@@ -8,6 +8,7 @@ import XCTest
 @MainActor
 final class HabitTests: XCTestCase {
 
+    private let sep10 = Day(year: 2026, month: 9, day: 10)
     private let sep11 = Day(year: 2026, month: 9, day: 11)
     private let sep12 = Day(year: 2026, month: 9, day: 12)
     private let sep13 = Day(year: 2026, month: 9, day: 13)
@@ -85,7 +86,45 @@ final class HabitTests: XCTestCase {
         XCTAssertEqual(read.name, "No phone on waking")
         XCTAssertEqual(read.kind, .yesNo)
         XCTAssertFalse(read.isArchived)
-        XCTAssertEqual(read.target, HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
+        XCTAssertEqual(read.targets, [HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11)])
+    }
+
+    // MARK: Dated targets (ADR 0003)
+
+    func test_targetInForce_onEachDay_isTheRecordThatAppliedThen_andNilBeforeTheFirst() throws {
+        let store = Store.inMemory()
+        let habit = try makeHabit(store)
+
+        try store.setHabitTarget(habit.id, amount: 3, period: .week, effectiveFrom: sep13)
+
+        let read = try XCTUnwrap(store.habit(habit.id))
+        XCTAssertNil(read.target(inForceOn: sep10))
+        XCTAssertEqual(read.target(inForceOn: sep11), HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
+        XCTAssertEqual(read.target(inForceOn: sep12), HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
+        XCTAssertEqual(read.target(inForceOn: sep13), HabitTargetRecord(amount: 3, period: .week, effectiveFrom: sep13))
+        XCTAssertEqual(read.target(inForceOn: Day(year: 2026, month: 12, day: 25))?.amount, 3)
+    }
+
+    func test_settingTheTargetAlreadyInForce_writesNoNewRecord() throws {
+        let store = Store.inMemory()
+        let habit = try makeHabit(store)
+
+        try store.setHabitTarget(habit.id, amount: 1, period: .day, effectiveFrom: sep13)
+
+        XCTAssertEqual(try XCTUnwrap(store.habit(habit.id)).targets.map(\.effectiveFrom), [sep11])
+    }
+
+    func test_settingTheTargetTwiceOnOneDay_replacesThatDaysRecord() throws {
+        let store = Store.inMemory()
+        let habit = try makeHabit(store)
+        try store.setHabitTarget(habit.id, amount: 20, period: .day, effectiveFrom: sep13)
+
+        try store.setHabitTarget(habit.id, amount: 25, period: .day, effectiveFrom: sep13)
+
+        let read = try XCTUnwrap(store.habit(habit.id))
+        XCTAssertEqual(read.targets.map(\.effectiveFrom), [sep11, sep13])
+        XCTAssertEqual(read.target(inForceOn: sep13)?.amount, 25)
+        XCTAssertEqual(read.target(inForceOn: sep12)?.amount, 1)
     }
 
     func test_newHabits_listAfterExistingOnes() throws {

@@ -1,9 +1,11 @@
 import UIKit
 import os
 
-/// A Habit's detail, pushed from its card: the streak as the hero and a month calendar for
-/// fixing past Days (tapping a Day toggles its Check-in). Archive lives in the toolbar
-/// menu; an archived Habit is restored or deleted from the tab's Archived section.
+/// A Habit's detail, pushed from its card: the streak as the hero, the target in force with
+/// a way to change it (a new dated record effective today, ADR 0003), and a month calendar
+/// for fixing past Days (tapping a Day toggles a yes/no Check-in or opens the number sheet
+/// for a quantitative one). Archive lives in the toolbar menu; an archived Habit is restored
+/// or deleted from the tab's Archived section.
 final class HabitDetailViewController: ScreenViewController {
 
     private static let logger = Logger(category: "Habits")
@@ -11,7 +13,10 @@ final class HabitDetailViewController: ScreenViewController {
     private let dependencies: AppDependencies
     private let habitID: HabitRecord.ID
     private let streak = StreakHeroView()
+    private let targetValueLabel = UILabel()
+    private let targetUnitLabel = UILabel()
     private let calendar = MonthCalendarView()
+    private var habit: HabitRecord?
     /// False once a render finds the Habit gone (deleted elsewhere); the screen pops itself
     /// once it is fully on screen, never mid-transition.
     private var habitExists = true
@@ -35,7 +40,9 @@ final class HabitDetailViewController: ScreenViewController {
         streakCard.contentStack.addArrangedSubview(streak)
         contentStack.addArrangedSubview(streakCard)
 
-        calendar.onTapDay = { [weak self] day in self?.toggle(day) }
+        contentStack.addArrangedSubview(makeTargetCard())
+
+        calendar.onTapDay = { [weak self] day in self?.edit(day) }
         let calendarCard = CardView()
         calendarCard.contentStack.addArrangedSubview(calendar)
         contentStack.addArrangedSubview(calendarCard)
@@ -53,6 +60,39 @@ final class HabitDetailViewController: ScreenViewController {
 
     // MARK: - Rendering
 
+    private func makeTargetCard() -> UIView {
+        targetValueLabel.font = UIFont.metricNumber
+        targetValueLabel.textColor = UIColor.accentGreen
+        targetValueLabel.adjustsFontForContentSizeCategory = true
+        targetValueLabel.setContentHuggingPriority(.required, for: .horizontal)
+        targetUnitLabel.font = UIFont.label
+        targetUnitLabel.textColor = UIColor.textSecondary
+        targetUnitLabel.adjustsFontForContentSizeCategory = true
+
+        var configuration = UIButton.Configuration.filled()
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = UIColor.fill
+        configuration.baseForegroundColor = UIColor.textPrimary
+        configuration.title = "Change"
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var attributes = attributes
+            attributes.font = UIFont.cardTitle
+            return attributes
+        }
+        let change = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.presentChangeTarget() })
+        change.accessibilityLabel = "Change target"
+        change.setContentHuggingPriority(.required, for: .horizontal)
+
+        let row = UIStackView(arrangedSubviews: [targetValueLabel, targetUnitLabel, change])
+        row.axis = .horizontal
+        row.alignment = .center
+        row.spacing = Metrics.spaceTight
+
+        let card = CardView(title: "Target", systemImage: "scope", iconTint: UIColor.accentGreen)
+        card.contentStack.addArrangedSubview(row)
+        return card
+    }
+
     private func render() {
         let today = Day.today()
         do {
@@ -61,10 +101,15 @@ final class HabitDetailViewController: ScreenViewController {
                 popIfGone()
                 return
             }
+            self.habit = habit
             let model = HabitCardModel(habit: habit, checkIns: try dependencies.store.checkIns(for: habitID), today: today, columns: 1)
             title = "\(habit.emoji) \(habit.name)"
-            streak.setStreak(model.streak, unit: model.streakUnit)
-            calendar.model = .init(today: today, met: model.met)
+            streak.setStreak(model.streak, unit: model.streakUnit, caption: model.weekCaption)
+            let summary = model.target?.summary(for: habit.kind)
+            targetValueLabel.text = summary?.value ?? "—"
+            targetValueLabel.textColor = summary == nil ? UIColor.textTertiary : UIColor.accentGreen
+            targetUnitLabel.text = summary?.unit
+            calendar.model = .init(today: today, levels: model.levels, editableFrom: model.editableFrom)
         } catch {
             Self.logger.error("Failed to read Habit: \(error, privacy: .public)")
         }
@@ -78,6 +123,25 @@ final class HabitDetailViewController: ScreenViewController {
     }
 
     // MARK: - Actions
+
+    /// A yes/no Day toggles its Check-in; a quantitative Day opens its number sheet.
+    private func edit(_ day: Day) {
+        guard let habit else { return }
+        switch habit.kind {
+        case .yesNo:
+            toggle(day)
+        case .quantitative:
+            present(HabitAmountViewController.sheet(dependencies: dependencies, habitID: habitID, day: day) { [weak self] in self?.render() }, animated: true)
+        }
+    }
+
+    private func presentChangeTarget() {
+        guard let habit else { return }
+        let sheet = HabitTargetViewController.sheet(dependencies: dependencies, habit: habit, target: habit.target(inForceOn: .today())) { [weak self] in
+            self?.render()
+        }
+        present(sheet, animated: true)
+    }
 
     private func toggle(_ day: Day) {
         do {

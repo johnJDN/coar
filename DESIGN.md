@@ -151,6 +151,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | `HeroCounter` | Large flip-style digits in individual `fill` boxes, unit label trailing. |
 | `MetricRow` | Leading emoji or tinted icon, label, trailing value (`textSecondary`), optional square `→` button. Used for habits and journal-style entries. |
 | `CheckToggle` | Two-state `— / ✓` capsule. Used for yes/no habit check-ins; there is no recorded "miss", an empty day is the miss. |
+| `AmountControl` | Capsule showing today's total for a quantitative habit: `—` on `fill` when nothing is logged, the amount on `fill` while short of the target, `accentGreen` with bloom once met. Tapping opens the number sheet (hero field, target beside it, `+N` glass chips). |
 | `PillChip` | Capsule with leading icon tile, title, subtitle, trailing chevron. Glass when floating, `fill` when in-card. |
 | `SetRow` | `[set #] [weight lbs] [reps] [✓]` — four pills in `fill`. Completed: all pills and text flood `accentGreen` at 18% fill / 100% text. |
 | `ExerciseCard` | Thumbnail, name, "Equipment • n sets", timer + more buttons; `SetRow` list; footer split actions "Progression | Add Set". Superset link icon between cards. |

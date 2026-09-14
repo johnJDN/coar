@@ -2,22 +2,20 @@ import SwiftUI
 import UIKit
 
 /// The new-habit sheet's content (ADR 0001: SwiftUI leaf, values in, closures out). Emoji,
-/// name, target amount, and Period; the kind is yes/no until the quantitative ticket adds a
-/// selector. Every edit reports the whole draft so the host can enable Save.
+/// name, kind, Period, and target amount. Every edit reports the whole draft so the host
+/// can enable Save.
 struct HabitForm: View {
 
     struct Draft: Equatable {
         var emoji = ""
         var name = ""
-        var targetAmount: Double? = 1
-        var period: HabitPeriod = .day
+        var target = HabitTargetDraft()
 
         var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-        /// Saveable: an emoji, a name, and a positive whole target.
+        /// Saveable: an emoji, a name, and a valid target.
         var isComplete: Bool {
-            guard let targetAmount else { return false }
-            return !emoji.isEmpty && !trimmedName.isEmpty && targetAmount > 0 && targetAmount.rounded() == targetAmount
+            !emoji.isEmpty && !trimmedName.isEmpty && target.amount != nil
         }
     }
 
@@ -55,36 +53,7 @@ struct HabitForm: View {
                 Text("The emoji is the habit's icon everywhere it appears.")
             }
 
-            Section {
-                HStack(spacing: Metrics.spaceInner) {
-                    Text("Amount").foregroundStyle(Color.textPrimary)
-                    Spacer()
-                    TextField("1", value: $draft.targetAmount, format: .number)
-                        .keyboardType(.numberPad)
-                        .multilineTextAlignment(.trailing)
-                        .font(Font.metricNumber)
-                        .foregroundStyle(Color.accentGreen)
-                        .accessibilityLabel("Target amount")
-                }
-                .formRow()
-                HStack(spacing: Metrics.spaceInner) {
-                    Text("Period").foregroundStyle(Color.textPrimary)
-                    Spacer()
-                    Picker("Period", selection: $draft.period) {
-                        ForEach(HabitPeriod.allCases, id: \.self) { period in
-                            Text(period.title).tag(period)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-                .formRow()
-            } header: {
-                Text("Target")
-            } footer: {
-                Text("A yes/no habit checks in once a day. The target is how many check-ins make a period count.")
-            }
+            HabitTargetSection(draft: $draft.target)
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)

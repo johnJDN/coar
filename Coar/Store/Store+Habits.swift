@@ -30,7 +30,23 @@ extension Store {
         target.effectiveFrom = effectiveFrom.rawValue
         target.habit = habit
         try save()
-        return HabitRecord(habit, today: .today())!
+        return HabitRecord(habit)!
+    }
+
+    /// Sets the target in force from `effectiveFrom` on, as a new dated record (ADR 0003):
+    /// past Days keep the record that applied then. Setting what is already in force on
+    /// that Day writes nothing; setting again on a Day that already starts a record
+    /// replaces it, so a Day never starts two.
+    func setHabitTarget(_ id: HabitRecord.ID, amount: Double, period: HabitPeriod, effectiveFrom: Day = .today()) throws {
+        guard let habit = try fetchHabit(id) else { return }
+        let inForce = HabitRecord(habit)?.target(inForceOn: effectiveFrom)
+        guard inForce?.amount != amount || inForce?.period != period else { return }
+        let target = habit.targetObjects.first { $0.effectiveFrom == effectiveFrom.rawValue } ?? HabitTarget(context: context)
+        target.amount = amount
+        target.period = period.rawValue
+        target.effectiveFrom = effectiveFrom.rawValue
+        target.habit = habit
+        try save()
     }
 
     /// Active Habits in the user's order.
@@ -44,7 +60,7 @@ extension Store {
     }
 
     func habit(_ id: HabitRecord.ID) throws -> HabitRecord? {
-        try fetchHabit(id).flatMap { HabitRecord($0, today: .today()) }
+        try fetchHabit(id).flatMap(HabitRecord.init)
     }
 
     /// Persists the given order; `ids` lists the active Habits first to last.
@@ -119,8 +135,7 @@ extension Store {
             NSSortDescriptor(key: "sortOrder", ascending: true),
             NSSortDescriptor(key: "modifiedAt", ascending: true),
         ]
-        let today = Day.today()
-        return try context.fetch(request).compactMap { HabitRecord($0, today: today) }
+        return try context.fetch(request).compactMap(HabitRecord.init)
     }
 
     private func fetchHabit(_ id: HabitRecord.ID) throws -> Habit? {
@@ -148,7 +163,7 @@ extension Store {
 }
 
 private extension HabitRecord {
-    init?(_ object: Habit, today: Day) {
+    init?(_ object: Habit) {
         guard let id = object.id, let modifiedAt = object.modifiedAt,
               let kind = HabitKind(rawValue: object.kind)
         else { return nil }
@@ -159,24 +174,25 @@ private extension HabitRecord {
             kind: kind,
             isArchived: object.isArchived,
             sortOrder: Int(object.sortOrder),
-            target: object.target(inForceOn: today),
+            targets: object.targetSeries,
             modifiedAt: modifiedAt
         )
     }
 }
 
 private extension Habit {
-    /// The target in force on `day` (ADR 0003): the entry with the latest effective-from Day
-    /// on or before it, the latest-modified one when a Day starts several; nil before the
-    /// first entry.
-    func target(inForceOn day: Day) -> HabitTargetRecord? {
-        (targets as? Set<HabitTarget> ?? [])
-            .compactMap { object -> (HabitTargetRecord, Date)? in
-                guard let record = HabitTargetRecord(object), record.effectiveFrom <= day else { return nil }
-                return (record, object.modifiedAt ?? .distantPast)
-            }
-            .max { ($0.0.effectiveFrom, $0.1) < ($1.0.effectiveFrom, $1.1) }?
-            .0
+    var targetObjects: [HabitTarget] {
+        Array(targets as? Set<HabitTarget> ?? [])
+    }
+
+    /// The dated series earliest first. When a Day starts several records (two devices
+    /// editing before sync), the latest-modified one stands, as the dedupe pass will settle.
+    var targetSeries: [HabitTargetRecord] {
+        let latestPerDay = Dictionary(
+            targetObjects.compactMap { object in HabitTargetRecord(object).map { ($0.effectiveFrom, (object.modifiedAt ?? .distantPast, $0)) } },
+            uniquingKeysWith: { $0.0 >= $1.0 ? $0 : $1 }
+        )
+        return latestPerDay.values.map(\.1).sorted { $0.effectiveFrom < $1.effectiveFrom }
     }
 }
 

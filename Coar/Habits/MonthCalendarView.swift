@@ -1,13 +1,22 @@
 import UIKit
 
-/// A month calendar for retroactive Check-ins (DESIGN.md §11): Monday-first grid, done Days
-/// in `accentGreen` with bloom, empty Days on `surfaceSunken`, future Days muted and inert.
-/// Owns which month is shown; the owner supplies today and the met Days and handles taps.
+/// A month calendar for retroactive Check-ins (DESIGN.md §11): Monday-first grid, Days
+/// coloured like the heatmap's cells (done in `accentGreen` with bloom, quantitative buckets
+/// by intensity, empty on `surfaceSunken`), future Days and Days before the first target
+/// muted and inert. Owns which month is shown; the owner supplies today and the levels and
+/// handles taps.
 final class MonthCalendarView: UIView {
 
     struct Model: Equatable {
         var today: Day
-        var met: Set<Day>
+        var levels: [Day: Heatmap.Level]
+        /// The first Day that can be tapped; nil when none can.
+        var editableFrom: Day?
+
+        func isEditable(_ day: Day) -> Bool {
+            guard let editableFrom else { return false }
+            return day >= editableFrom && day <= today
+        }
     }
 
     var model: Model? {
@@ -77,7 +86,7 @@ final class MonthCalendarView: UIView {
                 cell.configure(nil)
             case .day(let day):
                 guard let model = self?.model else { return cell.configure(nil) }
-                cell.configure(.init(day: day, isDone: model.met.contains(day), isToday: day == model.today, isFuture: day > model.today))
+                cell.configure(.init(day: day, level: model.levels[day] ?? .empty, isToday: day == model.today, isEditable: model.isEditable(day)))
             }
         }
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, item in
@@ -156,10 +165,11 @@ final class MonthCalendarView: UIView {
 
 extension MonthCalendarView: UICollectionViewDelegate {
 
-    /// Only Days up to today respond; the future is inert (DESIGN.md §1.3).
+    /// Only Days from the first target up to today respond; the future and the time before
+    /// the Habit are inert (DESIGN.md §1.3).
     func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         guard case .day(let day) = dataSource.itemIdentifier(for: indexPath), let model else { return false }
-        return day <= model.today
+        return model.isEditable(day)
     }
 
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
@@ -173,15 +183,15 @@ extension MonthCalendarView: UICollectionViewDelegate {
     }
 }
 
-/// One Day of the month calendar: a circle that is `accentGreen` with bloom when done,
-/// `surfaceSunken` when not, and absent for Days still to come.
+/// One Day of the month calendar: a circle coloured by its level (`accentGreen` with bloom
+/// when done), absent for Days still to come.
 private final class CalendarDayCell: UICollectionViewCell {
 
     struct State {
         let day: Day
-        let isDone: Bool
+        let level: Heatmap.Level
         let isToday: Bool
-        let isFuture: Bool
+        let isEditable: Bool
     }
 
     private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 6)
@@ -242,18 +252,20 @@ private final class CalendarDayCell: UICollectionViewCell {
             isAccessibilityElement = false
             return
         }
+        let isFuture = state.level == .future
+        let isDone = state.level == .done
         label.text = String(state.day.day)
-        circle.isHidden = state.isFuture
-        circle.backgroundColor = state.isDone ? UIColor.accentGreen : UIColor.surfaceSunken
-        label.textColor = state.isFuture ? UIColor.textTertiary
-            : state.isDone ? .white
+        circle.isHidden = isFuture
+        circle.backgroundColor = state.level.fillColor
+        label.textColor = !state.isEditable ? UIColor.textTertiary
+            : isDone ? .white
             : state.isToday ? UIColor.accentGreen
             : UIColor.textPrimary
         label.font = state.isToday ? Self.todayFont : Self.dayFont
-        bloomView.setVisible(state.isDone, animated: true)
+        bloomView.setVisible(isDone, animated: true)
         isAccessibilityElement = true
-        accessibilityTraits = state.isFuture ? .staticText : .button
+        accessibilityTraits = state.isEditable ? .button : .staticText
         accessibilityLabel = state.day.start().formatted(.dateTime.month(.wide).day())
-        accessibilityValue = state.isFuture ? "" : state.isDone ? "Done" : "Not done"
+        accessibilityValue = isFuture ? "" : state.level.accessibilityValue
     }
 }

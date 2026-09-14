@@ -4,6 +4,13 @@ import Foundation
 enum HabitKind: Int16, CaseIterable {
     case yesNo = 0
     case quantitative = 1
+
+    var title: String {
+        switch self {
+        case .yesNo: return "Yes / no"
+        case .quantitative: return "Amount"
+        }
+    }
 }
 
 /// The span a Habit's target applies over (CONTEXT.md "Period"). Raw values are stored.
@@ -35,14 +42,31 @@ struct HabitRecord: Hashable, Identifiable {
     let kind: HabitKind
     let isArchived: Bool
     let sortOrder: Int
-    /// The target in force today; nil only for a Habit whose first target starts later.
-    let target: HabitTargetRecord?
+    /// The dated target series (ADR 0003), earliest first; one record per effective-from Day.
+    let targets: [HabitTargetRecord]
     let modifiedAt: Date
 
-    /// Whether a Day's Check-in counts as met. A yes/no Habit is met by any Check-in;
-    /// quantitative amounts against the target are ticket 05.
-    func meets(amount: Double) -> Bool {
-        amount > 0
+    /// The target in force on a Day: the record with the latest effective-from Day on or
+    /// before it. Nil before the first record: such a Day renders empty, never against 0.
+    func target(inForceOn day: Day) -> HabitTargetRecord? {
+        targets.last { $0.effectiveFrom <= day }
+    }
+}
+
+/// Amounts as the Habits screens show them: whole numbers plain, a fraction kept when there
+/// is one, and the quick-add steps the number sheet offers against a target.
+enum HabitAmount {
+
+    static func text(_ amount: Double) -> String {
+        amount.formatted(.number.precision(.fractionLength(0...1)))
+    }
+
+    /// Three `+N` steps scaled to the target's magnitude: 20 pages gets +1 +5 +10, 100
+    /// push-ups +10 +50 +100. Small targets step by 1, 2, 5; no target uses 1, 5, 10.
+    static func quickAdds(target: Double?) -> [Double] {
+        guard let target, target >= 10 else { return target == nil ? [1, 5, 10] : [1, 2, 5] }
+        let scale = pow(10, floor(log10(target)) - 1)
+        return [1, 5, 10].map { $0 * scale }
     }
 }
 
@@ -52,6 +76,16 @@ struct HabitTargetRecord: Hashable {
     let amount: Double
     let period: HabitPeriod
     let effectiveFrom: Day
+
+    /// The target as a value and its unit: "20" "a day", "3" "days a week", "1" "a day".
+    func summary(for kind: HabitKind) -> (value: String, unit: String) {
+        let value = HabitAmount.text(amount)
+        switch (kind, period) {
+        case (.yesNo, .week): return (value, amount == 1 ? "day a week" : "days a week")
+        case (_, .day): return (value, "a day")
+        case (.quantitative, .week): return (value, "a week")
+        }
+    }
 }
 
 /// A Check-in as read through the façade (CONTEXT.md "Check-in"): a Day's total for a Habit.

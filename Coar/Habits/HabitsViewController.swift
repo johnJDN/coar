@@ -2,8 +2,9 @@ import UIKit
 import os
 
 /// The Habits tab (DESIGN.md §11): one card per active Habit, then an Archived section.
-/// Long-press to reorder; tap a card for its detail; the toggle checks today in. Reads
-/// through the façade on every appearance and after every write.
+/// Long-press to reorder; tap a card for its detail; the toggle checks today in and the
+/// amount control opens today's number sheet. Reads through the façade on every appearance
+/// and after every write.
 final class HabitsViewController: UIViewController {
 
     private static let logger = Logger(category: "Habits")
@@ -73,6 +74,7 @@ final class HabitsViewController: UIViewController {
             guard let self, let model = cards[id] else { return }
             cell.configure(with: model)
             cell.onToggle = { [weak self] on in self?.setToday(id, done: on) }
+            cell.onAmountTap = { [weak self] in self?.presentAmount(id) }
         }
         let archivedCell = UICollectionView.CellRegistration<ArchivedHabitCell, HabitRecord.ID> { [weak self] cell, _, id in
             guard let self, let habit = archived[id] else { return }
@@ -217,6 +219,10 @@ final class HabitsViewController: UIViewController {
         })
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
+    }
+
+    private func presentAmount(_ id: HabitRecord.ID) {
+        present(HabitAmountViewController.sheet(dependencies: dependencies, habitID: id, day: .today()) { [weak self] in self?.render() }, animated: true)
     }
 
     private func presentNewHabit() {

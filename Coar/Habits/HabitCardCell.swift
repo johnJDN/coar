@@ -1,15 +1,18 @@
 import UIKit
 
-/// One habit as a `Card` (DESIGN.md §11): emoji, name, today's `CheckToggle`, the streak as
-/// the hero number, and the heatmap. Tapping the card opens the detail; the toggle reports
-/// through `onToggle`.
+/// One habit as a `Card` (DESIGN.md §11): emoji, name, today's control (a `CheckToggle` for
+/// a yes/no Habit, an `AmountControl` for a quantitative one), the streak as the hero
+/// number, and the heatmap. Tapping the card opens the detail; the toggle reports through
+/// `onToggle`, the amount control through `onAmountTap`.
 final class HabitCardCell: CardCell {
 
     var onToggle: ((Bool) -> Void)?
+    var onAmountTap: (() -> Void)?
 
     private let emojiLabel = UILabel()
     private let nameLabel = UILabel()
     private let toggle = CheckToggleView()
+    private let amountControl = AmountControlView()
     private let streak = StreakHeroView()
     private let heatmap = HeatmapView()
 
@@ -27,8 +30,10 @@ final class HabitCardCell: CardCell {
 
         toggle.onToggle = { [weak self] on in self?.onToggle?(on) }
         toggle.setContentHuggingPriority(.required, for: .horizontal)
+        amountControl.onTap = { [weak self] in self?.onAmountTap?() }
+        amountControl.setContentHuggingPriority(.required, for: .horizontal)
 
-        let header = UIStackView(arrangedSubviews: [emojiLabel, nameLabel, toggle])
+        let header = UIStackView(arrangedSubviews: [emojiLabel, nameLabel, toggle, amountControl])
         header.axis = .horizontal
         header.alignment = .center
         header.spacing = Metrics.spaceTight
@@ -47,10 +52,19 @@ final class HabitCardCell: CardCell {
     func configure(with model: HabitCardModel) {
         emojiLabel.text = model.emoji
         nameLabel.text = model.name
-        toggle.setOn(model.isDoneToday, animated: false)
-        toggle.accessibilityLabel = "Check in \(model.name)"
-        streak.setStreak(model.streak, unit: model.streakUnit)
+        toggle.isHidden = model.kind != .yesNo
+        amountControl.isHidden = model.kind != .quantitative
+        switch model.kind {
+        case .yesNo:
+            toggle.setOn(model.isDoneToday, animated: false)
+            toggle.accessibilityLabel = "Check in \(model.name)"
+        case .quantitative:
+            amountControl.setAmount(model.todayAmount, isMet: model.isDoneToday, animated: false)
+            amountControl.accessibilityLabel = "Log \(model.name)"
+        }
+        streak.setStreak(model.streak, unit: model.streakUnit, caption: model.weekCaption)
         heatmap.cells = model.heatmap
-        accessibilityLabel = "\(model.name), \(model.streak) \(model.streakUnit) streak"
+        heatmap.weekDots = model.weekDots
+        accessibilityLabel = "\(model.name), \(model.streak) \(model.streakUnit) streak" + (model.weekCaption.map { ", \($0)" } ?? "")
     }
 }
