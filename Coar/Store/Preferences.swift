@@ -6,7 +6,7 @@ import Foundation
 /// displayed weight at once.
 final class Preferences {
 
-    /// Posted on the main thread with the `Preferences` instance as the object.
+    /// Posted synchronously from the setter, with the `Preferences` instance as the object.
     static let massUnitDidChange = Notification.Name("Preferences.massUnitDidChange")
 
     private static let massUnitKey = "massUnit"

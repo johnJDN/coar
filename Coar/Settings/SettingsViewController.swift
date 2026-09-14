@@ -7,7 +7,7 @@ import os
 /// re-renders the form with fresh values after every action.
 final class SettingsViewController: UIHostingController<SettingsForm> {
 
-    private static let logger = Logger(subsystem: "com.johnnguyen.coar", category: "Settings")
+    private static let logger = Logger(category: "Settings")
 
     private let dependencies: AppDependencies
     private var model: SettingsForm.Model

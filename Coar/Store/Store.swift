@@ -17,7 +17,7 @@ final class Store {
         return NSManagedObjectModel(contentsOf: url)!
     }()
 
-    private static let logger = Logger(subsystem: "com.johnnguyen.coar", category: "Store")
+    private static let logger = Logger(category: "Store")
 
     private let container: NSPersistentContainer
     private var context: NSManagedObjectContext { container.viewContext }
@@ -98,20 +98,18 @@ final class Store {
     /// never starts two.
     func setTarget(_ macros: Macros, effectiveFrom day: Day = .today()) throws {
         guard try target(inForceOn: day)?.macros != macros else { return }
-        let record = try fetchTargets(effectiveFrom: day).first ?? MacroTarget(context: context)
+        let record = try fetchTarget(effectiveFrom: day) ?? MacroTarget(context: context)
         record.effectiveFrom = day.rawValue
-        record.calories = macros.calories
-        record.protein = macros.protein
-        record.fat = macros.fat
-        record.carbs = macros.carbs
+        record.macros = macros
         try save()
     }
 
-    private func fetchTargets(effectiveFrom day: Day) throws -> [MacroTarget] {
+    private func fetchTarget(effectiveFrom day: Day) throws -> MacroTarget? {
         let request = MacroTarget.fetchRequest()
         request.predicate = NSPredicate(format: "effectiveFrom == %@", day.rawValue)
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
-        return try context.fetch(request)
+        request.fetchLimit = 1
+        return try context.fetch(request).first
     }
 
     // MARK: - Writes
@@ -153,11 +151,19 @@ struct TargetRecord: Hashable {
 private extension TargetRecord {
     init?(_ object: MacroTarget) {
         guard let raw = object.effectiveFrom, let day = Day(rawValue: raw), let modifiedAt = object.modifiedAt else { return nil }
-        self.init(
-            macros: Macros(calories: object.calories, protein: object.protein, fat: object.fat, carbs: object.carbs),
-            effectiveFrom: day,
-            modifiedAt: modifiedAt
-        )
+        self.init(macros: object.macros, effectiveFrom: day, modifiedAt: modifiedAt)
+    }
+}
+
+private extension MacroTarget {
+    var macros: Macros {
+        get { Macros(calories: calories, protein: protein, fat: fat, carbs: carbs) }
+        set {
+            calories = newValue.calories
+            protein = newValue.protein
+            fat = newValue.fat
+            carbs = newValue.carbs
+        }
     }
 }
 

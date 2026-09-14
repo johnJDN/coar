@@ -18,10 +18,8 @@ struct SettingsForm: View {
     let onChangeMassUnit: (MassUnit) -> Void
     let onConnectHealth: () -> Void
 
-    @State private var calories: Double?
-    @State private var protein: Double?
-    @State private var fat: Double?
-    @State private var carbs: Double?
+    /// The Targets fields as typed; nil where a field is empty.
+    @State private var fields: [Macro: Double?]
 
     init(
         model: Model,
@@ -33,27 +31,25 @@ struct SettingsForm: View {
         self.onSaveTargets = onSaveTargets
         self.onChangeMassUnit = onChangeMassUnit
         self.onConnectHealth = onConnectHealth
-        _calories = State(initialValue: model.target?.calories)
-        _protein = State(initialValue: model.target?.protein)
-        _fat = State(initialValue: model.target?.fat)
-        _carbs = State(initialValue: model.target?.carbs)
+        _fields = State(initialValue: Dictionary(uniqueKeysWithValues: Macro.allCases.map { ($0, model.target?[$0]) }))
     }
 
     /// The four fields as a Target, or nil while any is empty or negative.
     private var draft: Macros? {
-        guard let calories, let protein, let fat, let carbs,
-              [calories, protein, fat, carbs].allSatisfy({ $0 >= 0 })
-        else { return nil }
-        return Macros(calories: calories, protein: protein, fat: fat, carbs: carbs)
+        var macros = Macros(calories: 0, protein: 0, fat: 0, carbs: 0)
+        for macro in Macro.allCases {
+            guard let value = fields[macro] ?? nil, value >= 0 else { return nil }
+            macros[macro] = value
+        }
+        return macros
     }
 
     var body: some View {
         Form {
             Section {
-                macroRow("Calories", unit: "kcal", systemImage: "flame.fill", tint: Color.accentAmber, value: $calories)
-                macroRow("Protein", unit: "g", systemImage: "fish.fill", tint: Color.accentBlue, value: $protein)
-                macroRow("Fat", unit: "g", systemImage: "drop.fill", tint: Color.accentPink, value: $fat)
-                macroRow("Carbs", unit: "g", systemImage: "leaf.fill", tint: Color.accentOrange, value: $carbs)
+                ForEach(Macro.allCases, id: \.self) { macro in
+                    macroRow(macro)
+                }
                 Button("Save targets") {
                     if let draft { onSaveTargets(draft) }
                 }
@@ -84,7 +80,7 @@ struct SettingsForm: View {
 
             Section {
                 HStack(spacing: Metrics.spaceInner) {
-                    IconTile(systemImage: "heart.fill", tint: Color.accentCoral)
+                    IconTile(systemImage: "heart.fill", tint: Color.accentGreen)
                     Text("Apple Health").foregroundStyle(Color.textPrimary)
                     Spacer()
                     Text(healthStatusText)
@@ -116,20 +112,18 @@ struct SettingsForm: View {
         }
     }
 
-    private func macroRow(
-        _ name: String, unit: String, systemImage: String, tint: Color, value: Binding<Double?>
-    ) -> some View {
+    private func macroRow(_ macro: Macro) -> some View {
         HStack(spacing: Metrics.spaceInner) {
-            IconTile(systemImage: systemImage, tint: tint)
-            Text(name).foregroundStyle(Color.textPrimary)
+            IconTile(systemImage: macro.systemImage, tint: macro.accent)
+            Text(macro.title).foregroundStyle(Color.textPrimary)
             Spacer()
-            TextField("—", value: value, format: .number)
+            TextField("—", value: Binding(get: { fields[macro] ?? nil }, set: { fields[macro] = $0 }), format: .number)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(Font.metricNumber)
-                .foregroundStyle(tint)
-                .accessibilityLabel("\(name) target")
-            Text(unit)
+                .foregroundStyle(macro.accent)
+                .accessibilityLabel("\(macro.title) target")
+            Text(macro.unit)
                 .font(Font.label)
                 .foregroundStyle(Color.textSecondary)
         }
