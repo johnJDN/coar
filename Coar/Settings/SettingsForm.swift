@@ -54,7 +54,7 @@ struct SettingsForm: View {
                     if let draft { onSaveTargets(draft) }
                 }
                 .disabled(draft == nil || draft == model.target)
-                .settingsRow()
+                .formRow()
             } header: {
                 Text("Targets")
             } footer: {
@@ -75,7 +75,7 @@ struct SettingsForm: View {
                     .labelsHidden()
                     .fixedSize()
                 }
-                .settingsRow()
+                .formRow()
             }
 
             Section {
@@ -86,10 +86,10 @@ struct SettingsForm: View {
                     Text(healthStatusText)
                         .foregroundStyle(model.healthStatus == nil ? Color.textTertiary : Color.textSecondary)
                 }
-                .settingsRow()
+                .formRow()
                 if model.healthStatus == .notRequested {
                     Button("Connect Apple Health", action: onConnectHealth)
-                        .settingsRow()
+                        .formRow()
                 }
             } header: {
                 Text("Apple Health")
@@ -127,16 +127,7 @@ struct SettingsForm: View {
                 .font(Font.label)
                 .foregroundStyle(Color.textSecondary)
         }
-        .settingsRow()
-    }
-}
-
-private extension View {
-    /// A Settings row: `surface` background, no separator (DESIGN.md §10), label text in
-    /// `textPrimary`; buttons keep the tint so they read as tappable.
-    func settingsRow() -> some View {
-        listRowBackground(Color.surface)
-            .listRowSeparator(.hidden)
+        .formRow()
     }
 }
 

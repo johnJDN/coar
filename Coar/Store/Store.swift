@@ -20,7 +20,8 @@ final class Store {
     private static let logger = Logger(category: "Store")
 
     private let container: NSPersistentContainer
-    private var context: NSManagedObjectContext { container.viewContext }
+    /// For the `Store+<Domain>` extensions only; nothing outside the façade may touch it.
+    var context: NSManagedObjectContext { container.viewContext }
 
     /// The on-device store mirrored to the user's private CloudKit database.
     static func live() -> Store {
@@ -125,7 +126,8 @@ final class Store {
 
     /// Every write ends here: stamps `modifiedAt` on each inserted or updated object, then
     /// saves. The stamp is app-set so the sync dedupe rule can compare it across devices.
-    private func save() throws {
+    /// For the `Store+<Domain>` extensions only.
+    func save() throws {
         guard context.hasChanges else { return }
         let now = Date()
         for object in context.insertedObjects.union(context.updatedObjects) {

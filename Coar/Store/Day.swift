@@ -57,3 +57,42 @@ struct Day: Hashable, Comparable, CustomStringConvertible {
         (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
     }
 }
+
+// MARK: - Calendar arithmetic
+
+extension Day {
+
+    /// A fixed proleptic Gregorian calendar in UTC: Day arithmetic is about calendar days,
+    /// so it must not depend on the device's zone or its daylight-saving transitions.
+    private static let gregorian: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }()
+
+    private var gregorianDate: Date {
+        Self.gregorian.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
+    /// The Day `days` after this one (before, when negative).
+    func advanced(by days: Int) -> Day {
+        Day(Self.gregorian.date(byAdding: .day, value: days, to: gregorianDate)!, in: Self.gregorian)
+    }
+
+    /// ISO weekday: Monday is 1, Sunday is 7. A Period week runs Monday to Sunday
+    /// (CONTEXT.md "Period").
+    var weekday: Int {
+        let sundayFirst = Self.gregorian.component(.weekday, from: gregorianDate)
+        return sundayFirst == 1 ? 7 : sundayFirst - 1
+    }
+
+    /// The Monday that starts this Day's week.
+    var startOfWeek: Day {
+        advanced(by: 1 - weekday)
+    }
+
+    /// How many Days this Day's month has.
+    var daysInMonth: Int {
+        Self.gregorian.range(of: .day, in: .month, for: gregorianDate)!.count
+    }
+}
