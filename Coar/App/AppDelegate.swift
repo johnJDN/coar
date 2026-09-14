@@ -3,12 +3,18 @@ import UIKit
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    /// The single store façade for the process. Loaded once at launch so CloudKit mirroring
-    /// starts before any screen asks for data. The unit-test host gets an in-memory store so
-    /// tests never touch CloudKit or the on-device database.
-    let store = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil
-        ? Store.live()
-        : Store.inMemory()
+    /// The process's single store façade, preferences, and Health access. The store loads
+    /// once at launch so CloudKit mirroring starts before any screen asks for data. The
+    /// unit-test host gets an in-memory store so tests never touch CloudKit or the on-device
+    /// database.
+    let dependencies: AppDependencies = {
+        let isTestHost = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        return AppDependencies(
+            store: isTestHost ? Store.inMemory() : Store.live(),
+            preferences: Preferences(),
+            health: HealthKitAccess()
+        )
+    }()
 
     func application(
         _ application: UIApplication,

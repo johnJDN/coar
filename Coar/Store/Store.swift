@@ -76,6 +76,44 @@ final class Store {
         return try context.fetch(request).first
     }
 
+    // MARK: - Target
+
+    /// The Target in force on a Day: the entry with the latest effective-from Day that is on
+    /// or before it. Nil when the series is empty or the Day precedes the first entry;
+    /// callers render `—`, never 0 (ADR 0003; `.scratch/data-model/issues/02`).
+    func target(inForceOn day: Day) throws -> TargetRecord? {
+        let request = MacroTarget.fetchRequest()
+        request.predicate = NSPredicate(format: "effectiveFrom <= %@", day.rawValue)
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "effectiveFrom", ascending: false),
+            NSSortDescriptor(key: "modifiedAt", ascending: false),
+        ]
+        request.fetchLimit = 1
+        return try context.fetch(request).first.flatMap(TargetRecord.init)
+    }
+
+    /// Sets the Target in force from `day` on. Past Days keep the Target that applied then
+    /// (ADR 0003). Setting the same values as are already in force on `day` writes nothing;
+    /// setting again on a Day that already starts an entry replaces that entry, so a Day
+    /// never starts two.
+    func setTarget(_ macros: Macros, effectiveFrom day: Day = .today()) throws {
+        guard try target(inForceOn: day)?.macros != macros else { return }
+        let record = try fetchTargets(effectiveFrom: day).first ?? MacroTarget(context: context)
+        record.effectiveFrom = day.rawValue
+        record.calories = macros.calories
+        record.protein = macros.protein
+        record.fat = macros.fat
+        record.carbs = macros.carbs
+        try save()
+    }
+
+    private func fetchTargets(effectiveFrom day: Day) throws -> [MacroTarget] {
+        let request = MacroTarget.fetchRequest()
+        request.predicate = NSPredicate(format: "effectiveFrom == %@", day.rawValue)
+        request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
+        return try context.fetch(request)
+    }
+
     // MARK: - Writes
 
     /// Every write ends here: stamps `modifiedAt` on each inserted or updated object, then
@@ -101,6 +139,25 @@ private extension BodyWeightRecord {
     init?(_ object: BodyWeight) {
         guard let raw = object.day, let day = Day(rawValue: raw), let modifiedAt = object.modifiedAt else { return nil }
         self.init(day: day, kilograms: object.kilograms, modifiedAt: modifiedAt)
+    }
+}
+
+/// A Target as read through the façade (CONTEXT.md "Target"): the daily macro amounts in
+/// force from `effectiveFrom` until a later entry takes over.
+struct TargetRecord: Hashable {
+    let macros: Macros
+    let effectiveFrom: Day
+    let modifiedAt: Date
+}
+
+private extension TargetRecord {
+    init?(_ object: MacroTarget) {
+        guard let raw = object.effectiveFrom, let day = Day(rawValue: raw), let modifiedAt = object.modifiedAt else { return nil }
+        self.init(
+            macros: Macros(calories: object.calories, protein: object.protein, fat: object.fat, carbs: object.carbs),
+            effectiveFrom: day,
+            modifiedAt: modifiedAt
+        )
     }
 }
 

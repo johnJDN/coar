@@ -9,7 +9,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
 
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = RootTabBarController(store: appDelegate.store)
+        window.rootViewController = RootTabBarController(dependencies: appDelegate.dependencies)
         window.makeKeyAndVisible()
         self.window = window
     }

@@ -1,18 +1,18 @@
 import UIKit
 
 /// The four Liquid Glass tabs. Each tab owns a `UINavigationController` with large titles
-/// (DESIGN.md §2). Screens receive the store façade; they never see a managed object context.
+/// (DESIGN.md §2). Screens receive their dependencies; they never see a managed object context.
 final class RootTabBarController: UITabBarController {
 
-    let store: Store
+    let dependencies: AppDependencies
 
-    init(store: Store) {
-        self.store = store
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
         super.init(nibName: nil, bundle: nil)
 
         tabs = [
-            UITab(title: "Home", image: UIImage(systemName: "house.fill"), identifier: "home") { _ in
-                Self.navigation(root: HomeViewController())
+            UITab(title: "Home", image: UIImage(systemName: "house.fill"), identifier: "home") { [dependencies] _ in
+                Self.navigation(root: HomeViewController(dependencies: dependencies))
             },
             UITab(title: "Habits", image: UIImage(systemName: "checkmark.circle.fill"), identifier: "habits") { _ in
                 Self.navigation(root: ScreenViewController(title: "Habits"))

@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Coar reads your sleep and steps from Health to show them on Home.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Coar writes the Body Weight you log so the Health app agrees with it.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
