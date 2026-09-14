@@ -7,4 +7,5 @@ struct AppDependencies {
     let store: Store
     let preferences: Preferences
     let health: HealthAccess
+    let bodyWeightWriter: BodyWeightWriter
 }

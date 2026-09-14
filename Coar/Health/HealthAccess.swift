@@ -47,3 +47,36 @@ final class HealthKitAccess: HealthAccess {
         try await healthStore.requestAuthorization(toShare: Self.shareTypes, read: Self.readTypes)
     }
 }
+
+// MARK: - Body Weight write
+
+/// The one Apple Health writer: a Body Weight as a body-mass sample. Write-only in v1;
+/// nothing is read back (ADR 0002). Faked in tests.
+protocol BodyWeightWriter: AnyObject {
+    func writeBodyWeight(kilograms: Double, on day: Day) async throws
+}
+
+extension HealthKitAccess: BodyWeightWriter {
+
+    /// Replaces whatever Coar wrote for that Day, so Health agrees with "one Body Weight
+    /// per Day". A Body Weight logged today is stamped now; an earlier Day gets noon. Shows
+    /// the system prompt first if it has never been shown.
+    func writeBodyWeight(kilograms: Double, on day: Day) async throws {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        if try await healthStore.statusForAuthorizationRequest(toShare: Self.shareTypes, read: Self.readTypes) == .shouldRequest {
+            try await requestAccess()
+        }
+
+        let type = HKQuantityType(.bodyMass)
+        let calendar = Calendar.current
+        let start = day.start(in: calendar)
+        let end = calendar.date(byAdding: .day, value: 1, to: start)!
+        let thatDay = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        _ = try await healthStore.deleteObjects(of: type, predicate: thatDay)
+
+        let now = Date()
+        let instant = (start..<end).contains(now) ? now : calendar.date(bySettingHour: 12, minute: 0, second: 0, of: start)!
+        let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: kilograms)
+        try await healthStore.save(HKQuantitySample(type: type, quantity: quantity, start: instant, end: instant))
+    }
+}

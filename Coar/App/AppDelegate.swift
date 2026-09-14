@@ -9,10 +9,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// database.
     let dependencies: AppDependencies = {
         let isTestHost = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        let health = HealthKitAccess()
         return AppDependencies(
             store: isTestHost ? Store.inMemory() : Store.live(),
             preferences: Preferences(),
-            health: HealthKitAccess()
+            health: health,
+            bodyWeightWriter: health
         )
     }()
 

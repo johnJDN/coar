@@ -20,8 +20,8 @@ final class RootTabBarController: UITabBarController {
             UITab(title: "Food", image: UIImage(systemName: "fork.knife"), identifier: "food") { _ in
                 Self.navigation(root: ScreenViewController(title: "Food"))
             },
-            UITab(title: "Train", image: UIImage(systemName: "dumbbell.fill"), identifier: "train") { _ in
-                Self.navigation(root: ScreenViewController(title: "Train"))
+            UITab(title: "Train", image: UIImage(systemName: "dumbbell.fill"), identifier: "train") { [dependencies] _ in
+                Self.navigation(root: TrainViewController(dependencies: dependencies))
             },
         ]
         tabBarMinimizeBehavior = .onScrollDown

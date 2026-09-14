@@ -26,6 +26,11 @@ enum MassUnit: String, CaseIterable {
         }
     }
 
+    /// The stored mass as the user reads it, e.g. "185.3 lbs".
+    func displayText(fromKilograms kilograms: Double) -> String {
+        "\(displayValue(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(1)))) \(symbol)"
+    }
+
     var symbol: String {
         switch self {
         case .pounds: return "lbs"

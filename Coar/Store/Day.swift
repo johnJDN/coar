@@ -25,6 +25,12 @@ struct Day: Hashable, Comparable, CustomStringConvertible {
         Day(Date(), in: calendar)
     }
 
+    /// The first instant of this Day in `calendar`'s time zone, for anything that needs a
+    /// `Date` (a chart axis, a HealthKit sample). Display only: the Day itself is the fact.
+    func start(in calendar: Calendar = .current) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    }
+
     // MARK: Storage form
 
     /// ISO-8601 calendar date, e.g. "2026-09-13". Sorts chronologically as a string.

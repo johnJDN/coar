@@ -84,7 +84,7 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 | `accentBlue` | `#6F8CFF` | Protein. Also generic "info" progression dot. |
 | `accentOrange` | `#F2A83B` | Carbs. |
 | `accentPink` | `#F0609C` | Fat. |
-| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep. |
+| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep. Body Weight (chart, chip tile, Settings unit tile). |
 | `accentLime` | `#B6E857` | Secondary volume groups. |
 | `accentLavender` | `#8C8DF5` | AI / coach. Gradient partner: `#B49CFF`. |
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |

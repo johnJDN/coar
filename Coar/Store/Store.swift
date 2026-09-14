@@ -69,9 +69,18 @@ final class Store {
         try fetchBodyWeight(on: day).flatMap(BodyWeightRecord.init)
     }
 
+    /// Every Body Weight in Day order, earliest first: the series the weight screen charts
+    /// and Trend Weight smooths.
+    func bodyWeights() throws -> [BodyWeightRecord] {
+        let request = BodyWeight.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "day", ascending: true)]
+        return try context.fetch(request).compactMap(BodyWeightRecord.init)
+    }
+
     private func fetchBodyWeight(on day: Day) throws -> BodyWeight? {
         let request = BodyWeight.fetchRequest()
         request.predicate = NSPredicate(format: "day == %@", day.rawValue)
+        request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
         request.fetchLimit = 1
         return try context.fetch(request).first
     }

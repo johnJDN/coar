@@ -1,0 +1,119 @@
+import SwiftUI
+import UIKit
+import os
+
+/// The weight screen, pushed from the Train root. One card: Trend Weight as the hero (the
+/// raw value with a `—` trend caption while there is only one point; `—` when there are
+/// none), the chart of raw points and trend, and a Log action. Reads through the façade on
+/// every appearance, after every log, and whenever the unit changes.
+final class BodyWeightViewController: ScreenViewController {
+
+    private static let logger = Logger(category: "BodyWeight")
+
+    private let dependencies: AppDependencies
+    private let heroLabel = UILabel()
+    private let captionLabel = UILabel()
+    private let chart = UIHostingController(rootView: BodyWeightChart(model: .init(raw: [], trend: [], unit: "")))
+    private var unitObserver: NSObjectProtocol?
+
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        super.init(title: "Body Weight")
+    }
+
+    deinit {
+        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        let log = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentLog() })
+        log.accessibilityLabel = "Log Body Weight"
+        navigationItem.rightBarButtonItem = log
+
+        heroLabel.font = UIFont.heroNumber
+        heroLabel.adjustsFontForContentSizeCategory = true
+        captionLabel.font = UIFont.label
+        captionLabel.textColor = UIColor.textSecondary
+        captionLabel.adjustsFontForContentSizeCategory = true
+        captionLabel.numberOfLines = 0
+
+        chart.view.backgroundColor = .clear
+        chart.sizingOptions = .intrinsicContentSize
+        addChild(chart)
+
+        let card = CardView()
+        card.contentStack.addArrangedSubview(heroLabel)
+        card.contentStack.addArrangedSubview(captionLabel)
+        card.contentStack.setCustomSpacing(Metrics.spaceInner, after: captionLabel)
+        card.contentStack.addArrangedSubview(chart.view)
+        contentStack.addArrangedSubview(card)
+        chart.didMove(toParent: self)
+
+        unitObserver = NotificationCenter.default.addObserver(
+            forName: Preferences.massUnitDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.render() }
+        }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        render()
+    }
+
+    // MARK: - Rendering
+
+    private func render() {
+        let records: [BodyWeightRecord]
+        do {
+            records = try dependencies.store.bodyWeights()
+        } catch {
+            Self.logger.error("Failed to read Body Weights: \(error, privacy: .public)")
+            records = []
+        }
+        let unit = dependencies.preferences.massUnit
+        let trend = TrendWeight.series(of: records.map(\.kilograms))
+
+        let hero: String
+        let caption: String
+        if let current = trend.last, let latest = records.last {
+            hero = unit.displayText(fromKilograms: current)
+            caption = "Trend Weight · latest \(unit.displayText(fromKilograms: latest.kilograms)), \(Self.dayText(latest.day))"
+        } else if let latest = records.last {
+            hero = unit.displayText(fromKilograms: latest.kilograms)
+            caption = "\(Self.dayText(latest.day)) · Trend —"
+        } else {
+            hero = "—"
+            caption = "No Body Weight yet"
+        }
+        setHero(hero, isEmpty: records.isEmpty)
+        captionLabel.text = caption
+
+        let raw = records.map { BodyWeightChart.Point(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }
+        let smoothed = zip(raw, trend).map { BodyWeightChart.Point(date: $0.date, value: unit.displayValue(fromKilograms: $1)) }
+        chart.rootView = BodyWeightChart(model: .init(raw: raw, trend: smoothed, unit: unit.symbol))
+    }
+
+    /// Number changes cross-dissolve (DESIGN.md §9); the empty value takes `textTertiary` (§5).
+    private func setHero(_ text: String, isEmpty: Bool) {
+        let apply = {
+            self.heroLabel.text = text
+            self.heroLabel.textColor = isEmpty ? UIColor.textTertiary : UIColor.textPrimary
+        }
+        guard heroLabel.text != text, viewIfLoaded?.window != nil else { return apply() }
+        UIView.transition(with: heroLabel, duration: 0.25, options: .transitionCrossDissolve, animations: apply)
+    }
+
+    private static func dayText(_ day: Day) -> String {
+        day.start().formatted(.dateTime.month(.abbreviated).day())
+    }
+
+    // MARK: - Log
+
+    private func presentLog() {
+        let sheet = BodyWeightLogViewController.sheet(dependencies: dependencies) { [weak self] in self?.render() }
+        present(sheet, animated: true)
+    }
+}
