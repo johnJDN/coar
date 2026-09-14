@@ -164,6 +164,15 @@ extension UIFont {
     static var label: UIFont { FontToken.label.uiFont }
 }
 
+extension UIConfigurationTextAttributesTransformer {
+    /// A capsule button's title in the card-title style (chips, in-card buttons).
+    static let cardTitle = UIConfigurationTextAttributesTransformer { attributes in
+        var attributes = attributes
+        attributes.font = UIFont.cardTitle
+        return attributes
+    }
+}
+
 extension Font {
     static var pageTitle: Font { FontToken.pageTitle.font }
     static var pageSubtitle: Font { FontToken.pageSubtitle.font }

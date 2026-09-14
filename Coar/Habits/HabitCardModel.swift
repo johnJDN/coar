@@ -48,7 +48,10 @@ struct HabitCardModel: Hashable, Identifiable {
             case .yesNo: levels[day] = inForce != nil && amount > 0 ? .done : .empty
             case .quantitative: levels[day] = Heatmap.level(amount: amount, target: inForce?.amount)
             }
-            if let inForce, inForce.period == .day, amount >= inForce.amount { metDays.insert(day) }
+            // A daily yes/no Habit is met by any Check-in, whatever amount its target stores.
+            if let inForce, inForce.period == .day, habit.kind == .yesNo ? amount > 0 : amount >= inForce.amount {
+                metDays.insert(day)
+            }
         }
 
         let weekTotals = Dictionary(amounts.map { ($0.key.startOfWeek, $0.value) }, uniquingKeysWith: +)
@@ -73,9 +76,11 @@ struct HabitCardModel: Hashable, Identifiable {
         }
         self.streak = streak
         streakUnit = period.streakUnit(streak)
-        weekCaption = period == .week && target != nil
-            ? "\(HabitAmount.text(weekTotals[today.startOfWeek] ?? 0)) of \(HabitAmount.text(target!.amount)) this week"
-            : nil
+        if let target, period == .week {
+            weekCaption = "\(HabitAmount.text(weekTotals[today.startOfWeek] ?? 0)) of \(HabitAmount.text(target.amount)) this week"
+        } else {
+            weekCaption = nil
+        }
         self.levels = levels
         heatmap = Heatmap.cells(endingOn: today, columns: columns, levels: levels)
         weekDots = period == .week ? Heatmap.weeks(endingOn: today, columns: columns).map(metWeeks.contains) : nil

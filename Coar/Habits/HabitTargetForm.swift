@@ -41,8 +41,8 @@ struct HabitTargetDraft: Equatable {
         switch (kind, period) {
         case (.yesNo, .day): return "Check in once a day. Every day with a check-in counts."
         case (.yesNo, .week): return "The week counts once you have checked in on this many days."
-        case (.quantitative, .day): return "Log a total each day. The day counts once it reaches this amount."
-        case (.quantitative, .week): return "Log a total each day. The week counts once its days add up to this amount."
+        case (.quantitative, .day): return "Enter a total each day. The day counts once it reaches this amount."
+        case (.quantitative, .week): return "Enter a total each day. The week counts once its days add up to this amount."
         }
     }
 }

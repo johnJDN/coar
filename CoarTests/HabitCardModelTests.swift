@@ -98,6 +98,13 @@ final class HabitCardModelTests: XCTestCase {
         XCTAssertEqual(model.levels[thursday10], .done)
     }
 
+    func test_yesNoDailyHabit_isMetByAnyCheckIn_whateverAmountItsTargetStores() {
+        let habit = habit(targets: [HabitTargetRecord(amount: 2, period: .day, effectiveFrom: sep1)])
+        let model = HabitCardModel(habit: habit, checkIns: checkIns(days(8...10)), today: thursday10)
+        XCTAssertEqual(model.streak, 3)
+        XCTAssertTrue(model.isDoneToday)
+    }
+
     func test_quantitativeControl_showsTodaysTotal() {
         let habit = habit(kind: .quantitative, targets: [HabitTargetRecord(amount: 20, period: .day, effectiveFrom: sep1)])
         let model = HabitCardModel(habit: habit, checkIns: checkIns([thursday10], amount: 12), today: thursday10)

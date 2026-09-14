@@ -45,3 +45,4 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Calendar days before the first target are inert, not just empty.
 - [?] Kind is fixed at creation; Change Target edits amount and period only.
 - [?] The Target card shows "20 a day" / "3 days a week" with a Change button and no "since" date.
+- [?] A daily yes/no habit is met by any check-in even if its stored target amount is 2 (ticket 04's form allowed it); the amount row no longer appears for that combination.

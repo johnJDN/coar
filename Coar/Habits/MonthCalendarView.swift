@@ -86,7 +86,10 @@ final class MonthCalendarView: UIView {
                 cell.configure(nil)
             case .day(let day):
                 guard let model = self?.model else { return cell.configure(nil) }
-                cell.configure(.init(day: day, level: model.levels[day] ?? .empty, isToday: day == model.today, isEditable: model.isEditable(day)))
+                cell.configure(.init(
+                    day: day, level: day > model.today ? .future : model.levels[day] ?? .empty,
+                    isToday: day == model.today, isEditable: model.isEditable(day)
+                ))
             }
         }
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, item in

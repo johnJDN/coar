@@ -47,6 +47,8 @@ final class HabitCardCell: CardCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         streak.reset()
+        toggle.reset()
+        amountControl.reset()
     }
 
     func configure(with model: HabitCardModel) {
@@ -59,8 +61,8 @@ final class HabitCardCell: CardCell {
             toggle.setOn(model.isDoneToday, animated: false)
             toggle.accessibilityLabel = "Check in \(model.name)"
         case .quantitative:
-            amountControl.setAmount(model.todayAmount, isMet: model.isDoneToday, animated: false)
-            amountControl.accessibilityLabel = "Log \(model.name)"
+            amountControl.setAmount(model.todayAmount, isMet: model.isDoneToday, animated: true)
+            amountControl.accessibilityLabel = "Check in \(model.name)"
         }
         streak.setStreak(model.streak, unit: model.streakUnit, caption: model.weekCaption)
         heatmap.cells = model.heatmap

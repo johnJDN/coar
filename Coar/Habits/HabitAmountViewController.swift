@@ -105,7 +105,7 @@ final class HabitAmountViewController: UIViewController {
             guard let habit = try dependencies.store.habit(habitID) else { return dismiss(animated: true) }
             title = "\(habit.emoji) \(habit.name)"
             let target = habit.target(inForceOn: day)
-            targetLabel.text = target.map { "of \(HabitAmount.text($0.amount))" }
+            targetLabel.text = target.map { "of \(HabitAmount.text($0.amount))" + ($0.period == .week ? " this week" : "") }
             targetLabel.isHidden = target == nil
             field.accessibilityLabel = "\(habit.name) total" + (target.map { ", target \(HabitAmount.text($0.amount))" } ?? "")
             savedAmount = try dependencies.store.checkIn(habitID, on: day)?.amount ?? 0
@@ -124,11 +124,7 @@ final class HabitAmountViewController: UIViewController {
         configuration.cornerStyle = .capsule
         configuration.title = "+\(HabitAmount.text(step))"
         configuration.baseForegroundColor = UIColor.textPrimary
-        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
-            var attributes = attributes
-            attributes.font = UIFont.cardTitle
-            return attributes
-        }
+        configuration.titleTextAttributesTransformer = .cardTitle
         let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.add(step) })
         button.accessibilityLabel = "Add \(HabitAmount.text(step))"
         return button

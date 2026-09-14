@@ -61,3 +61,19 @@
   empty, so a tap cannot create a Check-in nothing renders. (8) Kind is fixed at creation;
   the Change Target sheet edits amount and Period only. (9) The Target card shows the value
   and unit ("20 a day", "3 days a week") with no "since" date.
+- 2026-09-13 (agent, after /code-review): the detail calendar hides future Days again (the
+  cell now takes "future" from the Day, not from a level the model never emits); a daily
+  yes/no Habit is met by any Check-in whatever amount its target stores (a ticket-04 Habit
+  saved with amount 2 showed green cells and a 0 streak, and Change Target could not repair
+  it), with a test; the number sheet says "of 20 this week" for a weekly target; the
+  heatmap's VoiceOver value refreshes when the dot row changes; the amount control's bloom
+  fades in on a change instead of popping, and resets on cell reuse like the streak hero;
+  "log"/"logged" copy became "check in"/"entered" (CONTEXT.md avoids "log" for Check-ins).
+  Duplication pulled out: `CapsuleControlView` (bloom, capsule, spring, highlight; `CheckToggle`
+  and `AmountControl` subclass it), `UIConfigurationTextAttributesTransformer.cardTitle`.
+  `Heatmap.Level.threeQuarters` is now `.mostly` (it runs to just under 100 %). 82 tests
+  pass. Left as deliberate: the three `(kind, period)` string tables stay separate switches
+  (each is one screen's copy); `summary(for:)` returns a `(value, unit)` tuple; dot row
+  geometry (6 pt dots, 10 pt row) is drawing, not spacing, so it is not a §4 token;
+  `setHabitTarget` reads the target in force through `HabitRecord` so the series logic has
+  one home.

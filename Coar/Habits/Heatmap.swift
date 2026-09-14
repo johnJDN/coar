@@ -12,7 +12,7 @@ enum Heatmap {
     enum Level: Hashable {
         /// After today: not drawn.
         case future
-        /// Nothing logged, or no target in force to judge it against: `surfaceSunken`. An
+        /// No Check-in, or no target in force to judge it against: `surfaceSunken`. An
         /// empty Day is the miss.
         case empty
         /// Quantitative only: up to a quarter of the target in force.
@@ -20,7 +20,7 @@ enum Heatmap {
         /// Quantitative only: up to half.
         case half
         /// Quantitative only: more than half but short of the target.
-        case threeQuarters
+        case mostly
         /// Met: the accent, with bloom.
         case done
     }
@@ -33,7 +33,7 @@ enum Heatmap {
         switch amount / target {
         case ...0.25: return .quarter
         case ...0.5: return .half
-        case ..<1: return .threeQuarters
+        case ..<1: return .mostly
         default: return .done
         }
     }

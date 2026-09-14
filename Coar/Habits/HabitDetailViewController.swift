@@ -74,11 +74,7 @@ final class HabitDetailViewController: ScreenViewController {
         configuration.baseBackgroundColor = UIColor.fill
         configuration.baseForegroundColor = UIColor.textPrimary
         configuration.title = "Change"
-        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
-            var attributes = attributes
-            attributes.font = UIFont.cardTitle
-            return attributes
-        }
+        configuration.titleTextAttributesTransformer = .cardTitle
         let change = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.presentChangeTarget() })
         change.accessibilityLabel = "Change target"
         change.setContentHuggingPriority(.required, for: .horizontal)

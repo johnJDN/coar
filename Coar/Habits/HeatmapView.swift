@@ -93,9 +93,7 @@ final class HeatmapView: UIView {
         snapshot.appendSections([0])
         snapshot.appendItems(cells.map(\.day))
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: animated)
-        let done = cells.filter { $0.level == .done }.count
-        accessibilityValue = "\(done) of \(cells.filter { $0.level != .future }.count) days done"
-            + (weekDots.map { ", \($0.filter { $0 }.count) weeks met" } ?? "")
+        updateAccessibilityValue()
     }
 
     private func renderDots(animated: Bool) {
@@ -103,6 +101,13 @@ final class HeatmapView: UIView {
         for (dot, filled) in zip(dotRow.arrangedSubviews.compactMap { $0 as? WeekDotView }, weekDots ?? []) {
             dot.setFilled(filled, animated: animated)
         }
+        updateAccessibilityValue()
+    }
+
+    private func updateAccessibilityValue() {
+        let done = cells.filter { $0.level == .done }.count
+        accessibilityValue = "\(done) of \(cells.filter { $0.level != .future }.count) days done"
+            + (weekDots.map { ", \($0.filter { $0 }.count) weeks met" } ?? "")
     }
 }
 
@@ -189,7 +194,7 @@ extension Heatmap.Level {
         case .empty: return UIColor.surfaceSunken
         case .quarter: return UIColor.accentGreen.withAlphaComponent(0.3)
         case .half: return UIColor.accentGreen.withAlphaComponent(0.5)
-        case .threeQuarters: return UIColor.accentGreen.withAlphaComponent(0.7)
+        case .mostly: return UIColor.accentGreen.withAlphaComponent(0.7)
         case .done: return UIColor.accentGreen
         }
     }
@@ -200,7 +205,7 @@ extension Heatmap.Level {
         case .empty: return "Not done"
         case .quarter: return "Up to a quarter"
         case .half: return "Up to half"
-        case .threeQuarters: return "More than half"
+        case .mostly: return "More than half"
         case .done: return "Done"
         }
     }

@@ -64,9 +64,9 @@ final class HeatmapTests: XCTestCase {
     }
 
     func test_bucket_belowTheTarget_isTheThirdBucket() {
-        XCTAssertEqual(Heatmap.level(amount: 10.1, target: 20), .threeQuarters)
-        XCTAssertEqual(Heatmap.level(amount: 15, target: 20), .threeQuarters)
-        XCTAssertEqual(Heatmap.level(amount: 19.9, target: 20), .threeQuarters)
+        XCTAssertEqual(Heatmap.level(amount: 10.1, target: 20), .mostly)
+        XCTAssertEqual(Heatmap.level(amount: 15, target: 20), .mostly)
+        XCTAssertEqual(Heatmap.level(amount: 19.9, target: 20), .mostly)
     }
 
     func test_bucket_targetReachedOrPassed_isDone() {
