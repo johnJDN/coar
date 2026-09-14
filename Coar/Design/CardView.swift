@@ -50,8 +50,8 @@ final class CardView: UIView {
             surfaceView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
             highlightView.topAnchor.constraint(equalTo: surfaceView.topAnchor),
-            highlightView.leadingAnchor.constraint(equalTo: surfaceView.leadingAnchor, constant: Metrics.radiusCard),
-            highlightView.trailingAnchor.constraint(equalTo: surfaceView.trailingAnchor, constant: -Metrics.radiusCard),
+            highlightView.leadingAnchor.constraint(equalTo: surfaceView.leadingAnchor),
+            highlightView.trailingAnchor.constraint(equalTo: surfaceView.trailingAnchor),
             highlightView.heightAnchor.constraint(equalToConstant: 1),
 
             contentStack.topAnchor.constraint(equalTo: surfaceView.topAnchor, constant: Metrics.spaceInner),

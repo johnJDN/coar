@@ -3,7 +3,7 @@ import Foundation
 /// A calendar day as it was where the user was when a record was made (CONTEXT.md "Day",
 /// ADR 0005). Computed once at write time from an instant and the local calendar, stored as
 /// its `rawValue` ("2026-09-13"), and never recomputed from the instant later.
-struct Day: Hashable, Comparable, Codable, CustomStringConvertible {
+struct Day: Hashable, Comparable, CustomStringConvertible {
 
     let year: Int
     let month: Int
@@ -32,18 +32,17 @@ struct Day: Hashable, Comparable, Codable, CustomStringConvertible {
         String(format: "%04d-%02d-%02d", year, month, day)
     }
 
+    /// Fails for anything that is not a real Gregorian date (e.g. "2026-02-31").
     init?(rawValue: String) {
         let parts = rawValue.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3,
-              let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]),
-              (1...12).contains(month), (1...31).contains(day)
+              let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2])
         else { return nil }
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = TimeZone(identifier: "UTC")!
+        let components = DateComponents(year: year, month: month, day: day)
+        guard components.isValidDate(in: gregorian) else { return nil }
         self.init(year: year, month: month, day: day)
-    }
-
-    /// The first instant of this Day in `calendar`; for placing a Day on a time axis.
-    func startDate(in calendar: Calendar = .current) -> Date {
-        calendar.date(from: DateComponents(year: year, month: month, day: day))!
     }
 
     var description: String { rawValue }

@@ -10,7 +10,7 @@ import UIKit
 
 // MARK: - Colour
 
-enum ColorToken: CaseIterable {
+enum ColorToken {
     // Surfaces
     case background, surface, surfaceRaised, surfaceSunken, fill
     // Text
@@ -53,12 +53,12 @@ enum ColorToken: CaseIterable {
 }
 
 extension UIColor {
-    convenience init(hex: UInt32, alpha: CGFloat = 1) {
+    convenience init(hex: UInt32) {
         self.init(
             red: CGFloat((hex >> 16) & 0xFF) / 255,
             green: CGFloat((hex >> 8) & 0xFF) / 255,
             blue: CGFloat(hex & 0xFF) / 255,
-            alpha: alpha
+            alpha: 1
         )
     }
 
@@ -103,8 +103,8 @@ extension Color {
 
 // MARK: - Typography (DESIGN.md §5)
 
-enum FontToken: CaseIterable {
-    case pageTitle, pageSubtitle, sectionHeader, cardTitle, heroNumber, metricNumber, bodyText, caption
+enum FontToken {
+    case pageTitle, pageSubtitle, sectionHeader, cardTitle, heroNumber, metricNumber, bodyText, label
 
     /// The text style the token scales with, and its weight. Hero numbers are a fixed 40pt
     /// rounded face scaled by the large-title metrics.
@@ -117,7 +117,7 @@ enum FontToken: CaseIterable {
         case .heroNumber: return (.largeTitle, .bold, 40, true)
         case .metricNumber: return (.title3, .semibold, nil, false)
         case .bodyText: return (.body, .regular, nil, false)
-        case .caption: return (.footnote, .regular, nil, false)
+        case .label: return (.footnote, .regular, nil, false)
         }
     }
 
@@ -161,7 +161,7 @@ extension UIFont {
     static var heroNumber: UIFont { FontToken.heroNumber.uiFont }
     static var metricNumber: UIFont { FontToken.metricNumber.uiFont }
     static var bodyText: UIFont { FontToken.bodyText.uiFont }
-    static var caption: UIFont { FontToken.caption.uiFont }
+    static var label: UIFont { FontToken.label.uiFont }
 }
 
 extension Font {
@@ -172,7 +172,7 @@ extension Font {
     static var heroNumber: Font { FontToken.heroNumber.font }
     static var metricNumber: Font { FontToken.metricNumber.font }
     static var bodyText: Font { FontToken.bodyText.font }
-    static var captionLabel: Font { FontToken.caption.font }
+    static var label: Font { FontToken.label.font }
 }
 
 private extension Font.Weight {

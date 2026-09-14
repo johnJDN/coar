@@ -30,3 +30,10 @@
   this ticket (one-per-Day replace is in the write path; ticket 03 adds its tests and
   HealthKit). (4) Verified in the simulator in light and dark: Liquid Glass tab bar, large
   titles, `background` ground, one `Card` with the §6 elevation on Home.
+- 2026-09-13 (agent, after /code-review): fixed the caption token name mismatch (now `label`
+  on both sides), `lbs`, `Day(rawValue:)` rejects impossible dates, the unit-test host uses
+  the in-memory store so no test run touches CloudKit, removed unused generality
+  (`Habit.createdAt`, `Codable`, `CaseIterable`, `startDate`). DESIGN.md §3 now says tokens
+  live in `Tokens.swift` (ADR 0001) rather than an asset catalog. Left for ticket 09 to
+  decide: `LoggedSet` carries its Planned Set target on the same row rather than a separate
+  target-row entity; a separate entity can be added additively if the logger needs it.

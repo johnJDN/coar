@@ -53,9 +53,9 @@ never made opaque. Set `isInteractive = true` on any glass effect the user can t
 
 ## 3. Color tokens
 
-Defined as color sets in `Assets.xcassets` with light/dark variants, exposed as
-`Color.<token>`. Values below are eyeballed from Bevel and are the starting point;
-tune in-simulator, but keep the *roles* fixed.
+Defined once in `Coar/Design/Tokens.swift` as dynamic colours (ADR 0001) and exposed as
+both `UIColor.<token>` and `Color.<token>`. Values below are eyeballed from Bevel and are
+the starting point; tune in-simulator, but keep the *roles* fixed.
 
 ### Surfaces
 

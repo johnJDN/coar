@@ -2,12 +2,9 @@ import Foundation
 
 /// The unit a mass is shown and entered in. Every stored mass is kilograms (ADR 0004); the
 /// unit converts on display and input only, rounding at one decimal.
-enum MassUnit: String, CaseIterable, Codable {
+enum MassUnit: String, CaseIterable {
     case pounds
     case kilograms
-
-    /// The default display unit.
-    static let `default` = MassUnit.pounds
 
     private static let poundsPerKilogram = 2.204_622_621_848_776
 
@@ -31,7 +28,7 @@ enum MassUnit: String, CaseIterable, Codable {
 
     var symbol: String {
         switch self {
-        case .pounds: return "lb"
+        case .pounds: return "lbs"
         case .kilograms: return "kg"
         }
     }
