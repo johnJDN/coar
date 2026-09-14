@@ -10,9 +10,11 @@ final class HabitDetailViewController: ScreenViewController {
 
     private let dependencies: AppDependencies
     private let habitID: HabitRecord.ID
-    private let streakLabel = UILabel()
-    private let unitLabel = UILabel()
+    private let streak = StreakHeroView()
     private let calendar = MonthCalendarView()
+    /// False once a render finds the Habit gone (deleted elsewhere); the screen pops itself
+    /// once it is fully on screen, never mid-transition.
+    private var habitExists = true
 
     init(dependencies: AppDependencies, habitID: HabitRecord.ID) {
         self.dependencies = dependencies
@@ -29,19 +31,8 @@ final class HabitDetailViewController: ScreenViewController {
         more.accessibilityLabel = "More"
         navigationItem.rightBarButtonItem = more
 
-        streakLabel.font = UIFont.heroNumber
-        streakLabel.adjustsFontForContentSizeCategory = true
-        streakLabel.setContentHuggingPriority(.required, for: .horizontal)
-        unitLabel.font = UIFont.label
-        unitLabel.textColor = UIColor.textSecondary
-        unitLabel.adjustsFontForContentSizeCategory = true
-        let hero = UIStackView(arrangedSubviews: [streakLabel, unitLabel])
-        hero.axis = .horizontal
-        hero.alignment = .firstBaseline
-        hero.spacing = Metrics.spaceTight
-
-        let streakCard = CardView(title: "Streak", systemImage: "flame.fill")
-        streakCard.contentStack.addArrangedSubview(hero)
+        let streakCard = CardView(title: "Streak", systemImage: "flame.fill", iconTint: UIColor.accentAmber)
+        streakCard.contentStack.addArrangedSubview(streak)
         contentStack.addArrangedSubview(streakCard)
 
         calendar.onTapDay = { [weak self] day in self?.toggle(day) }
@@ -55,26 +46,35 @@ final class HabitDetailViewController: ScreenViewController {
         render()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        popIfGone()
+    }
+
     // MARK: - Rendering
 
     private func render() {
         let today = Day.today()
         do {
             guard let habit = try dependencies.store.habit(habitID) else {
-                navigationController?.popViewController(animated: true)
+                habitExists = false
+                popIfGone()
                 return
             }
-            let checkIns = try dependencies.store.checkIns(for: habitID)
-            let model = HabitCardModel(habit: habit, checkIns: checkIns, today: today, columns: 1)
+            let model = HabitCardModel(habit: habit, checkIns: try dependencies.store.checkIns(for: habitID), today: today, columns: 1)
             title = "\(habit.emoji) \(habit.name)"
-            streakLabel.text = String(model.streak)
-            streakLabel.textColor = model.streak == 0 ? UIColor.textTertiary : UIColor.textPrimary
-            unitLabel.text = model.streakUnit
-            let met = Set(checkIns.filter { HabitCardModel.meets(habit: habit, amount: $0.amount) }.map(\.day))
-            calendar.model = .init(today: today, met: met)
+            streak.setStreak(model.streak, unit: model.streakUnit)
+            calendar.model = .init(today: today, met: model.met)
         } catch {
             Self.logger.error("Failed to read Habit: \(error, privacy: .public)")
         }
+    }
+
+    private func popIfGone() {
+        guard !habitExists, viewIfLoaded?.window != nil, presentedViewController == nil,
+              navigationController?.transitionCoordinator == nil
+        else { return }
+        navigationController?.popViewController(animated: true)
     }
 
     // MARK: - Actions

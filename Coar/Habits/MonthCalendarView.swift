@@ -144,13 +144,11 @@ final class MonthCalendarView: UIView {
         monthLabel.text = first.start().formatted(.dateTime.month(.wide).year())
         nextButton.isEnabled = (visibleMonth.year, visibleMonth.month) < (model.today.year, model.today.month)
 
-        let existing = Set(dataSource.snapshot().itemIdentifiers)
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
         snapshot.appendItems((0..<(first.weekday - 1)).map(Item.blank))
         snapshot.appendItems((0..<first.daysInMonth).map { .day(first.advanced(by: $0)) })
-        snapshot.reconfigureItems(snapshot.itemIdentifiers.filter(existing.contains))
-        dataSource.apply(snapshot, animatingDifferences: window != nil)
+        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: window != nil)
         updateHeight()
         accessibilityLabel = monthLabel.text
     }
@@ -158,9 +156,14 @@ final class MonthCalendarView: UIView {
 
 extension MonthCalendarView: UICollectionViewDelegate {
 
-    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+    /// Only Days up to today respond; the future is inert (DESIGN.md §1.3).
+    func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         guard case .day(let day) = dataSource.itemIdentifier(for: indexPath), let model else { return false }
         return day <= model.today
+    }
+
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        self.collectionView(collectionView, shouldHighlightItemAt: indexPath)
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -181,9 +184,16 @@ private final class CalendarDayCell: UICollectionViewCell {
         let isFuture: Bool
     }
 
-    private let bloomView = UIView()
+    private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 6)
     private let circle = UIView()
     private let label = UILabel()
+
+    /// Both scale with Dynamic Type (DESIGN.md §5); today is bold.
+    private static let dayFont = UIFont.preferredFont(forTextStyle: .subheadline)
+    private static let todayFont: UIFont = {
+        let base = UIFont.preferredFont(forTextStyle: .subheadline, compatibleWith: UITraitCollection(preferredContentSizeCategory: .large))
+        return UIFontMetrics(forTextStyle: .subheadline).scaledFont(for: .systemFont(ofSize: base.pointSize, weight: .bold))
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -200,13 +210,7 @@ private final class CalendarDayCell: UICollectionViewCell {
                 view.heightAnchor.constraint(equalTo: view.widthAnchor),
             ])
         }
-        bloomView.backgroundColor = UIColor.accentGreen
-        bloomView.layer.shadowColor = UIColor.accentGreen.cgColor
-        bloomView.layer.shadowOffset = .zero
-        bloomView.layer.shadowRadius = 6
-        bloomView.alpha = 0
-
-        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.font = Self.dayFont
         label.adjustsFontForContentSizeCategory = true
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -215,9 +219,6 @@ private final class CalendarDayCell: UICollectionViewCell {
             label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             label.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
         ])
-
-        applyBloomOpacity()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _) in self.applyBloomOpacity() }
     }
 
     @available(*, unavailable)
@@ -225,11 +226,8 @@ private final class CalendarDayCell: UICollectionViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        // The circle's own frame is not settled until after this pass; its size is known.
-        let diameter = contentView.bounds.width - Metrics.spaceTight
-        circle.layer.cornerRadius = diameter / 2
-        bloomView.layer.cornerRadius = diameter / 2
-        bloomView.layer.shadowPath = UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: diameter, height: diameter)).cgPath
+        // The circle's own frame is not settled until after this pass, but its size is known.
+        circle.layer.cornerRadius = (contentView.bounds.width - Metrics.spaceTight) / 2
     }
 
     override var isHighlighted: Bool {
@@ -240,7 +238,7 @@ private final class CalendarDayCell: UICollectionViewCell {
         guard let state else {
             label.text = nil
             circle.isHidden = true
-            bloomView.alpha = 0
+            bloomView.setVisible(false, animated: false)
             isAccessibilityElement = false
             return
         }
@@ -251,28 +249,11 @@ private final class CalendarDayCell: UICollectionViewCell {
             : state.isDone ? .white
             : state.isToday ? UIColor.accentGreen
             : UIColor.textPrimary
-        label.font = state.isToday
-            ? UIFont.preferredFont(forTextStyle: .subheadline).withWeight(.bold)
-            : UIFont.preferredFont(forTextStyle: .subheadline)
-        let bloom: CGFloat = state.isDone ? 1 : 0
-        if window != nil, bloomView.alpha != bloom {
-            UIView.animate(withDuration: Elevation.bloomFade) { self.bloomView.alpha = bloom }
-        } else {
-            bloomView.alpha = bloom
-        }
+        label.font = state.isToday ? Self.todayFont : Self.dayFont
+        bloomView.setVisible(state.isDone, animated: true)
         isAccessibilityElement = true
         accessibilityTraits = state.isFuture ? .staticText : .button
         accessibilityLabel = state.day.start().formatted(.dateTime.month(.wide).day())
         accessibilityValue = state.isFuture ? "" : state.isDone ? "Done" : "Not done"
-    }
-
-    private func applyBloomOpacity() {
-        bloomView.layer.shadowOpacity = Float(Elevation.bloomOpacity(for: traitCollection.userInterfaceStyle))
-    }
-}
-
-private extension UIFont {
-    func withWeight(_ weight: UIFont.Weight) -> UIFont {
-        UIFont.systemFont(ofSize: pointSize, weight: weight)
     }
 }

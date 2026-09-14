@@ -152,7 +152,6 @@ final class HabitsViewController: UIViewController {
         }
         archived = Dictionary(uniqueKeysWithValues: archivedHabits.map { ($0.id, $0) })
 
-        let existing = Set(dataSource.snapshot().itemIdentifiers)
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         if active.isEmpty && archivedHabits.isEmpty {
             snapshot.appendSections([.empty])
@@ -165,8 +164,7 @@ final class HabitsViewController: UIViewController {
                 snapshot.appendItems(archivedHabits.map { .archived($0.id) }, toSection: .archived)
             }
         }
-        snapshot.reconfigureItems(snapshot.itemIdentifiers.filter(existing.contains))
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(reconfiguringExisting: snapshot)
     }
 
     // MARK: - Actions
@@ -231,7 +229,12 @@ final class HabitsViewController: UIViewController {
         case .began:
             guard let indexPath = collectionView.indexPathForItem(at: location),
                   case .habit = dataSource.itemIdentifier(for: indexPath)
-            else { return gesture.state = .cancelled }
+            else {
+                // Disabling cancels the recognition; re-enabling arms it for the next press.
+                gesture.isEnabled = false
+                gesture.isEnabled = true
+                return
+            }
             collectionView.beginInteractiveMovementForItem(at: indexPath)
         case .changed:
             collectionView.updateInteractiveMovementTargetPosition(location)
@@ -265,13 +268,14 @@ extension HabitsViewController: UICollectionViewDelegate {
 
 /// The empty state (DESIGN.md §1.5): the card the first Habit will occupy, with `—` in its
 /// hero slot, so the tab never reads as broken.
-private final class EmptyStateCell: UICollectionViewCell {
+private final class EmptyStateCell: CardCell {
+
+    override class var header: (title: String, systemImage: String, iconTint: UIColor)? {
+        ("Habits", "checkmark.circle.fill", UIColor.textPrimary)
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        clipsToBounds = false
-        contentView.clipsToBounds = false
-        let card = CardView(title: "Habits", systemImage: "checkmark.circle.fill")
         let hero = UILabel()
         hero.text = "—"
         hero.font = UIFont.heroNumber
@@ -285,18 +289,7 @@ private final class EmptyStateCell: UICollectionViewCell {
         caption.numberOfLines = 0
         card.contentStack.addArrangedSubview(hero)
         card.contentStack.addArrangedSubview(caption)
-        card.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: contentView.topAnchor),
-            card.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-        ])
         isAccessibilityElement = true
         accessibilityLabel = "No habits yet. Tap + to add your first habit."
     }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 }

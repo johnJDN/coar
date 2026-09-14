@@ -44,13 +44,30 @@
   (additive, CloudKit-safe) because screens need a stable identity for a Habit and Body
   Weight's Day key does not carry over; the diffable data source keys on it. (2) The
   new-habit sheet stores a Week period and any whole target amount, but this ticket renders
-  every Habit daily (streak in days, binary cells); ticket 05 makes Week and amounts mean
-  something. (3) A streak of 0 shows as a muted "0 days", not `—`: zero is a value, not
-  missing data. (4) Archive does not confirm (it is reversible); Delete permanently does.
-  (5) Cells before the Habit existed render as empty `surfaceSunken`, not blank; "before the
-  first target renders empty" is ticket 05's dated-target rule. (6) `Store.context` and
-  `Store.save()` went from private to internal so `Store+Habits.swift` can live in its own
-  file; the "view controllers never touch a context" rule is now by convention (nothing
-  outside `Store+*` uses them). (7) Reorder is long-press interactive movement rather than
-  an Edit mode. (8) The detail title is inline "emoji name"; no large title on a pushed
-  detail.
+  every Habit daily (streak in days, unit "days", binary cells); ticket 05 makes Week and
+  amounts mean something. (3) A streak of 0 shows as a muted "0 days", not `—`: zero is a
+  value, not missing data. (4) Archive does not confirm (it is reversible); Delete
+  permanently does. (5) `Store.context` and `Store.save()` went from private to internal so
+  `Store+Habits.swift` can live in its own file; "view controllers never touch a context" is
+  now by convention (nothing outside `Store+*` uses them). (6) Reorder is long-press
+  interactive movement rather than an Edit mode. (7) The detail title is inline "emoji
+  name"; no large title on a pushed detail. (8) Restore puts the Habit at the end of the
+  active list: its old slot has been renumbered away.
+- 2026-09-13 (agent, after /code-review): today's calendar number now scales with Dynamic
+  Type (`UIFontMetrics`, DESIGN.md §5); the streak unit is always days here rather than
+  echoing a stored Week period (spec story 23 would have read "3 weeks" for 3 days); Restore
+  lands at the end of the list with a test; the detail pops itself in `viewDidAppear` when
+  the Habit is gone, never mid-transition; `HabitCardCell` resets its streak on reuse so a
+  recycled cell does not cross-dissolve from another Habit's number; the long-press cancel
+  no longer sets `state` (subclass-only API); future calendar Days no longer highlight.
+  Duplication pulled out: `BloomView` (the one §6 bloom, used by the toggle, heatmap cells,
+  and calendar days), `CardCell` (a card pinned in a cell; `HabitCardCell`,
+  `ArchivedHabitCell`, `EmptyStateCell` subclass it), `StreakHeroView` (card and detail),
+  `apply(reconfiguringExisting:)` on the diffable data source, `SectionHeaderView` moved to
+  `Design/`. `HabitRecord.meets(amount:)` is the one place ticket 05 changes the "met" rule;
+  `Heatmap.columns` replaces the view-owned constant. `CardView` takes an `iconTint` so the
+  Streak flame is `accentAmber` (§3). `DayTests` covers leap day, year end, ISO weekday,
+  start of week, days in month. 56 tests pass. Left as deliberate: `visibleMonth` stays a
+  `(year, month)` tuple inside `MonthCalendarView` (one private user; a `Month` type can come
+  when a second screen needs one); `formRow()` shared with Settings (the same row style, one
+  definition).

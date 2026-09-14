@@ -1,11 +1,11 @@
 import UIKit
 
 /// The habit heatmap (DESIGN.md §8, §11): a non-interactive `UICollectionView` of 7 rows
-/// with Monday on top and `columns` weeks, `surfaceSunken` empty cells, `accentGreen` done
-/// cells with bloom, nothing drawn after today. Height follows width so the cells are square.
+/// with Monday on top and `Heatmap.columns` weeks, `surfaceSunken` empty cells, `accentGreen`
+/// done cells with bloom, nothing drawn after today. Height follows width so the cells are
+/// square.
 final class HeatmapView: UIView {
 
-    static let columns = 26
     private static let gap: CGFloat = 1.5
 
     var cells: [Heatmap.Cell] = [] {
@@ -39,7 +39,7 @@ final class HeatmapView: UIView {
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            heightAnchor.constraint(equalTo: widthAnchor, multiplier: CGFloat(Heatmap.rows) / CGFloat(Self.columns)),
+            heightAnchor.constraint(equalTo: widthAnchor, multiplier: CGFloat(Heatmap.rows) / CGFloat(Heatmap.columns)),
         ])
         isAccessibilityElement = true
         accessibilityLabel = "Heatmap"
@@ -54,12 +54,12 @@ final class HeatmapView: UIView {
         ))
         item.contentInsets = NSDirectionalEdgeInsets(top: gap, leading: gap, bottom: gap, trailing: gap)
         let column = NSCollectionLayoutGroup.vertical(
-            layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1 / CGFloat(columns)), heightDimension: .fractionalHeight(1)),
+            layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1 / CGFloat(Heatmap.columns)), heightDimension: .fractionalHeight(1)),
             repeatingSubitem: item, count: Heatmap.rows
         )
         let grid = NSCollectionLayoutGroup.horizontal(
             layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)),
-            repeatingSubitem: column, count: columns
+            repeatingSubitem: column, count: Heatmap.columns
         )
         let section = NSCollectionLayoutSection(group: grid)
         section.contentInsets = NSDirectionalEdgeInsets(top: -gap, leading: -gap, bottom: -gap, trailing: -gap)
@@ -67,13 +67,11 @@ final class HeatmapView: UIView {
     }
 
     private func render(animated: Bool) {
-        let previous = levels
         levels = Dictionary(uniqueKeysWithValues: cells.map { ($0.day, $0.level) })
         var snapshot = NSDiffableDataSourceSnapshot<Int, Day>()
         snapshot.appendSections([0])
         snapshot.appendItems(cells.map(\.day))
-        snapshot.reconfigureItems(cells.map(\.day).filter { previous[$0] != nil && previous[$0] != levels[$0] })
-        dataSource.apply(snapshot, animatingDifferences: animated)
+        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: animated)
         let done = cells.filter { $0.level == .done }.count
         accessibilityValue = "\(done) of \(cells.filter { $0.level != .future }.count) days done"
     }
@@ -87,7 +85,7 @@ private final class HeatmapCell: UICollectionViewCell {
         didSet { render(animated: window != nil && oldValue != level) }
     }
 
-    private let bloomView = UIView()
+    private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 4, cornerRadius: 2)
     private let fillView = UIView()
 
     override init(frame: CGRect) {
@@ -95,9 +93,9 @@ private final class HeatmapCell: UICollectionViewCell {
         clipsToBounds = false
         contentView.clipsToBounds = false
 
+        fillView.layer.cornerRadius = 2
+        fillView.layer.cornerCurve = .continuous
         for view in [bloomView, fillView] {
-            view.layer.cornerRadius = 2
-            view.layer.cornerCurve = .continuous
             view.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(view)
             NSLayoutConstraint.activate([
@@ -107,23 +105,11 @@ private final class HeatmapCell: UICollectionViewCell {
                 view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             ])
         }
-        bloomView.backgroundColor = UIColor.accentGreen
-        bloomView.layer.shadowColor = UIColor.accentGreen.cgColor
-        bloomView.layer.shadowOffset = .zero
-        bloomView.layer.shadowRadius = 4
-        bloomView.alpha = 0
-        applyBloomOpacity()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _) in self.applyBloomOpacity() }
         render(animated: false)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        bloomView.layer.shadowPath = UIBezierPath(roundedRect: contentView.bounds, cornerRadius: 2).cgPath
-    }
 
     private func render(animated: Bool) {
         switch level {
@@ -134,12 +120,6 @@ private final class HeatmapCell: UICollectionViewCell {
         case .done:
             fillView.backgroundColor = UIColor.accentGreen
         }
-        let bloom: CGFloat = level == .done ? 1 : 0
-        guard animated else { return bloomView.alpha = bloom }
-        UIView.animate(withDuration: Elevation.bloomFade) { self.bloomView.alpha = bloom }
-    }
-
-    private func applyBloomOpacity() {
-        bloomView.layer.shadowOpacity = Float(Elevation.bloomOpacity(for: traitCollection.userInterfaceStyle))
+        bloomView.setVisible(level == .done, animated: animated)
     }
 }

@@ -61,8 +61,11 @@ extension Store {
         try save()
     }
 
+    /// Returns the Habit to the active list, at the end: its old position has been taken.
     func restoreHabit(_ id: HabitRecord.ID) throws {
-        try fetchHabit(id)?.isArchived = false
+        guard let habit = try fetchHabit(id) else { return }
+        habit.isArchived = false
+        habit.sortOrder = try nextHabitSortOrder()
         try save()
     }
 

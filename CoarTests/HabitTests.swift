@@ -24,7 +24,8 @@ final class HabitTests: XCTestCase {
 
         try store.checkIn(habit.id, on: sep13, amount: 1)
 
-        XCTAssertEqual(try store.checkIns(for: habit.id).map { ($0.day, $0.amount) }.map { "\($0.0) \($0.1)" }, ["2026-09-13 1.0"])
+        XCTAssertEqual(try store.checkIns(for: habit.id).map(\.day), [sep13])
+        XCTAssertEqual(try store.checkIns(for: habit.id).map(\.amount), [1])
         XCTAssertEqual(try store.checkIn(habit.id, on: sep13)?.amount, 1)
         XCTAssertNil(try store.checkIn(habit.id, on: sep12))
     }
@@ -108,20 +109,21 @@ final class HabitTests: XCTestCase {
 
     // MARK: Archive
 
-    func test_archivedHabit_leavesTheActiveList_keepsItsCheckIns_andRestores() throws {
+    func test_archivedHabit_leavesTheActiveList_keepsItsCheckIns_andRestoresToTheEnd() throws {
         let store = Store.inMemory()
         let habit = try makeHabit(store)
+        let reading = try makeHabit(store, "Read", emoji: "📚")
         try store.checkIn(habit.id, on: sep13, amount: 1)
 
         try store.archiveHabit(habit.id)
 
-        XCTAssertEqual(try store.habits(), [])
+        XCTAssertEqual(try store.habits().map(\.id), [reading.id])
         XCTAssertEqual(try store.archivedHabits().map(\.id), [habit.id])
         XCTAssertEqual(try store.checkIns(for: habit.id).map(\.day), [sep13])
 
         try store.restoreHabit(habit.id)
 
-        XCTAssertEqual(try store.habits().map(\.id), [habit.id])
+        XCTAssertEqual(try store.habits().map(\.id), [reading.id, habit.id])
         XCTAssertEqual(try store.archivedHabits(), [])
     }
 

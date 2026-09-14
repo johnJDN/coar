@@ -14,20 +14,13 @@ final class CheckToggleView: UIControl {
         static let height: CGFloat = 32
     }
 
-    private let bloomView = UIView()
+    private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 5, cornerRadius: Size.height / 2)
     private let capsule = UIView()
     private let symbol = UIImageView()
 
     init() {
         super.init(frame: .zero)
 
-        bloomView.backgroundColor = UIColor.accentGreen
-        bloomView.layer.cornerRadius = Size.height / 2
-        bloomView.layer.shadowColor = UIColor.accentGreen.cgColor
-        bloomView.layer.shadowOffset = .zero
-        bloomView.layer.shadowRadius = 5
-        bloomView.alpha = 0
-        bloomView.isUserInteractionEnabled = false
         bloomView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(bloomView)
 
@@ -60,26 +53,19 @@ final class CheckToggleView: UIControl {
 
         isAccessibilityElement = true
         accessibilityTraits = .button
-        applyBloomOpacity()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _) in self.applyBloomOpacity() }
-        render()
+        render(animated: false)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        bloomView.layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: Size.height / 2).cgPath
-    }
-
     func setOn(_ on: Bool, animated: Bool) {
         guard on != isOn else { return }
         isOn = on
-        guard animated, window != nil else { return render() }
+        guard animated, window != nil else { return render(animated: false) }
         capsule.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
         UIView.animate(springDuration: 0.4, bounce: 0.15) {
-            self.render()
+            self.render(animated: true)
             self.capsule.transform = .identity
         }
     }
@@ -93,17 +79,11 @@ final class CheckToggleView: UIControl {
         onToggle?(isOn)
     }
 
-    private func render() {
+    private func render(animated: Bool) {
         capsule.backgroundColor = isOn ? UIColor.accentGreen : UIColor.fill
         symbol.image = UIImage(systemName: isOn ? "checkmark" : "minus")
         symbol.tintColor = isOn ? .white : UIColor.textSecondary
         accessibilityValue = isOn ? "Done" : "Not done"
-        UIView.animate(withDuration: Elevation.bloomFade) {
-            self.bloomView.alpha = self.isOn ? 1 : 0
-        }
-    }
-
-    private func applyBloomOpacity() {
-        bloomView.layer.shadowOpacity = Float(Elevation.bloomOpacity(for: traitCollection.userInterfaceStyle))
+        bloomView.setVisible(isOn, animated: animated)
     }
 }

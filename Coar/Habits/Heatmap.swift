@@ -6,6 +6,8 @@ import Foundation
 enum Heatmap {
 
     static let rows = 7
+    /// About six months of weeks.
+    static let columns = 26
 
     enum Level: Hashable {
         /// After today: not drawn.

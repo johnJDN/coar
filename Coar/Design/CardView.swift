@@ -18,7 +18,7 @@ final class CardView: UIView {
     private let surfaceView = UIView()
     private let highlightView = UIView()
 
-    init(title: String? = nil, systemImage: String? = nil, accessory: Accessory = .none) {
+    init(title: String? = nil, systemImage: String? = nil, iconTint: UIColor = UIColor.textPrimary, accessory: Accessory = .none) {
         super.init(frame: .zero)
 
         layer.masksToBounds = false
@@ -40,7 +40,7 @@ final class CardView: UIView {
         surfaceView.addSubview(contentStack)
 
         if let title {
-            contentStack.addArrangedSubview(Self.header(title: title, systemImage: systemImage, accessory: accessory))
+            contentStack.addArrangedSubview(Self.header(title: title, systemImage: systemImage, iconTint: iconTint, accessory: accessory))
         }
 
         NSLayoutConstraint.activate([
@@ -82,7 +82,7 @@ final class CardView: UIView {
         layer.shadowRadius = shadow.blur / 2
     }
 
-    private static func header(title: String, systemImage: String?, accessory: Accessory) -> UIView {
+    private static func header(title: String, systemImage: String?, iconTint: UIColor, accessory: Accessory) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .center
@@ -90,7 +90,7 @@ final class CardView: UIView {
 
         if let systemImage {
             let icon = UIImageView(image: UIImage(systemName: systemImage))
-            icon.tintColor = UIColor.textPrimary
+            icon.tintColor = iconTint
             icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
             icon.setContentHuggingPriority(.required, for: .horizontal)
             row.addArrangedSubview(icon)

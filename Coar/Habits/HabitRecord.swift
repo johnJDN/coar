@@ -38,6 +38,12 @@ struct HabitRecord: Hashable, Identifiable {
     /// The target in force today; nil only for a Habit whose first target starts later.
     let target: HabitTargetRecord?
     let modifiedAt: Date
+
+    /// Whether a Day's Check-in counts as met. A yes/no Habit is met by any Check-in;
+    /// quantitative amounts against the target are ticket 05.
+    func meets(amount: Double) -> Bool {
+        amount > 0
+    }
 }
 
 /// One entry of a Habit's dated target series (ADR 0003): the amount per Period in force
