@@ -77,8 +77,8 @@ final class TrainViewController: ScreenViewController {
 
     private func refreshBodyWeightChip() {
         do {
-            let latest = try dependencies.store.bodyWeights().last
-            bodyWeightChip.subtitle = latest.map { dependencies.preferences.massUnit.displayText(fromKilograms: $0.kilograms) }
+            let hero = TrendWeight.hero(of: try dependencies.store.bodyWeights().map(\.kilograms))
+            bodyWeightChip.subtitle = hero.map { dependencies.preferences.massUnit.displayText(fromKilograms: $0) }
         } catch {
             Self.logger.error("Failed to read Body Weight: \(error, privacy: .public)")
             bodyWeightChip.subtitle = nil

@@ -23,15 +23,9 @@ final class BodyWeightLogViewController: UIViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    /// Wraps the controller in the navigation bar and grabber sheet the weight screen presents.
+    /// The sheet the weight screen presents.
     static func sheet(dependencies: AppDependencies, onLogged: @escaping () -> Void) -> UIViewController {
-        let navigation = UINavigationController(rootViewController: BodyWeightLogViewController(dependencies: dependencies, onLogged: onLogged))
-        navigation.navigationBar.prefersLargeTitles = false
-        if let sheet = navigation.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        return navigation
+        BodyWeightLogViewController(dependencies: dependencies, onLogged: onLogged).inSheet(detents: [.medium()])
     }
 
     override func viewDidLoad() {
@@ -55,7 +49,7 @@ final class BodyWeightLogViewController: UIViewController {
         field.accessibilityLabel = "Body Weight in \(unit.symbol)"
         field.addAction(UIAction { [weak self] _ in self?.updateSaveState() }, for: .editingChanged)
         if let latest = try? dependencies.store.bodyWeights().last {
-            field.text = unit.displayValue(fromKilograms: latest.kilograms).formatted(.number.precision(.fractionLength(1)))
+            field.text = unit.displayValueText(fromKilograms: latest.kilograms)
         }
 
         let unitLabel = UILabel()

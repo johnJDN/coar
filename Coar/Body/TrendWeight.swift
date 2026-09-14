@@ -30,4 +30,10 @@ enum TrendWeight {
     static func current(of kilograms: [Double]) -> Double? {
         series(of: kilograms).last
     }
+
+    /// The number a Body Weight surface shows as its hero: Trend Weight once there is one,
+    /// the latest raw Body Weight before that, nil with nothing logged.
+    static func hero(of kilograms: [Double]) -> Double? {
+        current(of: kilograms) ?? kilograms.last
+    }
 }

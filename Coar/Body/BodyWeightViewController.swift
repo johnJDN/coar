@@ -76,19 +76,16 @@ final class BodyWeightViewController: ScreenViewController {
         let unit = dependencies.preferences.massUnit
         let trend = TrendWeight.series(of: records.map(\.kilograms))
 
-        let hero: String
         let caption: String
-        if let current = trend.last, let latest = records.last {
-            hero = unit.displayText(fromKilograms: current)
-            caption = "Trend Weight · latest \(unit.displayText(fromKilograms: latest.kilograms)), \(Self.dayText(latest.day))"
-        } else if let latest = records.last {
-            hero = unit.displayText(fromKilograms: latest.kilograms)
-            caption = "\(Self.dayText(latest.day)) · Trend —"
+        if let latest = records.last {
+            caption = trend.isEmpty
+                ? "\(Self.dayText(latest.day)) · Trend —"
+                : "Trend Weight · latest \(unit.displayText(fromKilograms: latest.kilograms)), \(Self.dayText(latest.day))"
         } else {
-            hero = "—"
             caption = "No Body Weight yet"
         }
-        setHero(hero, isEmpty: records.isEmpty)
+        let hero = TrendWeight.hero(of: records.map(\.kilograms)).map { unit.displayText(fromKilograms: $0) }
+        setHero(hero ?? "—", isEmpty: hero == nil)
         captionLabel.text = caption
 
         let raw = records.map { BodyWeightChart.Point(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }

@@ -36,15 +36,9 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         refreshHealthStatus()
     }
 
-    /// Wraps the controller in the navigation bar and grabber sheet Home presents.
+    /// The sheet Home presents.
     static func sheet(dependencies: AppDependencies) -> UIViewController {
-        let navigation = UINavigationController(rootViewController: SettingsViewController(dependencies: dependencies))
-        navigation.navigationBar.prefersLargeTitles = false
-        if let sheet = navigation.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        return navigation
+        SettingsViewController(dependencies: dependencies).inSheet(detents: [.large()])
     }
 
     // MARK: - Actions

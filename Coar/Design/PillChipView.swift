@@ -11,6 +11,12 @@ final class PillChipView: UIControl {
         didSet { subtitleLabel.text = subtitle ?? "—" }
     }
 
+    /// The capsule hugs its tile more tightly than `spaceInner` and gives the chevron room.
+    private enum Inset {
+        static let tile: CGFloat = 6
+        static let trailing: CGFloat = 14
+    }
+
     private let subtitleLabel = UILabel()
     private let effectView: UIVisualEffectView
 
@@ -71,10 +77,10 @@ final class PillChipView: UIControl {
             tile.widthAnchor.constraint(equalToConstant: 34),
             tile.heightAnchor.constraint(equalToConstant: 34),
 
-            row.topAnchor.constraint(equalTo: content.topAnchor, constant: 6),
-            row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 6),
-            row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -14),
-            row.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -6),
+            row.topAnchor.constraint(equalTo: content.topAnchor, constant: Inset.tile),
+            row.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: Inset.tile),
+            row.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -Inset.trailing),
+            row.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -Inset.tile),
         ])
 
         isAccessibilityElement = true

@@ -238,6 +238,13 @@ enum Elevation {
         }
     }
 
+    /// Bloom: the accent-coloured second shadow on filled dots, active chart points, and
+    /// ring end-caps; light mode lowers it. Appears with `bloomFade`, never pops.
+    static func bloomOpacity(for style: UIUserInterfaceStyle) -> Double {
+        style == .dark ? 0.55 : 0.30
+    }
+    static let bloomFade: TimeInterval = 0.2
+
     /// The 1pt inner top highlight on dark cards; clear in light mode.
     static let cardHighlight = UIColor { traits in
         traits.userInterfaceStyle == .dark ? UIColor.white.withAlphaComponent(0.06) : .clear

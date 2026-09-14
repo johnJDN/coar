@@ -38,3 +38,15 @@
   Notes for the human: (1) the Apple Health write is only exercised through the fake; on a
   device, log a Body Weight, accept the prompt, and check the Health app shows one sample
   for today. (2) The log sheet logs today only; back-dating waits for a ticket that needs it.
+- 2026-09-13 (agent, after /code-review): input now rounds at one decimal before converting
+  (ADR 0004 "on input"); bloom opacity and its 200 ms fade live in `Elevation`; chip insets
+  named; one `inSheet(detents:)` wrapper for Settings and the log sheet; one
+  `MassUnit.displayValueText`; `TrendWeight.hero(of:)` is the shared "trend, else raw" rule
+  so the Train chip subtitle and the hero agree (both now Trend Weight). Left as deliberate:
+  Health samples Coar wrote for the Day are deleted before the new one is saved (story 72,
+  "so that the Health app agrees with Coar"; deleting Coar's own samples is neither a read
+  nor a second sample); the system prompt is shown on the first write if Settings never
+  showed it; earlier Days stamp noon (the writer needs some instant, and the sheet logs
+  today only); smoothing does not interpolate gaps (the spec names MacroFactor as the style,
+  not the algorithm; revisit if a long gap ever reads wrong); teal assigned to Body Weight
+  in DESIGN.md §3 (a metric needed an accent, and the Settings unit tile was already teal).

@@ -15,20 +15,31 @@ enum MassUnit: String, CaseIterable {
         case .pounds: value = kilograms * Self.poundsPerKilogram
         case .kilograms: value = kilograms
         }
-        return (value * 10).rounded() / 10
+        return Self.roundedToOneDecimal(value)
     }
 
-    /// The kilograms to store for a value the user entered in this unit.
+    /// The kilograms to store for a value the user entered in this unit, rounded at display
+    /// precision first so what is stored is exactly what was shown.
     func kilograms(fromDisplayValue value: Double) -> Double {
+        let entered = Self.roundedToOneDecimal(value)
         switch self {
-        case .pounds: return value / Self.poundsPerKilogram
-        case .kilograms: return value
+        case .pounds: return entered / Self.poundsPerKilogram
+        case .kilograms: return entered
         }
+    }
+
+    /// The display value as text, e.g. "185.3"; the log sheet's field.
+    func displayValueText(fromKilograms kilograms: Double) -> String {
+        displayValue(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(1)))
     }
 
     /// The stored mass as the user reads it, e.g. "185.3 lbs".
     func displayText(fromKilograms kilograms: Double) -> String {
-        "\(displayValue(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(1)))) \(symbol)"
+        "\(displayValueText(fromKilograms: kilograms)) \(symbol)"
+    }
+
+    private static func roundedToOneDecimal(_ value: Double) -> Double {
+        (value * 10).rounded() / 10
     }
 
     var symbol: String {

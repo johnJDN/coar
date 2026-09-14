@@ -56,7 +56,7 @@ struct BodyWeightChart: View {
                 PointMark(x: .value("Day", last.date), y: .value("Trend Weight", last.value))
                     .foregroundStyle(Color.accentTeal)
                     .symbolSize(56)
-                    .shadow(color: Color.accentTeal.opacity(colorScheme == .dark ? 0.55 : 0.30), radius: 6)
+                    .shadow(color: Color.accentTeal.opacity(Elevation.bloomOpacity(for: colorScheme == .dark ? .dark : .light)), radius: 6)
             }
         }
         .chartXAxis {
@@ -81,6 +81,7 @@ struct BodyWeightChart: View {
             }
         }
         .frame(height: 180)
+        .animation(.easeIn(duration: Elevation.bloomFade), value: model)
         .accessibilityLabel("Body Weight chart in \(model.unit)")
     }
 }

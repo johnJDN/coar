@@ -30,4 +30,10 @@ final class TrendWeightTests: XCTestCase {
     func test_trendWeightCurrent_isTheLastPointOfTheSeries() {
         XCTAssertEqual(TrendWeight.current(of: [80.0, 82.0, 81.0, 83.0])!, 80.552, accuracy: 0.001)
     }
+
+    func test_heroValue_isTrendWeightOnceThereIsOne_andTheRawValueBeforeThat() {
+        XCTAssertEqual(TrendWeight.hero(of: [80.0, 82.0, 81.0, 83.0])!, 80.552, accuracy: 0.001)
+        XCTAssertEqual(TrendWeight.hero(of: [84.2]), 84.2)
+        XCTAssertNil(TrendWeight.hero(of: []))
+    }
 }
