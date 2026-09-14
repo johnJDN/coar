@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Xcode 26 project using buildable folders builds from `xcodebuild` with no project edits needed for new files; iOS 26 minimum
 - [x] `UITabBarController` with four `UITab`s, `tabBarMinimizeBehavior = .onScrollDown`; each tab a `UINavigationController` with large titles; no storyboards or XIBs
