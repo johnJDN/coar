@@ -50,3 +50,6 @@
   today only); smoothing does not interpolate gaps (the spec names MacroFactor as the style,
   not the algorithm; revisit if a long gap ever reads wrong); teal assigned to Body Weight
   in DESIGN.md §3 (a metric needed an accent, and the Settings unit tile was already teal).
+- 2026-09-13 (John): all three judgement calls confirmed as built (delete Coar's own Health
+  samples for the Day before saving; prompt on first write; no gap interpolation in Trend
+  Weight). Verified on device: logging a Body Weight in Coar writes it to Apple Health.
