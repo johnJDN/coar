@@ -73,10 +73,8 @@ struct PlanDraft: Equatable {
     /// "A1", "A2" for the first Superset's rows, "B1", "B2" for the next; nil for a row on
     /// its own.
     func supersetLabel(for id: PlanExerciseDraft.ID) -> String? {
-        guard let index = exercises.firstIndex(where: { $0.id == id }), let group = exercises[index].supersetGroup else { return nil }
-        let letter = String(UnicodeScalar(UInt8(ascii: "A") + UInt8(clamping: min(max(group - 1, 0), 25))))
-        let position = exercises[...index].filter { $0.supersetGroup == group }.count
-        return "\(letter)\(position)"
+        guard let index = exercises.firstIndex(where: { $0.id == id }) else { return nil }
+        return SupersetLabel.text(at: index, groups: exercises.map(\.supersetGroup))
     }
 
     /// One flag per boundary between adjacent rows: true where the two are in one Superset.

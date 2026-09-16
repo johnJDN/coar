@@ -252,9 +252,9 @@ final class PlannedSetCell: UICollectionViewListCell {
         dash.adjustsFontForContentSizeCategory = true
         dash.setContentHuggingPriority(.required, for: .horizontal)
 
-        let numberPill = Self.pill([numberLabel])
-        let weightPill = Self.pill([weightField, unitLabel])
-        let repsPill = Self.pill([minField, dash, maxField])
+        let numberPill = UIView.pill([numberLabel])
+        let weightPill = UIView.pill([weightField, unitLabel])
+        let repsPill = UIView.pill([minField, dash, maxField])
 
         let row = UIStackView(arrangedSubviews: [numberPill, weightPill, repsPill])
         row.axis = .horizontal
@@ -294,25 +294,5 @@ final class PlannedSetCell: UICollectionViewListCell {
         fields.repMax = maxField.text ?? ""
         self.fields = fields
         onChange?(fields)
-    }
-
-    private static func pill(_ views: [UIView]) -> UIView {
-        let stack = UIStackView(arrangedSubviews: views)
-        stack.axis = .horizontal
-        stack.alignment = .firstBaseline
-        stack.spacing = 4
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        let pill = UIView()
-        pill.backgroundColor = UIColor.fill
-        pill.layer.cornerRadius = Metrics.radiusInner
-        pill.layer.cornerCurve = .continuous
-        pill.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: pill.topAnchor, constant: 10),
-            stack.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 10),
-            stack.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -10),
-            stack.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -10),
-        ])
-        return pill
     }
 }

@@ -52,7 +52,7 @@ final class WorkoutDetailViewController: ScreenViewController {
 
         contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         if workout.exercises.isEmpty {
-            contentStack.addArrangedSubview(Self.emptyCard())
+            contentStack.addArrangedSubview(CardView.emptyState(caption: "No sets were logged.", accessibilityLabel: "No sets were logged."))
         }
         for row in workout.exercises {
             let card = CardView(title: row.name, systemImage: "dumbbell.fill")
@@ -100,22 +100,5 @@ final class WorkoutDetailViewController: ScreenViewController {
         line.isAccessibilityElement = true
         line.accessibilityLabel = "Set \(number), \(text)"
         return line
-    }
-
-    private static func emptyCard() -> UIView {
-        let card = CardView()
-        let hero = UILabel()
-        hero.text = "—"
-        hero.font = UIFont.heroNumber
-        hero.textColor = UIColor.textTertiary
-        hero.adjustsFontForContentSizeCategory = true
-        let caption = UILabel()
-        caption.text = "No sets were logged."
-        caption.font = UIFont.label
-        caption.textColor = UIColor.textSecondary
-        caption.adjustsFontForContentSizeCategory = true
-        card.contentStack.addArrangedSubview(hero)
-        card.contentStack.addArrangedSubview(caption)
-        return card
     }
 }

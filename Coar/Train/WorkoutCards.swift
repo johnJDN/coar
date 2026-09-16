@@ -48,10 +48,10 @@ final class WorkoutCardControl: UIControl {
         didSet { card.alpha = isHighlighted ? 0.85 : 1 }
     }
 
-    /// "6:12 PM · 50 min" once finished; "In progress · since 6:12 PM" while active.
+    /// "6:12 PM · 50 min" once finished; "Active · since 6:12 PM" while it is the Active Workout.
     private static func whenText(_ workout: WorkoutRecord) -> String {
         guard let finishedAt = workout.finishedAt else {
-            return "In progress · since \(TrainText.timeText(workout.startedAt))"
+            return "Active · since \(TrainText.timeText(workout.startedAt))"
         }
         return "\(TrainText.timeText(workout.startedAt)) · \(TrainText.duration(from: workout.startedAt, to: finishedAt))"
     }

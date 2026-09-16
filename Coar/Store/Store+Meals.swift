@@ -135,7 +135,7 @@ private extension Meal {
     /// Serving is gone stays, carrying no macros.
     var componentRecords: [MealComponentRecord] {
         componentObjects
-            .sorted { ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast) }
+            .sorted(by: Store.bySortOrder)
             .compactMap { object in
                 guard let id = object.id, let foodItem = object.foodItem, let foodItemID = foodItem.id else { return nil }
                 return MealComponentRecord(

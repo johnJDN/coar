@@ -127,3 +127,28 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Plans and Exercises list by name; no manual order.
 - [?] `Exercise`, `Plan`, `PlanExercise`, `PlannedSet` gained an optional `id: UUID` (additive).
 - [?] New plan is a full-width glass capsule under the Plans cards, not a `+` in the navigation bar.
+
+## 09: Train: Workout logger and lifecycle
+
+- [ ] Train root → Start workout: the menu lists each Plan (with its exercise count) and "Empty workout"; pick Push: the logger opens titled "Push", subtitle "Started h:mm", one card per exercise with "A1 · Barbell · 3 sets", set rows pre-filled with the target weight and the range's minimum reps.
+- [ ] Tap a row's `—` check: all four pills flood green with the spring and the check appears; tap again to undo. Type a weight and reps (Done bar closes the pad); kill and relaunch the app: the numbers and checks are still there and the root reads "Resume workout · Push · since h:mm".
+- [ ] Add set repeats the last set; long-press a row → Remove set; card `…` → Remove exercise; Add exercise → picker → the new card lands at the bottom with 3 blank sets (reps placeholder `—`).
+- [ ] Edit the Plan (change a target, remove an exercise) while the Workout is active: the logger is unchanged; the Plan editor shows only its own edits.
+- [ ] Back out of the logger: the Active Workout bar docks above the tab bar ("Push · Active · n min") on every tab and inline when the tab bar minimises; tap it: back in the logger (no second copy); push the picker from the logger: no bar; switch to Home: bar; tap: back to the logger.
+- [ ] Finish with some sets unchecked: "n sets you did not complete will be dropped" → Finish → "Update plan targets with today's weights?" → Update: the Plan's weights match what you lifted, reps and exercises unchanged; the detail shows only completed sets; the root's grid marks today, Recent workouts lists it ("h:mm · n min", "Sep d · n exercises · n sets"), the bar is gone.
+- [ ] Finish with nothing checked: "Nothing logged yet" → Discard removes it (grid and Recent unchanged). `…` → Discard workout asks first.
+- [ ] Start a Workout, set the device clock 13 hours ahead, relaunch: "Still working out?" offers Finish / Discard (Discard / Keep active if nothing was completed).
+- [ ] Two finished Workouts on one Day: the grid marks the Day once; tapping opens the "Today · 2 workouts" list; tapping a card opens its detail; a Day with one goes straight to it.
+- [ ] Settings → kg: the logger, detail, and Recent captions read in kg; a weight typed as 60 kg reads 132.3 lbs back in lbs.
+- [ ] Dynamic Type: set pills, card headers, the Start button's two lines, the accessory bar and the detail lines scale without clipping; check light and dark throughout.
+- [?] Logged Sets pre-fill reps with the range's minimum (8 for 8–12); the range is the placeholder once cleared.
+- [?] Finish with no completed set offers Discard / Keep logging; the launch prompt offers Discard / Keep active in that case.
+- [?] Finish with uncompleted sets confirms how many will be dropped.
+- [?] The logger's `…` has Discard workout (with confirmation).
+- [?] Write-back skips 0 kg sets and pairs rows by Exercise in order; the offer is skipped when no completed set has a weight; the launch prompt's Finish never offers it.
+- [?] A Workout's title is the Plan's live name (renaming a Plan retitles past Workouts); "Empty workout" with no Plan.
+- [?] An Exercise added mid-Workout starts with 3 blank sets; Add set repeats the last set with no target.
+- [?] The grid marks today as soon as a Workout starts; Recent workouts shows the last 5 finished only.
+- [?] Remove set is a long-press menu; Remove exercise lives in the card's `…`.
+- [?] Non-Workout Days draw as empty sunken circles (like the Habits calendar); only Workout Days respond.
+- [?] `Workout`, `WorkoutExercise`, `LoggedSet` gained an optional `id: UUID` (additive).

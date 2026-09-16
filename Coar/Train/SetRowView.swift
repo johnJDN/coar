@@ -7,6 +7,7 @@ import UIKit
 final class SetRowView: UIView {
 
     struct Model: Equatable {
+        let id: LoggedSetRecord.ID
         let number: Int
         /// The weight in the display unit as text; empty when none.
         let weight: String
@@ -58,16 +59,16 @@ final class SetRowView: UIView {
         unitLabel.adjustsFontForContentSizeCategory = true
         unitLabel.setContentHuggingPriority(.required, for: .horizontal)
 
-        checkSymbol.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
+        checkSymbol.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .body, scale: .medium)
         checkSymbol.contentMode = .center
         checkSymbol.translatesAutoresizingMaskIntoConstraints = false
         checkButton.addAction(UIAction { [weak self] _ in self?.tappedCheck() }, for: .touchUpInside)
         checkButton.accessibilityLabel = "Complete set"
 
-        let numberPill = Self.pill([numberLabel])
-        let weightPill = Self.pill([weightField, unitLabel])
-        let repsPill = Self.pill([repsField])
-        let checkPill = Self.pill([])
+        let numberPill = UIView.pill([numberLabel])
+        let weightPill = UIView.pill([weightField, unitLabel])
+        let repsPill = UIView.pill([repsField])
+        let checkPill = UIView.pill([])
         checkPill.addSubview(checkSymbol)
         checkButton.translatesAutoresizingMaskIntoConstraints = false
         checkPill.addSubview(checkButton)
@@ -151,26 +152,6 @@ final class SetRowView: UIView {
 
     private func changed() {
         onChange?(weightField.text ?? "", repsField.text ?? "")
-    }
-
-    private static func pill(_ views: [UIView]) -> UIView {
-        let pill = UIView()
-        pill.layer.cornerRadius = Metrics.radiusInner
-        pill.layer.cornerCurve = .continuous
-        guard !views.isEmpty else { return pill }
-        let stack = UIStackView(arrangedSubviews: views)
-        stack.axis = .horizontal
-        stack.alignment = .firstBaseline
-        stack.spacing = 4
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        pill.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: pill.topAnchor, constant: 10),
-            stack.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 10),
-            stack.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -10),
-            stack.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -10),
-        ])
-        return pill
     }
 
     /// The number pads have no return key; a Done bar closes them.

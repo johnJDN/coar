@@ -170,7 +170,6 @@ extension Store {
     func workoutDays(from start: Day, to end: Day) throws -> Set<Day> {
         let request = Workout.fetchRequest()
         request.predicate = NSPredicate(format: "day >= %@ AND day <= %@", start.rawValue, end.rawValue)
-        request.propertiesToFetch = ["day"]
         return Set(try context.fetch(request).compactMap { $0.day.flatMap(Day.init(rawValue:)) })
     }
 
@@ -236,24 +235,11 @@ extension Store {
         NotificationCenter.default.post(name: Self.activeWorkoutDidChange, object: self)
     }
 
-    static func bySortOrder<Object: NSManagedObject & ModifiedAtStamped>(_ lhs: Object, _ rhs: Object) -> Bool where Object: SortOrdered {
-        (lhs.sortOrder, lhs.modifiedAt ?? .distantPast) < (rhs.sortOrder, rhs.modifiedAt ?? .distantPast)
-    }
 }
 
 enum WorkoutError: Error {
     case notFound
 }
-
-/// An entity with an explicit `sortOrder` (ADR 0002: no ordered relationships).
-protocol SortOrdered: AnyObject {
-    var sortOrder: Int32 { get }
-}
-
-extension PlanExercise: SortOrdered {}
-extension PlannedSet: SortOrdered {}
-extension WorkoutExercise: SortOrdered {}
-extension LoggedSet: SortOrdered {}
 
 // MARK: - Records
 

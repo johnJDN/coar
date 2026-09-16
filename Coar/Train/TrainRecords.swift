@@ -32,6 +32,21 @@ enum MuscleGroup: Int16, CaseIterable {
     }
 }
 
+/// Names a row's place in its Superset (CONTEXT.md "Superset"): "A1", "A2" for the first
+/// group in row order, "B1", "B2" for the next; nil for a row on its own. Shared by Plan
+/// drafts and Workouts, whose groups are numbered the same way.
+enum SupersetLabel {
+    static func text(at index: Int, groups: [Int?]) -> String? {
+        guard index < groups.count, let group = groups[index] else { return nil }
+        var seen: [Int] = []
+        for case let other? in groups where !seen.contains(other) { seen.append(other) }
+        let rank = seen.firstIndex(of: group) ?? 0
+        let letter = String(UnicodeScalar(UInt8(ascii: "A") + UInt8(clamping: min(rank, 25))))
+        let position = groups[...index].filter { $0 == group }.count
+        return "\(letter)\(position)"
+    }
+}
+
 /// A rep range as a Plan prescribes it (CONTEXT.md "Planned Set"): a min and a max; a single
 /// number is min = max and shows as one number.
 struct RepRange: Hashable {

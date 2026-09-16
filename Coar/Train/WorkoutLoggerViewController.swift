@@ -66,7 +66,7 @@ final class WorkoutLoggerViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        (tabBarController as? RootTabBarController)?.isLoggerVisible = true
+        (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = true
         render()
     }
 
@@ -75,9 +75,13 @@ final class WorkoutLoggerViewController: UIViewController {
         popIfGone()
     }
 
+    /// Only leaving the stack (a pop) frees the accessory slot; a picker pushed over the
+    /// logger, or a switch to another tab, keeps the logger where it is.
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        (tabBarController as? RootTabBarController)?.isLoggerVisible = false
+        if isMovingFromParent {
+            (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = false
+        }
     }
 
     // MARK: - Collection view
@@ -172,6 +176,7 @@ final class WorkoutLoggerViewController: UIViewController {
             .compactMap { $0 }.joined(separator: " · ")
         let sets = row.sets.enumerated().map { index, set in
             SetRowView.Model(
+                id: set.id,
                 number: index + 1,
                 weight: set.kilograms > 0 ? TrainText.weightValue(set.kilograms, in: unit) : "",
                 reps: set.reps > 0 ? "\(set.reps)" : "",
@@ -180,7 +185,7 @@ final class WorkoutLoggerViewController: UIViewController {
                 isCompleted: set.isCompleted
             )
         }
-        return ExerciseCardCell.Model(name: row.name, subtitle: subtitle, sets: sets, setIDs: row.sets.map(\.id))
+        return ExerciseCardCell.Model(name: row.name, subtitle: subtitle, sets: sets)
     }
 
     // MARK: - Set writes
@@ -362,58 +367,5 @@ extension WorkoutLoggerViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         false
-    }
-}
-
-extension WorkoutRecord {
-    /// "A1", "A2" for the first Superset's rows, "B1", "B2" for the next; nil for a row on
-    /// its own (CONTEXT.md "Superset").
-    func supersetLabel(for rowID: WorkoutExerciseRecord.ID) -> String? {
-        guard let index = exercises.firstIndex(where: { $0.id == rowID }), let group = exercises[index].supersetGroup else { return nil }
-        var seen: [Int] = []
-        for row in exercises {
-            if let other = row.supersetGroup, !seen.contains(other) { seen.append(other) }
-        }
-        let rank = seen.firstIndex(of: group) ?? 0
-        let letter = String(UnicodeScalar(UInt8(ascii: "A") + UInt8(clamping: min(rank, 25))))
-        let position = exercises[...index].filter { $0.supersetGroup == group }.count
-        return "\(letter)\(position)"
-    }
-}
-
-/// A full-width glass capsule action as a list item (the logger's Add exercise, matching
-/// the root's New plan).
-final class GlassActionCell: UICollectionViewCell {
-
-    private let button: UIButton
-    private var onTap: (() -> Void)?
-
-    override init(frame: CGRect) {
-        var configuration = UIButton.Configuration.glass()
-        configuration.imagePadding = Metrics.spaceTight
-        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .headline)
-        configuration.cornerStyle = .capsule
-        configuration.baseForegroundColor = UIColor.textPrimary
-        configuration.titleTextAttributesTransformer = .cardTitle
-        button = UIButton(configuration: configuration)
-        super.init(frame: frame)
-        button.addAction(UIAction { [weak self] _ in self?.onTap?() }, for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(button)
-        NSLayoutConstraint.activate([
-            button.topAnchor.constraint(equalTo: contentView.topAnchor),
-            button.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            button.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor),
-        ])
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    func configure(title: String, systemImage: String, onTap: @escaping () -> Void) {
-        button.configuration?.title = title
-        button.configuration?.image = UIImage(systemName: systemImage)
-        self.onTap = onTap
     }
 }

@@ -16,6 +16,8 @@ final class TrainViewController: ScreenViewController {
     private let exercisesChip = PillChipView(title: "Exercises", systemImage: "figure.strengthtraining.traditional", tint: UIColor.accentLime)
     private let bodyWeightChip = PillChipView(title: "Body Weight", systemImage: "scalemass.fill", tint: UIColor.accentTeal)
     private let startButton = UIButton(configuration: .prominentGlass())
+    /// The Workout Resume opens; nil while Start offers the menu instead.
+    private var activeWorkoutID: WorkoutRecord.ID?
     private let plansStack = UIStackView()
     private let recentStack = UIStackView()
     private let archivedHeader = TrainViewController.sectionHeader("Archived")
@@ -175,6 +177,10 @@ final class TrainViewController: ScreenViewController {
         startButton.configuration?.baseForegroundColor = .white
         startButton.configuration?.titleTextAttributesTransformer = .cardTitle
         startButton.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
+        startButton.addAction(UIAction { [weak self] _ in
+            guard let self, let activeWorkoutID else { return }
+            showLogger(for: activeWorkoutID)
+        }, for: .touchUpInside)
     }
 
     /// Start offers each active Plan and "Empty workout" as a menu; while a Workout is active
@@ -189,19 +195,16 @@ final class TrainViewController: ScreenViewController {
             Self.logger.error("Failed to read for Start: \(error, privacy: .public)")
             return
         }
+        activeWorkoutID = active?.id
+        startButton.configuration?.image = UIImage(systemName: "play.fill")
         if let active {
             startButton.configuration?.title = "Resume workout"
-            startButton.configuration?.image = UIImage(systemName: "play.fill")
             startButton.configuration?.subtitle = "\(active.title) · since \(TrainText.timeText(active.startedAt))"
             startButton.menu = nil
             startButton.showsMenuAsPrimaryAction = false
-            startButton.removeTarget(nil, action: nil, for: .touchUpInside)
-            startButton.addAction(UIAction { [weak self] _ in self?.showLogger(for: active.id) }, for: .touchUpInside)
         } else {
             startButton.configuration?.title = "Start workout"
-            startButton.configuration?.image = UIImage(systemName: "play.fill")
             startButton.configuration?.subtitle = nil
-            startButton.removeTarget(nil, action: nil, for: .touchUpInside)
             let fromPlans = plans.map { plan in
                 UIAction(title: plan.name, subtitle: TrainText.count(plan.exercises.count, "exercise")) { [weak self] _ in self?.start(from: plan.id) }
             }
@@ -237,15 +240,7 @@ final class TrainViewController: ScreenViewController {
     }
 
     private func newPlanRow() -> UIView {
-        var configuration = UIButton.Configuration.glass()
-        configuration.title = "New plan"
-        configuration.image = UIImage(systemName: "plus")
-        configuration.imagePadding = Metrics.spaceTight
-        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .headline)
-        configuration.cornerStyle = .capsule
-        configuration.baseForegroundColor = UIColor.textPrimary
-        configuration.titleTextAttributesTransformer = .cardTitle
-        let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.showPlanEditor(.create) })
+        let button = UIButton.glassAction(title: "New plan", systemImage: "plus") { [weak self] in self?.showPlanEditor(.create) }
         let row = UIStackView(arrangedSubviews: [button])
         row.alignment = .leading
         return row
@@ -264,7 +259,7 @@ final class TrainViewController: ScreenViewController {
 
         plansStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         if plans.isEmpty {
-            plansStack.addArrangedSubview(Self.emptyCard(caption: "Tap New plan to build your first plan.", accessibilityLabel: "No plans yet. Tap New plan to build your first plan."))
+            plansStack.addArrangedSubview(CardView.emptyState(caption: "Tap New plan to build your first plan.", accessibilityLabel: "No plans yet. Tap New plan to build your first plan."))
         }
         for plan in plans {
             let card = PlanCardControl(plan: plan)
@@ -292,7 +287,7 @@ final class TrainViewController: ScreenViewController {
         }
         recentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         if recent.isEmpty {
-            recentStack.addArrangedSubview(Self.emptyCard(caption: "Finished workouts land here.", accessibilityLabel: "No workouts yet. Finished workouts land here."))
+            recentStack.addArrangedSubview(CardView.emptyState(caption: "Finished workouts land here.", accessibilityLabel: "No workouts yet. Finished workouts land here."))
         }
         for workout in recent {
             let card = WorkoutCardControl(workout: workout)
@@ -302,27 +297,6 @@ final class TrainViewController: ScreenViewController {
             }, for: .touchUpInside)
             recentStack.addArrangedSubview(card)
         }
-    }
-
-    /// The empty state (DESIGN.md §1.5): the card the first record will occupy.
-    private static func emptyCard(caption text: String, accessibilityLabel: String) -> UIView {
-        let card = CardView()
-        let hero = UILabel()
-        hero.text = "—"
-        hero.font = UIFont.heroNumber
-        hero.textColor = UIColor.textTertiary
-        hero.adjustsFontForContentSizeCategory = true
-        let caption = UILabel()
-        caption.text = text
-        caption.font = UIFont.label
-        caption.textColor = UIColor.textSecondary
-        caption.adjustsFontForContentSizeCategory = true
-        caption.numberOfLines = 0
-        card.contentStack.addArrangedSubview(hero)
-        card.contentStack.addArrangedSubview(caption)
-        card.isAccessibilityElement = true
-        card.accessibilityLabel = accessibilityLabel
-        return card
     }
 
     private func restore(_ plan: PlanRecord) {

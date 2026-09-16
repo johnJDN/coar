@@ -78,6 +78,12 @@ final class ActiveWorkoutBar: UIControl {
         }
     }
 
+    /// Stops the minute ticker while the bar is off screen.
+    func stop() {
+        ticker?.invalidate()
+        ticker = nil
+    }
+
     private func tick() {
         detailLabel.text = "Active · \(TrainText.duration(from: startedAt, to: Date()))"
         accessibilityLabel = "\(titleLabel.text ?? ""), \(detailLabel.text ?? ""). Return to workout"

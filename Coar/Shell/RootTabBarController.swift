@@ -3,8 +3,9 @@ import os
 
 /// The four Liquid Glass tabs. Each tab owns a `UINavigationController` with large titles
 /// (DESIGN.md §2). Screens receive their dependencies; they never see a managed object context.
-/// Also owns the bottom accessory: while a Workout is active and the logger is not on screen,
-/// the `ActiveWorkoutBar` sits above the tab bar and taps back into the logger. On the first
+/// Also owns the bottom accessory: while a Workout is active and the user is away from the
+/// logger (another tab, or Train without the logger in its stack), the `ActiveWorkoutBar`
+/// sits above the tab bar and taps back into the logger. On the first
 /// appearance, an Active Workout older than `WorkoutRecord.staleAfter` is offered Finish or
 /// Discard rather than carried on.
 final class RootTabBarController: UITabBarController {
@@ -14,8 +15,8 @@ final class RootTabBarController: UITabBarController {
 
     let dependencies: AppDependencies
 
-    /// Set by the logger as it appears and leaves: the accessory hides while it shows.
-    var isLoggerVisible = false {
+    /// Set by the logger as it enters and leaves the Train tab's stack.
+    var loggerIsInTrainStack = false {
         didSet { refreshAccessory() }
     }
 
@@ -42,6 +43,7 @@ final class RootTabBarController: UITabBarController {
             },
         ]
         tabBarMinimizeBehavior = .onScrollDown
+        delegate = self
 
         activeBar.onTap = { [weak self] in self?.showActiveWorkout() }
         activeObserver = NotificationCenter.default.addObserver(
@@ -87,44 +89,64 @@ final class RootTabBarController: UITabBarController {
         }
     }
 
+    private var isOnTrainTab: Bool {
+        selectedTab?.identifier == Self.trainTabIdentifier
+    }
+
     private func refreshAccessory() {
         guard isViewLoaded else { return }
-        if let active = activeWorkout(), !isLoggerVisible {
+        if let active = activeWorkout(), !(isOnTrainTab && loggerIsInTrainStack) {
             activeBar.configure(with: active)
             if bottomAccessory == nil {
                 setBottomAccessory(UITabAccessory(contentView: activeBar), animated: true)
             }
         } else if bottomAccessory != nil {
+            activeBar.stop()
             setBottomAccessory(nil, animated: true)
         }
     }
 
-    /// Switches to Train and pushes the logger, unless it is already on top there.
+    /// Switches to Train and returns to the logger: back to the one already in the stack,
+    /// or a fresh push when there is none.
     private func showActiveWorkout() {
         guard let active = activeWorkout() else { return refreshAccessory() }
         selectedTab = tabs.first { $0.identifier == Self.trainTabIdentifier }
         guard let navigation = selectedViewController as? UINavigationController else { return }
-        if navigation.topViewController is WorkoutLoggerViewController { return }
-        navigation.pushViewController(WorkoutLoggerViewController(dependencies: dependencies, workoutID: active.id), animated: true)
+        if let logger = navigation.viewControllers.first(where: { $0 is WorkoutLoggerViewController }) {
+            navigation.popToViewController(logger, animated: true)
+        } else {
+            navigation.pushViewController(WorkoutLoggerViewController(dependencies: dependencies, workoutID: active.id), animated: true)
+        }
+        refreshAccessory()
     }
 
     /// An Active Workout left twelve hours or more: the app never guesses the numbers, so
-    /// it asks. Finish keeps the sets that were completed; Discard deletes the Workout.
+    /// it asks. Finish keeps the sets that were completed; Discard deletes the Workout. With
+    /// nothing completed there is nothing to keep, so only Discard (or leaving it) is offered,
+    /// as the logger's own Finish does.
     private func checkStaleWorkout() {
         guard let active = activeWorkout(), active.isStale(at: Date()) else { return }
+        let started = "started \(TrainText.dayText(active.day)) at \(TrainText.timeText(active.startedAt))"
+        let hasCompletedSets = active.completedSetCount > 0
         let alert = UIAlertController(
             title: "Still working out?",
-            message: "\(active.title), started \(TrainText.dayText(active.day)) at \(TrainText.timeText(active.startedAt)), is still active. Finish keeps the sets you completed; Discard deletes it.",
+            message: hasCompletedSets
+                ? "\(active.title), \(started), is still active. Finish keeps the sets you completed; Discard deletes it."
+                : "\(active.title), \(started), is still active and no set was completed. Discard it, or keep it active?",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Finish", style: .default) { [weak self] _ in
-            guard let self else { return }
-            do {
-                try dependencies.store.finishWorkout(active.id)
-            } catch {
-                Self.logger.error("Failed to finish the stale Workout: \(error, privacy: .public)")
-            }
-        })
+        if hasCompletedSets {
+            alert.addAction(UIAlertAction(title: "Finish", style: .default) { [weak self] _ in
+                guard let self else { return }
+                do {
+                    try dependencies.store.finishWorkout(active.id)
+                } catch {
+                    Self.logger.error("Failed to finish the stale Workout: \(error, privacy: .public)")
+                }
+            })
+        } else {
+            alert.addAction(UIAlertAction(title: "Keep active", style: .cancel))
+        }
         alert.addAction(UIAlertAction(title: "Discard", style: .destructive) { [weak self] _ in
             guard let self else { return }
             do {
@@ -134,5 +156,11 @@ final class RootTabBarController: UITabBarController {
             }
         })
         present(alert, animated: true)
+    }
+}
+
+extension RootTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelectTab selectedTab: UITab, previousTab: UITab?) {
+        refreshAccessory()
     }
 }

@@ -210,9 +210,7 @@ extension FoodItem {
     /// The Servings in the user's order. Should two carry the default flag (two devices
     /// editing before sync), the latest-modified one stands, as the dedupe pass will settle.
     var servingRecords: [ServingRecord] {
-        let ordered = servingObjects.sorted {
-            ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast)
-        }
+        let ordered = servingObjects.sorted(by: Store.bySortOrder)
         let standingDefault = ordered.filter(\.isDefault).max { ($0.modifiedAt ?? .distantPast) < ($1.modifiedAt ?? .distantPast) }
         return ordered.compactMap { object in
             guard let id = object.id else { return nil }
@@ -231,7 +229,7 @@ private extension Entry {
     /// The breakdown in the order it was logged.
     var componentRecords: [EntryComponentRecord] {
         (components as? Set<EntryComponent> ?? [])
-            .sorted { ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast) }
+            .sorted(by: Store.bySortOrder)
             .map { EntryComponentRecord(name: $0.name ?? "", servingName: $0.servingName ?? "", quantity: $0.quantity, macros: $0.macros) }
     }
 }

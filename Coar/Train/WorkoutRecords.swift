@@ -36,6 +36,12 @@ struct WorkoutRecord: Hashable, Identifiable {
     var uncompletedSetCount: Int {
         exercises.reduce(0) { $0 + $1.sets.filter { !$0.isCompleted }.count }
     }
+
+    /// "A1", "A2" for the first Superset's rows; nil for a row on its own.
+    func supersetLabel(for rowID: WorkoutExerciseRecord.ID) -> String? {
+        guard let index = exercises.firstIndex(where: { $0.id == rowID }) else { return nil }
+        return SupersetLabel.text(at: index, groups: exercises.map(\.supersetGroup))
+    }
 }
 
 /// One Exercise row of a Workout: the name as it was when the row was made, the Exercise it

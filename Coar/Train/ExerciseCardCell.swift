@@ -11,7 +11,6 @@ final class ExerciseCardCell: CardCell {
         let name: String
         let subtitle: String
         let sets: [SetRowView.Model]
-        let setIDs: [LoggedSetRecord.ID]
     }
 
     var onChangeSet: ((LoggedSetRecord.ID, _ weight: String, _ reps: String) -> Void)?
@@ -92,7 +91,7 @@ final class ExerciseCardCell: CardCell {
     func configure(with model: Model) {
         nameLabel.text = model.name
         subtitleLabel.text = model.subtitle
-        setIDs = model.setIDs
+        setIDs = model.sets.map(\.id)
         while rows.count > model.sets.count {
             let row = rows.removeLast()
             setsStack.removeArrangedSubview(row)

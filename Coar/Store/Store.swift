@@ -193,6 +193,28 @@ extension Serving: MacroAttributes {}
 extension Entry: MacroAttributes {}
 extension EntryComponent: MacroAttributes {}
 
+// MARK: - sortOrder
+
+/// An entity with an explicit `sortOrder` (ADR 0002: no ordered relationships). Ties, which
+/// two devices can make, break by `modifiedAt` so every device lists the same order.
+protocol SortOrdered: ModifiedAtStamped {
+    var sortOrder: Int32 { get }
+}
+
+extension Store {
+    static func bySortOrder<Object: SortOrdered>(_ lhs: Object, _ rhs: Object) -> Bool {
+        (lhs.sortOrder, lhs.modifiedAt ?? .distantPast) < (rhs.sortOrder, rhs.modifiedAt ?? .distantPast)
+    }
+}
+
+extension Serving: SortOrdered {}
+extension MealComponent: SortOrdered {}
+extension EntryComponent: SortOrdered {}
+extension PlanExercise: SortOrdered {}
+extension PlannedSet: SortOrdered {}
+extension WorkoutExercise: SortOrdered {}
+extension LoggedSet: SortOrdered {}
+
 // MARK: - modifiedAt
 
 /// Every entity carries an app-set `modifiedAt` (ADR 0002; `.scratch/data-model/issues/01`).

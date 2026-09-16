@@ -199,7 +199,7 @@ extension Plan {
     /// The rows in the user's order. A row whose Exercise is gone is dropped.
     var exerciseRecords: [PlanExerciseRecord] {
         exerciseObjects
-            .sorted { ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast) }
+            .sorted(by: Store.bySortOrder)
             .compactMap { row in
                 guard let id = row.id, let exercise = row.exercise.flatMap(ExerciseRecord.init) else { return nil }
                 return PlanExerciseRecord(
@@ -220,7 +220,7 @@ extension PlanExercise {
     /// The Planned Sets in the user's order.
     var plannedSetRecords: [PlannedSetRecord] {
         plannedSetObjects
-            .sorted { ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast) }
+            .sorted(by: Store.bySortOrder)
             .compactMap { set in
                 guard let id = set.id else { return nil }
                 return PlannedSetRecord(id: id, targetKilograms: set.targetKilograms, reps: RepRange(min: Int(set.repMin), max: Int(set.repMax)))
