@@ -7,57 +7,15 @@ import UIKit
 /// "Planned Set"); the weight is stored in kilograms (ADR 0004).
 final class PlannedSetsViewController: UIViewController {
 
-    /// One set as typed, before validation.
-    struct Fields: Hashable, Identifiable {
-        let id: UUID
-        var weight: String
-        var repMin: String
-        var repMax: String
-
-        init(id: UUID = UUID(), weight: String, repMin: String, repMax: String) {
-            self.id = id
-            self.weight = weight
-            self.repMin = repMin
-            self.repMax = repMax
-        }
-
-        init(_ set: PlannedSetDraft, in unit: MassUnit) {
-            self.init(
-                id: set.id,
-                weight: set.targetKilograms > 0 ? TrainText.weightValue(set.targetKilograms, in: unit) : "",
-                repMin: "\(set.reps.min)",
-                repMax: set.reps.min == set.reps.max ? "" : "\(set.reps.max)"
-            )
-        }
-
-        /// The set as it will be saved, or nil while the reps are missing or a number does
-        /// not parse. An empty weight is no weight; an empty max is min = max.
-        func set(in unit: MassUnit) -> PlannedSetDraft? {
-            guard let min = Int(repMin.trimmingCharacters(in: .whitespaces)), min > 0 else { return nil }
-            let maxText = repMax.trimmingCharacters(in: .whitespaces)
-            let max = maxText.isEmpty ? min : Int(maxText)
-            guard let max, max > 0 else { return nil }
-            let weightText = weight.trimmingCharacters(in: .whitespaces)
-            let kilograms: Double
-            if weightText.isEmpty {
-                kilograms = 0
-            } else {
-                guard let typed = TrainText.number(typed: weightText), typed >= 0 else { return nil }
-                kilograms = unit.kilograms(fromDisplayValue: typed)
-            }
-            return PlannedSetDraft(id: id, targetKilograms: kilograms, reps: RepRange(min: min, max: max))
-        }
-    }
-
     private enum Item: Hashable {
-        case set(Fields.ID)
+        case set(PlannedSetFields.ID)
         case add
     }
 
     private let unit: MassUnit
     private var row: PlanExerciseDraft
     private let onSave: (PlanExerciseDraft) -> Void
-    private var fields: [Fields]
+    private var fields: [PlannedSetFields]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
@@ -66,7 +24,7 @@ final class PlannedSetsViewController: UIViewController {
         self.unit = unit
         self.row = row
         self.onSave = onSave
-        fields = row.sets.map { Fields($0, in: unit) }
+        fields = row.sets.map { PlannedSetFields($0, in: unit) }
         super.init(nibName: nil, bundle: nil)
         title = exerciseName
     }
@@ -112,10 +70,10 @@ final class PlannedSetsViewController: UIViewController {
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
         ])
 
-        let setCell = UICollectionView.CellRegistration<PlannedSetCell, Fields.ID> { [weak self] cell, indexPath, id in
+        let setCell = UICollectionView.CellRegistration<PlannedSetCell, PlannedSetFields.ID> { [weak self] cell, indexPath, id in
             guard let self, let set = fields.first(where: { $0.id == id }) else { return }
             cell.configure(number: indexPath.item + 1, fields: set, unitSymbol: unit.symbol)
             cell.onChange = { [weak self] changed in
@@ -125,11 +83,7 @@ final class PlannedSetsViewController: UIViewController {
             }
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
-            var content = UIListContentConfiguration.listRow()
-            content.text = "Add set"
-            content.image = UIImage(systemName: "plus.circle.fill")
-            content.imageProperties.tintColor = UIColor.accentGreen
-            content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
+            let content = UIListContentConfiguration.addRow("Add set")
             cell.contentConfiguration = content
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
@@ -141,7 +95,7 @@ final class PlannedSetsViewController: UIViewController {
         }
         let footer = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionFooter) { [weak self] view, _, _ in
             var content = UIListContentConfiguration.groupedFooter()
-            content.text = "Weight in \(self?.unit.symbol ?? ""); leave it empty for bodyweight. Reps as one number or a range."
+            content.text = "Weight in \(self?.unit.symbol ?? ""); leave it empty when no weight is lifted. Reps as one number or a range."
             view.contentConfiguration = content
         }
 
@@ -184,7 +138,7 @@ final class PlannedSetsViewController: UIViewController {
     private func addSet() {
         view.endEditing(true)
         let last = fields.last
-        fields.append(Fields(weight: last?.weight ?? "", repMin: last?.repMin ?? "8", repMax: last?.repMax ?? "12"))
+        fields.append(PlannedSetFields(weight: last?.weight ?? "", repMin: last?.repMin ?? "8", repMax: last?.repMax ?? "12"))
         render()
     }
 
@@ -208,13 +162,55 @@ extension PlannedSetsViewController: UICollectionViewDelegate {
     }
 }
 
+/// One Planned Set as typed on its row, before validation.
+struct PlannedSetFields: Hashable, Identifiable {
+    let id: UUID
+    var weight: String
+    var repMin: String
+    var repMax: String
+
+    init(id: UUID = UUID(), weight: String, repMin: String, repMax: String) {
+        self.id = id
+        self.weight = weight
+        self.repMin = repMin
+        self.repMax = repMax
+    }
+
+    init(_ set: PlannedSetDraft, in unit: MassUnit) {
+        self.init(
+            id: set.id,
+            weight: set.targetKilograms > 0 ? TrainText.weightValue(set.targetKilograms, in: unit) : "",
+            repMin: "\(set.reps.min)",
+            repMax: set.reps.min == set.reps.max ? "" : "\(set.reps.max)"
+        )
+    }
+
+    /// The set as it will be saved, or nil while the reps are missing, the max is below the
+    /// min, or a number does not parse. An empty weight is no weight; an empty max is
+    /// min = max.
+    func set(in unit: MassUnit) -> PlannedSetDraft? {
+        guard let min = Int(repMin.trimmingCharacters(in: .whitespaces)), min > 0 else { return nil }
+        let maxText = repMax.trimmingCharacters(in: .whitespaces)
+        guard let max = maxText.isEmpty ? min : Int(maxText), max >= min else { return nil }
+        let weightText = weight.trimmingCharacters(in: .whitespaces)
+        let kilograms: Double
+        if weightText.isEmpty {
+            kilograms = 0
+        } else {
+            guard let typed = Double(typed: weightText), typed >= 0 else { return nil }
+            kilograms = unit.kilograms(fromDisplayValue: typed)
+        }
+        return PlannedSetDraft(id: id, targetKilograms: kilograms, reps: RepRange(min: min, max: max))
+    }
+}
+
 /// `SetRow` (DESIGN.md §7) for a Planned Set: `[set #] [weight unit] [min – max]`, three
 /// pills in `fill`. Reports every keystroke as new `Fields`.
 final class PlannedSetCell: UICollectionViewListCell {
 
-    var onChange: ((PlannedSetsViewController.Fields) -> Void)?
+    var onChange: ((PlannedSetFields) -> Void)?
 
-    private var fields: PlannedSetsViewController.Fields?
+    private var fields: PlannedSetFields?
     private let numberLabel = UILabel()
     private let weightField = UITextField()
     private let unitLabel = UILabel()
@@ -281,7 +277,7 @@ final class PlannedSetCell: UICollectionViewListCell {
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     /// A re-render while the user is typing must not move the cursor.
-    func configure(number: Int, fields: PlannedSetsViewController.Fields, unitSymbol: String) {
+    func configure(number: Int, fields: PlannedSetFields, unitSymbol: String) {
         self.fields = fields
         numberLabel.text = "\(number)"
         unitLabel.text = unitSymbol

@@ -7,7 +7,7 @@ import XCTest
 final class PlanDraftTests: XCTestCase {
 
     private let bench = UUID()
-    private let row = UUID()
+    private let cableRow = UUID()
     private let squat = UUID()
     private let curl = UUID()
 
@@ -21,10 +21,10 @@ final class PlanDraftTests: XCTestCase {
         draft.exercises.map(\.supersetGroup)
     }
 
-    func test_appendedRow_startsWithThreeSetsOfEightToTwelve_andNoSuperset() {
+    func test_appendedRow_startsWithThreeSetsOfEightToTwelve_andNoSuperset() throws {
         let plan = draft(bench)
 
-        let row = try! XCTUnwrap(plan.exercises.first)
+        let row = try XCTUnwrap(plan.exercises.first)
         XCTAssertEqual(row.exerciseID, bench)
         XCTAssertNil(row.supersetGroup)
         XCTAssertEqual(row.sets.map(\.reps), Array(repeating: RepRange(min: 8, max: 12), count: 3))
@@ -32,7 +32,7 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_linkingTwoAdjacentRows_makesOneSuperset_andAThirdExtendsIt() {
-        var plan = draft(bench, row, squat)
+        var plan = draft(bench, cableRow, squat)
 
         plan.toggleLink(below: plan.exercises[0].id)
         XCTAssertEqual(groups(plan), [1, 1, nil])
@@ -44,7 +44,7 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_unlinkingInsideAGroup_splitsIt_andAGroupOfOneIsNoGroup() {
-        var plan = draft(bench, row, squat, curl)
+        var plan = draft(bench, cableRow, squat, curl)
         plan.toggleLink(below: plan.exercises[0].id)
         plan.toggleLink(below: plan.exercises[1].id)
         plan.toggleLink(below: plan.exercises[2].id)
@@ -57,7 +57,7 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_twoSeparateSupersets_haveDistinctGroups() {
-        var plan = draft(bench, row, squat, curl)
+        var plan = draft(bench, cableRow, squat, curl)
 
         plan.toggleLink(below: plan.exercises[0].id)
         plan.toggleLink(below: plan.exercises[2].id)
@@ -66,19 +66,19 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_reorderingAMemberAway_breaksItsSuperset_andTheRestStayGrouped() {
-        var plan = draft(bench, row, squat, curl)
+        var plan = draft(bench, cableRow, squat, curl)
         plan.toggleLink(below: plan.exercises[0].id)
         plan.toggleLink(below: plan.exercises[1].id)
 
         // bench, squat, curl, row: bench and squat stay adjacent; row is on its own.
-        plan.reorder([bench, squat, curl, row].map { id in plan.exercises.first { $0.exerciseID == id }!.id })
+        plan.reorder([bench, squat, curl, cableRow].map { id in plan.exercises.first { $0.exerciseID == id }!.id })
 
-        XCTAssertEqual(plan.exercises.map(\.exerciseID), [bench, squat, curl, row])
+        XCTAssertEqual(plan.exercises.map(\.exerciseID), [bench, squat, curl, cableRow])
         XCTAssertEqual(groups(plan), [1, 1, nil, nil])
     }
 
     func test_removingTheMiddleOfAGroup_leavesTheNeighboursGrouped_andRemovingAPairMateUngroupsTheOther() {
-        var plan = draft(bench, row, squat)
+        var plan = draft(bench, cableRow, squat)
         plan.toggleLink(below: plan.exercises[0].id)
         plan.toggleLink(below: plan.exercises[1].id)
 
@@ -90,7 +90,7 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_theLastRow_cannotLinkBelow() {
-        var plan = draft(bench, row)
+        var plan = draft(bench, cableRow)
 
         plan.toggleLink(below: plan.exercises[1].id)
 
@@ -105,11 +105,26 @@ final class PlanDraftTests: XCTestCase {
     }
 
     func test_superset_labelsRowsA1A2_thenB1B2() {
-        var plan = draft(bench, row, squat, curl)
+        var plan = draft(bench, cableRow, squat, curl)
         plan.toggleLink(below: plan.exercises[0].id)
         plan.toggleLink(below: plan.exercises[2].id)
 
         XCTAssertEqual(plan.exercises.map { plan.supersetLabel(for: $0.id) }, ["A1", "A2", "B1", "B2"])
+    }
+
+    func test_typedSet_needsReps_treatsAnEmptyMaxAsMinEqualsMax_andRefusesAMaxBelowTheMin() throws {
+        XCTAssertNil(PlannedSetFields(weight: "135", repMin: "", repMax: "").set(in: .pounds))
+        XCTAssertNil(PlannedSetFields(weight: "135", repMin: "12", repMax: "8").set(in: .pounds))
+        XCTAssertNil(PlannedSetFields(weight: "heavy", repMin: "5", repMax: "").set(in: .pounds))
+
+        let single = try XCTUnwrap(PlannedSetFields(weight: "", repMin: "5", repMax: "").set(in: .pounds))
+        XCTAssertEqual(single.reps, RepRange(5))
+        XCTAssertEqual(single.targetKilograms, 0)
+
+        // 135 lb is 61.235 kg.
+        let range = try XCTUnwrap(PlannedSetFields(weight: "135", repMin: "8", repMax: "12").set(in: .pounds))
+        XCTAssertEqual(range.reps, RepRange(min: 8, max: 12))
+        XCTAssertEqual(range.targetKilograms, 61.235, accuracy: 0.001)
     }
 
     func test_repRange_showsOneNumberWhenMinIsMax_andLiftsAMaxBelowTheMin() {

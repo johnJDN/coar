@@ -134,16 +134,9 @@ final class HabitAmountViewController: UIViewController {
 
     private var enteredAmount: Double? {
         guard let text = field.text, !text.isEmpty else { return 0 }
-        guard let value = Self.parser.number(from: text)?.doubleValue ?? Double(text), value >= 0, value.isFinite else { return nil }
+        guard let value = Double(typed: text), value >= 0 else { return nil }
         return value
     }
-
-    private static let parser: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
 
     /// A chip: the typed total plus the step, written at once so "10 more pages" is one tap.
     private func add(_ step: Double) {

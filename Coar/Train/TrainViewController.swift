@@ -103,11 +103,15 @@ final class TrainViewController: ScreenViewController {
         do {
             let hero = TrendWeight.hero(of: try dependencies.store.bodyWeights().map(\.kilograms))
             bodyWeightChip.subtitle = hero.map { dependencies.preferences.massUnit.displayText(fromKilograms: $0) }
+        } catch {
+            Self.logger.error("Failed to read Body Weight: \(error, privacy: .public)")
+            bodyWeightChip.subtitle = nil
+        }
+        do {
             let count = try dependencies.store.exercises().count
             exercisesChip.subtitle = count == 0 ? nil : TrainText.count(count, "exercise")
         } catch {
-            Self.logger.error("Failed to read the chips: \(error, privacy: .public)")
-            bodyWeightChip.subtitle = nil
+            Self.logger.error("Failed to read Exercises: \(error, privacy: .public)")
             exercisesChip.subtitle = nil
         }
     }
@@ -124,13 +128,12 @@ final class TrainViewController: ScreenViewController {
     }
 
     private func newPlanRow() -> UIView {
-        var configuration = UIButton.Configuration.filled()
+        var configuration = UIButton.Configuration.glass()
         configuration.title = "New plan"
         configuration.image = UIImage(systemName: "plus")
         configuration.imagePadding = Metrics.spaceTight
         configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .headline)
         configuration.cornerStyle = .capsule
-        configuration.baseBackgroundColor = UIColor.fill
         configuration.baseForegroundColor = UIColor.textPrimary
         configuration.titleTextAttributesTransformer = .cardTitle
         let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.showPlanEditor(.create) })

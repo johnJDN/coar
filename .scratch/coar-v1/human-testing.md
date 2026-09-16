@@ -103,3 +103,27 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A new meal goes straight to its log page.
 - [?] "No meals yet" is gone; an empty Meals segment shows only "New meal".
 - [?] `Meal` and `MealComponent` gained an optional `id: UUID` (additive).
+
+## 08: Train: Exercises, Plans, Supersets
+
+- [ ] Train → Exercises chip: the catalogue opens; `+` → type a name, pick a Muscle Group from the menu, add equipment and a rest of 150; Save stays disabled until there is a name (and while rest is 0); the row reads "Chest · Barbell · Rest 150 s"; the chip's subtitle back on the root reads "1 exercise".
+- [ ] Tap an Exercise → the sheet opens filled in; Archive exercise: it moves to the Archived section, dimmed with "Archived · tap to restore"; tap it → Restore brings it back.
+- [ ] Train root: with no Plans the Plans section shows a card with `—` and "Tap New plan to build your first plan."; New plan opens the editor with the keyboard in the name field.
+- [ ] Plan editor: Add exercise → the picker filters as you type; "New exercise “curl”" opens the sheet pre-filled and, on Save, the exercise lands in the plan; each new row reads "3 × 8–12"; drag the handle to reorder; swipe left to remove; Save is disabled until a name and one exercise exist.
+- [ ] Tap a row → Planned Sets: type 135 in weight and 5 in reps; leave the max empty: back in the editor the row reads "3 × 5 · 135 lbs"; type 8 and 12: "8–12"; type 12 then 8: Save is disabled; Add set repeats the last set; swipe a set to delete; the keyboard never covers the last row or Add set.
+- [ ] Superset: tap the link button on the first row: it turns lavender and the two rows read "A1 · …" / "A2 · …"; link the second row too: "A3"; unlink the middle: "A1 / A2" and the third alone; drag A2 below an unlinked row: the pair breaks; a plan with two pairs reads A1 A2 B1 B2. The last row has no link button.
+- [ ] Save the plan: the root card shows the name, "4 exercises", and the exercise names; tap it: the editor reopens with everything in order and the superset intact; kill and relaunch: same.
+- [ ] Editor `…` → Archive: pops to the root, the plan sits under Archived with Restore; Restore returns it to Plans.
+- [ ] Settings → kg: reopen a plan's sets: 135 lbs reads 61.2 kg; type 60 and save; back in lbs it reads 132.3 lbs.
+- [ ] Archive an Exercise that a Plan uses: the plan's row still shows it with "· archived"; the picker no longer offers it.
+- [ ] Dynamic Type: the set pills, plan cards, catalogue rows and the Exercise sheet scale without clipping; check light and dark throughout.
+- [?] The Superset link is a per-row button (lavender when linked) rather than an icon between cards; the between-cards icon arrives on the logger's `ExerciseCard`s.
+- [?] Grouped rows are labelled A1 / A2, B1 / B2.
+- [?] The picker offers "New exercise" inline.
+- [?] A new row starts as 3 × 8–12 with no weight; Add set repeats the last set.
+- [?] A Plan needs a name and one Exercise; a row may have zero sets ("No sets").
+- [?] An empty weight stores 0 kg and reads `—`; a max below the min disables Save rather than swapping.
+- [?] Archive (Plan editor `…`, Exercise sheet) does not confirm and discards unsaved editor changes.
+- [?] Plans and Exercises list by name; no manual order.
+- [?] `Exercise`, `Plan`, `PlanExercise`, `PlannedSet` gained an optional `id: UUID` (additive).
+- [?] New plan is a full-width glass capsule under the Plans cards, not a `+` in the navigation bar.

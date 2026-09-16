@@ -84,17 +84,14 @@ struct PlanRecord: Hashable, Identifiable {
 /// One row of a Plan: an Exercise, its place in a Superset if any, and its Planned Sets.
 struct PlanExerciseRecord: Hashable, Identifiable {
     let id: UUID
-    let exerciseID: ExerciseRecord.ID
     /// The Exercise as it stands now.
-    let name: String
-    let muscleGroup: MuscleGroup
-    let equipment: String?
-    let restSeconds: Int?
-    let isExerciseArchived: Bool
+    let exercise: ExerciseRecord
     /// Adjacent rows sharing a group are one Superset (CONTEXT.md "Superset"); nil for a
     /// row on its own.
     let supersetGroup: Int?
     let sets: [PlannedSetRecord]
+
+    var exerciseID: ExerciseRecord.ID { exercise.id }
 }
 
 /// A Planned Set as read through the façade: the target weight in kilograms (ADR 0004) and

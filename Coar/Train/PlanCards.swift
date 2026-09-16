@@ -17,7 +17,7 @@ final class PlanCardControl: UIControl {
         count.adjustsFontForContentSizeCategory = true
 
         let names = UILabel()
-        names.text = plan.exercises.isEmpty ? "—" : plan.exercises.map(\.name).joined(separator: " · ")
+        names.text = plan.exercises.isEmpty ? "—" : plan.exercises.map(\.exercise.name).joined(separator: " · ")
         names.font = UIFont.label
         names.textColor = plan.exercises.isEmpty ? UIColor.textTertiary : UIColor.textSecondary
         names.adjustsFontForContentSizeCategory = true

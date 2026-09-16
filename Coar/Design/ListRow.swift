@@ -13,6 +13,16 @@ extension UIListContentConfiguration {
         content.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: Metrics.spaceInner, bottom: 12, trailing: Metrics.spaceInner)
         return content
     }
+
+    /// An "Add …" row at the foot of an editor's list: the title beside a green `+`.
+    static func addRow(_ title: String) -> UIListContentConfiguration {
+        var content = listRow()
+        content.text = title
+        content.image = UIImage(systemName: "plus.circle.fill")
+        content.imageProperties.tintColor = UIColor.accentGreen
+        content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
+        return content
+    }
 }
 
 extension UIBackgroundConfiguration {

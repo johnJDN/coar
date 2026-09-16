@@ -96,16 +96,9 @@ final class BodyWeightLogViewController: UIViewController {
     // MARK: - Saving
 
     private var enteredValue: Double? {
-        guard let text = field.text, let value = Self.parser.number(from: text)?.doubleValue ?? Double(text) else { return nil }
-        return value > 0 && value.isFinite ? value : nil
+        guard let text = field.text, let value = Double(typed: text), value > 0 else { return nil }
+        return value
     }
-
-    private static let parser: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
 
     private func updateSaveState() {
         saveItem.isEnabled = enteredValue != nil

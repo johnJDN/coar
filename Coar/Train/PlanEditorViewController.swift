@@ -128,7 +128,7 @@ final class PlanEditorViewController: UIViewController {
         let exerciseCell = UICollectionView.CellRegistration<PlanExerciseCell, PlanExerciseDraft.ID> { [weak self] cell, _, id in
             guard let self, let row = draft.exercises.first(where: { $0.id == id }) else { return }
             let exercise = exercises[row.exerciseID]
-            let scheme = TrainText.sets(row.sets, in: dependencies.preferences.massUnit)
+            let scheme = TrainText.scheme(of: row.sets, in: dependencies.preferences.massUnit)
             cell.configure(
                 name: exercise?.name ?? "—",
                 detail: [draft.supersetLabel(for: id), scheme].compactMap { $0 }.joined(separator: " · "),
@@ -141,11 +141,7 @@ final class PlanEditorViewController: UIViewController {
             }
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
-            var content = UIListContentConfiguration.listRow()
-            content.text = "Add exercise"
-            content.image = UIImage(systemName: "plus.circle.fill")
-            content.imageProperties.tintColor = UIColor.accentGreen
-            content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
+            let content = UIListContentConfiguration.addRow("Add exercise")
             cell.contentConfiguration = content
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
@@ -291,11 +287,7 @@ extension PlanEditorViewController: UICollectionViewDelegate {
         atCurrentIndexPath currentIndexPath: IndexPath,
         toProposedIndexPath proposedIndexPath: IndexPath
     ) -> IndexPath {
-        let last = max(draft.exercises.count - 1, 0)
-        guard proposedIndexPath.section == originalIndexPath.section, proposedIndexPath.item <= last else {
-            return IndexPath(item: proposedIndexPath.section < originalIndexPath.section ? 0 : last, section: originalIndexPath.section)
-        }
-        return proposedIndexPath
+        IndexPath.reorderTarget(original: originalIndexPath, proposed: proposedIndexPath, lastReorderable: draft.exercises.count - 1)
     }
 }
 

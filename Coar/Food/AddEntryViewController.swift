@@ -144,7 +144,7 @@ final class AddEntryViewController: UIViewController {
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let actionCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { [weak self] cell, _, item in
-            var content = UIListContentConfiguration.listRow()
+            var content = UIListContentConfiguration.addRow("")
             let typed = self?.filterText ?? ""
             switch item {
             case .newFood:
@@ -154,9 +154,6 @@ final class AddEntryViewController: UIViewController {
             case .foodItem, .archived, .meal, .archivedMeal:
                 break
             }
-            content.image = UIImage(systemName: "plus.circle.fill")
-            content.imageProperties.tintColor = UIColor.accentGreen
-            content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
             cell.contentConfiguration = content
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()

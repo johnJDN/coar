@@ -136,11 +136,7 @@ final class MealEditorViewController: UIViewController {
             cell.accessibilityLabel = [content.text, content.secondaryText].compactMap { $0 }.joined(separator: ", ")
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
-            var content = UIListContentConfiguration.listRow()
-            content.text = "Add food"
-            content.image = UIImage(systemName: "plus.circle.fill")
-            content.imageProperties.tintColor = UIColor.accentGreen
-            content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
+            let content = UIListContentConfiguration.addRow("Add food")
             cell.contentConfiguration = content
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
@@ -272,10 +268,6 @@ extension MealEditorViewController: UICollectionViewDelegate {
         atCurrentIndexPath currentIndexPath: IndexPath,
         toProposedIndexPath proposedIndexPath: IndexPath
     ) -> IndexPath {
-        let last = max(draft.components.count - 1, 0)
-        guard proposedIndexPath.section == originalIndexPath.section, proposedIndexPath.item <= last else {
-            return IndexPath(item: proposedIndexPath.section < originalIndexPath.section ? 0 : last, section: originalIndexPath.section)
-        }
-        return proposedIndexPath
+        IndexPath.reorderTarget(original: originalIndexPath, proposed: proposedIndexPath, lastReorderable: draft.components.count - 1)
     }
 }

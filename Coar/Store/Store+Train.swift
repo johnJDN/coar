@@ -204,12 +204,7 @@ private extension Plan {
                 guard let id = row.id, let exercise = row.exercise.flatMap(ExerciseRecord.init) else { return nil }
                 return PlanExerciseRecord(
                     id: id,
-                    exerciseID: exercise.id,
-                    name: exercise.name,
-                    muscleGroup: exercise.muscleGroup,
-                    equipment: exercise.equipment,
-                    restSeconds: exercise.restSeconds,
-                    isExerciseArchived: exercise.isArchived,
+                    exercise: exercise,
                     supersetGroup: row.supersetGroup?.intValue,
                     sets: row.plannedSetRecords
                 )

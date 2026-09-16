@@ -77,7 +77,7 @@ final class TrainTests: XCTestCase {
         XCTAssertEqual(read.name, "Incline bench press")
         XCTAssertEqual(read.equipment, "Dumbbells")
         XCTAssertNil(read.restSeconds)
-        XCTAssertEqual(try store.plan(push.id)?.exercises.first?.name, "Incline bench press")
+        XCTAssertEqual(try store.plan(push.id)?.exercises.first?.exercise.name, "Incline bench press")
     }
 
     func test_archivedExercise_leavesThePicker_staysInItsPlan_andRestores() throws {
@@ -91,7 +91,7 @@ final class TrainTests: XCTestCase {
         XCTAssertEqual(try store.archivedExercises().map(\.id), [catalogue.row.id])
         let inPlan = try XCTUnwrap(store.plan(push.id)).exercises
         XCTAssertEqual(inPlan.map(\.exerciseID), [catalogue.bench.id, catalogue.row.id, catalogue.squat.id])
-        XCTAssertEqual(inPlan.map(\.isExerciseArchived), [false, true, false])
+        XCTAssertEqual(inPlan.map(\.exercise.isArchived), [false, true, false])
 
         try store.restoreExercise(catalogue.row.id)
 
@@ -110,10 +110,10 @@ final class TrainTests: XCTestCase {
         let read = try XCTUnwrap(store.plan(push.id))
         XCTAssertEqual(read.name, "Push")
         XCTAssertFalse(read.isArchived)
-        XCTAssertEqual(read.exercises.map(\.name), ["Bench press", "Cable row", "Back squat"])
+        XCTAssertEqual(read.exercises.map(\.exercise.name), ["Bench press", "Cable row", "Back squat"])
         XCTAssertEqual(read.exercises.map(\.exerciseID), [catalogue.bench.id, catalogue.row.id, catalogue.squat.id])
-        XCTAssertEqual(read.exercises.map(\.muscleGroup), [.chest, .back, .quads])
-        XCTAssertEqual(read.exercises.map(\.restSeconds), [150, nil, 180])
+        XCTAssertEqual(read.exercises.map(\.exercise.muscleGroup), [.chest, .back, .quads])
+        XCTAssertEqual(read.exercises.map(\.exercise.restSeconds), [150, nil, 180])
         XCTAssertEqual(read.exercises.map { $0.sets.count }, [3, 2, 1])
         XCTAssertEqual(read.exercises[1].sets.map(\.reps), [RepRange(min: 8, max: 12), RepRange(min: 8, max: 12)])
         XCTAssertEqual(read.exercises[2].sets.first?.targetKilograms, 140)
@@ -138,7 +138,7 @@ final class TrainTests: XCTestCase {
         let read = try XCTUnwrap(store.plan(push.id))
         XCTAssertEqual(read.name, "Push A")
         XCTAssertEqual(read.exercises.map(\.id), [squat.id, bench.id])
-        XCTAssertEqual(read.exercises.map(\.name), ["Back squat", "Bench press"])
+        XCTAssertEqual(read.exercises.map(\.exercise.name), ["Back squat", "Bench press"])
         let sets = read.exercises[1].sets
         XCTAssertEqual(sets.map(\.id), [bench.sets[2].id, bench.sets[0].id])
         XCTAssertEqual(sets.map(\.targetKilograms), [102.5, 100])

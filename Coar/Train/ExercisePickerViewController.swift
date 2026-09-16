@@ -73,12 +73,8 @@ final class ExercisePickerViewController: UIViewController {
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let newCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { [weak self] cell, _, _ in
-            var content = UIListContentConfiguration.listRow()
             let typed = self?.filter ?? ""
-            content.text = typed.isEmpty ? "New exercise" : "New exercise “\(typed)”"
-            content.image = UIImage(systemName: "plus.circle.fill")
-            content.imageProperties.tintColor = UIColor.accentGreen
-            content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
+            let content = UIListContentConfiguration.addRow(typed.isEmpty ? "New exercise" : "New exercise “\(typed)”")
             cell.contentConfiguration = content
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()

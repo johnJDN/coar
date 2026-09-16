@@ -74,7 +74,7 @@ struct PlanDraft: Equatable {
     /// its own.
     func supersetLabel(for id: PlanExerciseDraft.ID) -> String? {
         guard let index = exercises.firstIndex(where: { $0.id == id }), let group = exercises[index].supersetGroup else { return nil }
-        let letter = String(UnicodeScalar(UInt32(65 + min(max(group - 1, 0), 25)))!)
+        let letter = String(UnicodeScalar(UInt8(ascii: "A") + UInt8(clamping: min(max(group - 1, 0), 25))))
         let position = exercises[...index].filter { $0.supersetGroup == group }.count
         return "\(letter)\(position)"
     }
