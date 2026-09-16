@@ -137,7 +137,7 @@ extension Store {
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
-    private func fetchExercise(_ id: ExerciseRecord.ID) throws -> Exercise? {
+    func fetchExercise(_ id: ExerciseRecord.ID) throws -> Exercise? {
         let request = Exercise.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
@@ -152,7 +152,7 @@ extension Store {
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
-    private func fetchPlan(_ id: PlanRecord.ID) throws -> Plan? {
+    func fetchPlan(_ id: PlanRecord.ID) throws -> Plan? {
         let request = Plan.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
@@ -161,7 +161,7 @@ extension Store {
     }
 }
 
-private extension ExerciseRecord {
+extension ExerciseRecord {
     init?(_ object: Exercise) {
         guard let id = object.id, let modifiedAt = object.modifiedAt,
               let muscleGroup = MuscleGroup(rawValue: object.muscleGroup)
@@ -191,7 +191,7 @@ private extension PlanRecord {
     }
 }
 
-private extension Plan {
+extension Plan {
     var exerciseObjects: [PlanExercise] {
         Array(exercises as? Set<PlanExercise> ?? [])
     }
@@ -212,7 +212,7 @@ private extension Plan {
     }
 }
 
-private extension PlanExercise {
+extension PlanExercise {
     var plannedSetObjects: [PlannedSet] {
         Array(plannedSets as? Set<PlannedSet> ?? [])
     }

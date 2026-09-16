@@ -1,18 +1,23 @@
 import UIKit
 import os
 
-/// The Train root (DESIGN.md §11): the month grid, Start, and recent Workouts arrive with
-/// ticket 09; for now a placeholder grid card, the row of three `PillChip`s, the Plans
-/// section (tap a card to edit, New plan to add), and an Archived section with Restore.
-/// Exercises and Body Weight are live; Progress Photos is ticket 12.
+/// The Train root (DESIGN.md §11): the month grid of Workout Days (tap one to open its
+/// Workout, or the list when there were several), the row of three `PillChip`s, Start (a
+/// Plan or an empty Workout; Resume while one is active), the Plans section (tap a card to
+/// edit, New plan to add), Recent workouts, and an Archived section with Restore. Exercises
+/// and Body Weight are live; Progress Photos is ticket 12.
 final class TrainViewController: ScreenViewController {
 
     private static let logger = Logger(category: "Train")
+    private static let recentLimit = 5
 
     private let dependencies: AppDependencies
+    private let calendar = MonthCalendarView()
     private let exercisesChip = PillChipView(title: "Exercises", systemImage: "figure.strengthtraining.traditional", tint: UIColor.accentLime)
     private let bodyWeightChip = PillChipView(title: "Body Weight", systemImage: "scalemass.fill", tint: UIColor.accentTeal)
+    private let startButton = UIButton(configuration: .prominentGlass())
     private let plansStack = UIStackView()
+    private let recentStack = UIStackView()
     private let archivedHeader = TrainViewController.sectionHeader("Archived")
     private let archivedStack = UIStackView()
 
@@ -24,18 +29,16 @@ final class TrainViewController: ScreenViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let grid = CardView(title: "This month", systemImage: "calendar")
-        let placeholder = UILabel()
-        placeholder.text = "—"
-        placeholder.font = UIFont.heroNumber
-        placeholder.textColor = UIColor.textTertiary
-        placeholder.adjustsFontForContentSizeCategory = true
-        grid.contentStack.addArrangedSubview(placeholder)
+        calendar.onTapDay = { [weak self] day in self?.openDay(day) }
+        let grid = CardView()
+        grid.contentStack.addArrangedSubview(calendar)
         contentStack.addArrangedSubview(grid)
 
-        let chips = chipRow()
-        contentStack.addArrangedSubview(chips)
-        contentStack.setCustomSpacing(Metrics.spaceSection, after: chips)
+        contentStack.addArrangedSubview(chipRow())
+
+        configureStartButton()
+        contentStack.addArrangedSubview(startButton)
+        contentStack.setCustomSpacing(Metrics.spaceSection, after: startButton)
 
         let plansHeader = Self.sectionHeader("Plans")
         contentStack.addArrangedSubview(plansHeader)
@@ -48,6 +51,14 @@ final class TrainViewController: ScreenViewController {
         contentStack.addArrangedSubview(newPlan)
         contentStack.setCustomSpacing(Metrics.spaceSection, after: newPlan)
 
+        let recentHeader = Self.sectionHeader("Recent workouts")
+        contentStack.addArrangedSubview(recentHeader)
+        contentStack.setCustomSpacing(Metrics.spaceTight, after: recentHeader)
+        recentStack.axis = .vertical
+        recentStack.spacing = Metrics.spaceCard
+        contentStack.addArrangedSubview(recentStack)
+        contentStack.setCustomSpacing(Metrics.spaceSection, after: recentStack)
+
         contentStack.addArrangedSubview(archivedHeader)
         contentStack.setCustomSpacing(Metrics.spaceTight, after: archivedHeader)
         archivedStack.axis = .vertical
@@ -58,7 +69,10 @@ final class TrainViewController: ScreenViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshChips()
+        renderGrid()
         renderPlans()
+        renderStart()
+        renderRecent()
     }
 
     // MARK: - Chips
@@ -116,6 +130,101 @@ final class TrainViewController: ScreenViewController {
         }
     }
 
+    // MARK: - Month grid
+
+    /// Days with a Workout light up `accentGreen` and open it; every other Day is inert.
+    private func renderGrid() {
+        let today = Day.today()
+        let days: Set<Day>
+        do {
+            days = try dependencies.store.workoutDays(from: .distantPast, to: today)
+        } catch {
+            Self.logger.error("Failed to read Workout Days: \(error, privacy: .public)")
+            days = []
+        }
+        calendar.model = .init(
+            today: today,
+            levels: Dictionary(uniqueKeysWithValues: days.map { ($0, Heatmap.Level.done) }),
+            editableFrom: .distantPast,
+            tappableDays: days
+        )
+    }
+
+    private func openDay(_ day: Day) {
+        let workouts: [WorkoutRecord]
+        do {
+            workouts = try dependencies.store.workouts(on: day)
+        } catch {
+            Self.logger.error("Failed to read Workouts: \(error, privacy: .public)")
+            return
+        }
+        guard let only = workouts.first else { return }
+        let screen = workouts.count == 1
+            ? WorkoutScreens.screen(for: only, dependencies: dependencies)
+            : WorkoutsOnDayViewController(dependencies: dependencies, day: day)
+        navigationController?.pushViewController(screen, animated: true)
+    }
+
+    // MARK: - Start
+
+    private func configureStartButton() {
+        startButton.configuration?.imagePadding = Metrics.spaceTight
+        startButton.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .headline)
+        startButton.configuration?.cornerStyle = .capsule
+        startButton.configuration?.baseBackgroundColor = UIColor.accentGreen
+        startButton.configuration?.baseForegroundColor = .white
+        startButton.configuration?.titleTextAttributesTransformer = .cardTitle
+        startButton.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
+    }
+
+    /// Start offers each active Plan and "Empty workout" as a menu; while a Workout is active
+    /// the button reads Resume and goes straight to the logger (CONTEXT.md "Active Workout").
+    private func renderStart() {
+        let active: WorkoutRecord?
+        let plans: [PlanRecord]
+        do {
+            active = try dependencies.store.activeWorkout()
+            plans = try dependencies.store.plans()
+        } catch {
+            Self.logger.error("Failed to read for Start: \(error, privacy: .public)")
+            return
+        }
+        if let active {
+            startButton.configuration?.title = "Resume workout"
+            startButton.configuration?.image = UIImage(systemName: "play.fill")
+            startButton.configuration?.subtitle = "\(active.title) · since \(TrainText.timeText(active.startedAt))"
+            startButton.menu = nil
+            startButton.showsMenuAsPrimaryAction = false
+            startButton.removeTarget(nil, action: nil, for: .touchUpInside)
+            startButton.addAction(UIAction { [weak self] _ in self?.showLogger(for: active.id) }, for: .touchUpInside)
+        } else {
+            startButton.configuration?.title = "Start workout"
+            startButton.configuration?.image = UIImage(systemName: "play.fill")
+            startButton.configuration?.subtitle = nil
+            startButton.removeTarget(nil, action: nil, for: .touchUpInside)
+            let fromPlans = plans.map { plan in
+                UIAction(title: plan.name, subtitle: TrainText.count(plan.exercises.count, "exercise")) { [weak self] _ in self?.start(from: plan.id) }
+            }
+            let empty = UIAction(title: "Empty workout", image: UIImage(systemName: "square.dashed")) { [weak self] _ in self?.start(from: nil) }
+            startButton.menu = UIMenu(children: fromPlans + [UIMenu(options: .displayInline, children: [empty])])
+            startButton.showsMenuAsPrimaryAction = true
+        }
+        startButton.accessibilityLabel = startButton.configuration?.title
+    }
+
+    private func start(from planID: PlanRecord.ID?) {
+        do {
+            let workout = try dependencies.store.startWorkout(from: planID)
+            showLogger(for: workout.id)
+        } catch {
+            Self.logger.error("Failed to start Workout: \(error, privacy: .public)")
+        }
+    }
+
+    private func showLogger(for workoutID: WorkoutRecord.ID) {
+        navigationController?.pushViewController(WorkoutLoggerViewController(dependencies: dependencies, workoutID: workoutID), animated: true)
+    }
+
     // MARK: - Plans
 
     private static func sectionHeader(_ title: String) -> UILabel {
@@ -155,7 +264,7 @@ final class TrainViewController: ScreenViewController {
 
         plansStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         if plans.isEmpty {
-            plansStack.addArrangedSubview(Self.emptyPlansCard())
+            plansStack.addArrangedSubview(Self.emptyCard(caption: "Tap New plan to build your first plan.", accessibilityLabel: "No plans yet. Tap New plan to build your first plan."))
         }
         for plan in plans {
             let card = PlanCardControl(plan: plan)
@@ -171,8 +280,32 @@ final class TrainViewController: ScreenViewController {
         }
     }
 
-    /// The empty state (DESIGN.md §1.5): the card the first Plan will occupy.
-    private static func emptyPlansCard() -> UIView {
+    // MARK: - Recent workouts
+
+    private func renderRecent() {
+        let recent: [WorkoutRecord]
+        do {
+            recent = try dependencies.store.recentWorkouts(limit: Self.recentLimit)
+        } catch {
+            Self.logger.error("Failed to read recent Workouts: \(error, privacy: .public)")
+            return
+        }
+        recentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        if recent.isEmpty {
+            recentStack.addArrangedSubview(Self.emptyCard(caption: "Finished workouts land here.", accessibilityLabel: "No workouts yet. Finished workouts land here."))
+        }
+        for workout in recent {
+            let card = WorkoutCardControl(workout: workout)
+            card.addAction(UIAction { [weak self] _ in
+                guard let self else { return }
+                navigationController?.pushViewController(WorkoutScreens.screen(for: workout, dependencies: dependencies), animated: true)
+            }, for: .touchUpInside)
+            recentStack.addArrangedSubview(card)
+        }
+    }
+
+    /// The empty state (DESIGN.md §1.5): the card the first record will occupy.
+    private static func emptyCard(caption text: String, accessibilityLabel: String) -> UIView {
         let card = CardView()
         let hero = UILabel()
         hero.text = "—"
@@ -180,7 +313,7 @@ final class TrainViewController: ScreenViewController {
         hero.textColor = UIColor.textTertiary
         hero.adjustsFontForContentSizeCategory = true
         let caption = UILabel()
-        caption.text = "Tap New plan to build your first plan."
+        caption.text = text
         caption.font = UIFont.label
         caption.textColor = UIColor.textSecondary
         caption.adjustsFontForContentSizeCategory = true
@@ -188,7 +321,7 @@ final class TrainViewController: ScreenViewController {
         card.contentStack.addArrangedSubview(hero)
         card.contentStack.addArrangedSubview(caption)
         card.isAccessibilityElement = true
-        card.accessibilityLabel = "No plans yet. Tap New plan to build your first plan."
+        card.accessibilityLabel = accessibilityLabel
         return card
     }
 
@@ -199,6 +332,7 @@ final class TrainViewController: ScreenViewController {
             Self.logger.error("Failed to restore Plan: \(error, privacy: .public)")
         }
         renderPlans()
+        renderStart()
     }
 
     // MARK: - Navigation

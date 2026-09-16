@@ -38,4 +38,33 @@ enum TrainText {
     static func count(_ count: Int, _ noun: String) -> String {
         "\(count) \(count == 1 ? noun : noun + "s")"
     }
+
+    // MARK: Workouts
+
+    /// "135 lbs × 5": a Logged Set as history shows it; `—` for the weight when none was lifted.
+    static func setLine(_ set: LoggedSetRecord, in unit: MassUnit) -> String {
+        "\(weight(set.kilograms, in: unit)) × \(set.reps)"
+    }
+
+    /// "Sep 10 · 3 exercises · 12 sets": what a Workout card says under its title.
+    static func caption(of workout: WorkoutRecord) -> String {
+        let sets = workout.exercises.reduce(0) { $0 + $1.sets.count }
+        return [dayText(workout.day), count(workout.exercises.count, "exercise"), count(sets, "set")].joined(separator: " · ")
+    }
+
+    /// "Sep 10".
+    static func dayText(_ day: Day) -> String {
+        day.start().formatted(.dateTime.month(.abbreviated).day())
+    }
+
+    /// "6:12 PM".
+    static func timeText(_ date: Date) -> String {
+        date.formatted(.dateTime.hour().minute())
+    }
+
+    /// "42 min" / "1 h 12 min": how long a Workout has run or ran.
+    static func duration(from start: Date, to end: Date) -> String {
+        let minutes = Swift.max(0, Int(end.timeIntervalSince(start) / 60))
+        return minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h \(minutes % 60) min"
+    }
 }

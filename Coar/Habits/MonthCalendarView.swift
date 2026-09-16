@@ -12,10 +12,18 @@ final class MonthCalendarView: UIView {
         var levels: [Day: Heatmap.Level]
         /// The first Day that can be tapped; nil when none can.
         var editableFrom: Day?
+        /// When set, only these Days (within the editable range) respond to a tap; the rest
+        /// read normally but are inert. Nil lets every editable Day respond.
+        var tappableDays: Set<Day>? = nil
 
+        /// In the editable range: from `editableFrom` up to today. Days outside it are muted.
         func isEditable(_ day: Day) -> Bool {
             guard let editableFrom else { return false }
             return day >= editableFrom && day <= today
+        }
+
+        func isTappable(_ day: Day) -> Bool {
+            isEditable(day) && (tappableDays?.contains(day) ?? true)
         }
     }
 
@@ -88,7 +96,7 @@ final class MonthCalendarView: UIView {
                 guard let model = self?.model else { return cell.configure(nil) }
                 cell.configure(.init(
                     day: day, level: day > model.today ? .future : model.levels[day] ?? .empty,
-                    isToday: day == model.today, isEditable: model.isEditable(day)
+                    isToday: day == model.today, isEditable: model.isEditable(day), isTappable: model.isTappable(day)
                 ))
             }
         }
@@ -169,10 +177,10 @@ final class MonthCalendarView: UIView {
 extension MonthCalendarView: UICollectionViewDelegate {
 
     /// Only Days from the first target up to today respond; the future and the time before
-    /// the Habit are inert (DESIGN.md §1.3).
+    /// the Habit are inert (DESIGN.md §1.3). An owner may narrow it further to a set of Days.
     func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         guard case .day(let day) = dataSource.itemIdentifier(for: indexPath), let model else { return false }
-        return model.isEditable(day)
+        return model.isTappable(day)
     }
 
     func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
@@ -194,7 +202,10 @@ private final class CalendarDayCell: UICollectionViewCell {
         let day: Day
         let level: Heatmap.Level
         let isToday: Bool
+        /// In range: drawn in full; out of range: muted.
         let isEditable: Bool
+        /// Responds to a tap.
+        let isTappable: Bool
     }
 
     private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 6)
@@ -267,7 +278,7 @@ private final class CalendarDayCell: UICollectionViewCell {
         label.font = state.isToday ? Self.todayFont : Self.dayFont
         bloomView.setVisible(isDone, animated: true)
         isAccessibilityElement = true
-        accessibilityTraits = state.isEditable ? .button : .staticText
+        accessibilityTraits = state.isTappable ? .button : .staticText
         accessibilityLabel = state.day.start().formatted(.dateTime.month(.wide).day())
         accessibilityValue = isFuture ? "" : state.level.accessibilityValue
     }

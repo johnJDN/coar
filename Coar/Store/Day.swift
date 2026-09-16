@@ -25,6 +25,9 @@ struct Day: Hashable, Comparable, CustomStringConvertible {
         Day(Date(), in: calendar)
     }
 
+    /// Before any record: the start of a range that means "everything so far".
+    static let distantPast = Day(year: 1, month: 1, day: 1)
+
     /// The first instant of this Day in `calendar`'s time zone, for anything that needs a
     /// `Date` (a chart axis, a HealthKit sample). Display only: the Day itself is the fact.
     func start(in calendar: Calendar = .current) -> Date {
