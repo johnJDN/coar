@@ -21,7 +21,6 @@ struct LogFoodItemForm: View {
     let onChange: (Draft) -> Void
 
     @State private var draft: Draft
-    @FocusState private var quantityFocused: Bool
 
     init(servings: [ServingRecord], draft: Draft, onChange: @escaping (Draft) -> Void) {
         self.servings = servings
@@ -58,21 +57,8 @@ struct LogFoodItemForm: View {
             }
 
             Section {
-                HStack(spacing: Metrics.spaceInner) {
-                    Text("Quantity").foregroundStyle(Color.textPrimary)
-                    Spacer()
-                    TextField("—", value: $draft.typedQuantity, format: .number)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .font(Font.metricNumber)
-                        .foregroundStyle(Color.accentGreen)
-                        .focused($quantityFocused)
-                        .accessibilityLabel("Quantity")
-                    if let serving {
-                        Text("× \(serving.name)").foregroundStyle(Color.textSecondary)
-                    }
-                }
-                .formRow()
+                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name, autofocus: true)
+                    .formRow()
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)
                     .formRow()
@@ -98,7 +84,6 @@ struct LogFoodItemForm: View {
             guard !servings.contains(where: { $0.id == draft.servingID }), let fallback = servings.first(where: \.isDefault) ?? servings.first else { return }
             draft.servingID = fallback.id
         }
-        .onAppear { quantityFocused = true }
     }
 }
 

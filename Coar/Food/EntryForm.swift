@@ -14,7 +14,7 @@ struct EntryForm: View {
 
     @State private var draft: EntryDraft
 
-    init(draft: EntryDraft, servingName: String, components: [EntryComponentRecord] = [], onChange: @escaping (EntryDraft) -> Void, onDelete: @escaping () -> Void) {
+    init(draft: EntryDraft, servingName: String, components: [EntryComponentRecord], onChange: @escaping (EntryDraft) -> Void, onDelete: @escaping () -> Void) {
         self.servingName = servingName
         self.components = components
         self.onChange = onChange
@@ -25,18 +25,8 @@ struct EntryForm: View {
     var body: some View {
         Form {
             Section {
-                HStack(spacing: Metrics.spaceInner) {
-                    Text("Quantity").foregroundStyle(Color.textPrimary)
-                    Spacer()
-                    TextField("—", value: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }), format: .number)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .font(Font.metricNumber)
-                        .foregroundStyle(Color.accentGreen)
-                        .accessibilityLabel("Quantity")
-                    Text("× \(servingName)").foregroundStyle(Color.textSecondary)
-                }
-                .formRow()
+                QuantityRow(quantity: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }), unitName: servingName)
+                    .formRow()
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)
                     .formRow()
@@ -47,7 +37,7 @@ struct EntryForm: View {
             if !components.isEmpty {
                 Section {
                     ForEach(Array(components.enumerated()), id: \.offset) { _, line in
-                        BreakdownRow(name: line.name, servingName: line.servingName, quantity: line.quantity, macros: line.macros, multiplier: draft.quantity ?? 1)
+                        BreakdownRow(line: line, multiplier: draft.quantity ?? 1)
                             .formRow()
                     }
                 } header: {

@@ -87,7 +87,8 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [ ] Tap the meal Entry on the timeline: the detail has a "Made of" section between the quantity and the macros; change 1 → 2: both the lines and the macros double; overtype a macro: the lines stay; Save; reopen the meal from the sheet: it is unchanged.
 - [ ] Edit a food's serving macros after logging a meal that uses it: the meal's subtitle in the Meals segment changes; the Entry already logged does not.
 - [ ] Long-press a meal row → Edit: rename, change a line's serving and quantity, Save; Long-press → Archive: it leaves the list; type its name in the filter: dimmed "Tap to restore"; Restore brings it back; the log page's `…` menu offers the same Edit / Archive.
-- [ ] Remove, from a food, a serving that a meal uses: the meal editor shows "Serving removed · tap to pick another" in coral and Save stays disabled until you pick one.
+- [ ] Remove, from a food, a serving that a meal uses: in the Meals segment the meal's square `+` is disabled; its log page's Add is disabled and the footer says to edit the meal; the editor shows "Serving removed · tap to pick another" in coral and Save stays disabled until you pick one.
+- [ ] Log an Entry while the Food tab is visible (from the sheet): the summary numbers cross-dissolve and the bars slide rather than jump.
 - [ ] Light mode, log page and Entry detail, "Made of" section: is there a hairline gap between the two rows? (seen in a simulator render; the other sections show none.)
 - [ ] Dynamic Type: the summary row's numbers shrink to fit rather than wrap; the meal editor rows, the picker, the line form and the log page scale without clipping.
 - [?] A Meal Entry's Serving name is "meal" ("0.5 × meal" on the card and detail).
@@ -96,7 +97,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A macro whose Target is 0 shows `—` and no fill for that bar only.
 - [?] Summary numbers are whole with grouping and no units.
 - [?] The breakdown is stored for one of the meal and scaled on screen by the quantity; overtyping a macro makes the breakdown and totals disagree.
-- [?] A line whose serving was removed stays with zero macros until repicked; a meal logged in that state carries the line with `—`.
+- [?] A line whose serving was removed stays in the meal with zero macros until repicked, and the meal cannot be logged until then.
 - [?] Meals list by name; lines reorder by drag.
 - [?] The meal editor's food picker has no "New food" action.
 - [?] A new meal goes straight to its log page.

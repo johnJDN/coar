@@ -31,6 +31,7 @@ final class FoodItemEditorViewController: UIViewController {
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
+    private var hasAppeared = false
 
     init(dependencies: AppDependencies, mode: Mode, onSaved: @escaping (FoodItemRecord) -> Void) {
         self.dependencies = dependencies
@@ -61,9 +62,12 @@ final class FoodItemEditorViewController: UIViewController {
         render()
     }
 
+    /// A new Food Item starts in the name field, once; popping back from the Serving form
+    /// leaves the keyboard down.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if case .create = mode, draft.servings.isEmpty, let cell = nameCell() {
+        defer { hasAppeared = true }
+        if !hasAppeared, case .create = mode, let cell = nameCell() {
             cell.field.becomeFirstResponder()
         }
     }

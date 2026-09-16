@@ -74,10 +74,16 @@ final class MacroSummaryView: UIView {
         @available(*, unavailable)
         required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+        /// Numbers cross-dissolve and the bar springs (DESIGN.md §9) when a change lands on
+        /// screen; both are set plainly on first display.
         func configure(with model: MacroSummary.Bar, animated: Bool) {
             let text = NSMutableAttributedString(string: model.consumed, attributes: [.foregroundColor: UIColor.textPrimary])
             text.append(NSAttributedString(string: " / \(model.target)", attributes: [.foregroundColor: model.fraction == nil ? UIColor.textTertiary : UIColor.textSecondary]))
-            valueLabel.attributedText = text
+            if animated, valueLabel.attributedText?.string != text.string {
+                UIView.transition(with: valueLabel, duration: 0.2, options: .transitionCrossDissolve) { self.valueLabel.attributedText = text }
+            } else {
+                valueLabel.attributedText = text
+            }
             bar.setFraction(model.fraction ?? 0, animated: animated)
             let unit = macro.unit
             accessibilityLabel = model.fraction == nil

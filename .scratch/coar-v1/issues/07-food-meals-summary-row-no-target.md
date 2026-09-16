@@ -68,3 +68,21 @@
   just "New meal". (12) The summary row is computed from the Day's Entries on every render
   and reads the Target in force on the selected Day, so paging to a past Day judges it
   against the Target that applied then.
+- 2026-09-15 (agent, after /code-review): the summary row's numbers now cross-dissolve while
+  the bar springs (§9; they popped); a Meal with a line whose Serving was removed can no
+  longer be logged silently short: the sheet's square "+" and the log page's Add are
+  disabled and the log page's footer says to edit the Meal (judgement (7) above is
+  superseded on that point; the Entry never carries a `—` line); the Food Item and Meal
+  editors take the keyboard in the name field once, not again on every pop back from a
+  child form. Duplication pulled out: `Store.reconcile(_:keeping:id:)` (the id-sync /
+  latest-modified-wins loop the Serving and Meal-line writers both had),
+  `Store.makeEntry(...)` (both `logEntry`s), `Array.reorder(_:)` (both drafts),
+  `QuantityRow` (the four forms' quantity field), `BreakdownRow(line:multiplier:)` takes an
+  `EntryComponentRecord` (with `init(_ line: MealComponentRecord)`),
+  `FoodItemRecord.serving(_:)`, `MealDraft.macros(in:)`; the "meal" Serving-name sentinel
+  moved to `EntryRecord.mealServingName` since the store writes it; the filter overloads and
+  the unused default parameter are gone. Left as is: the Meal editor has no Archive of its
+  own (Archive lives on the sheet row's menu and the log page's `…`, as for Food Items);
+  `fetchFoodItem` / `servingObjects` are internal, documented as for the `Store+<Domain>`
+  extensions only; the Food tab still skips the whole render when a read throws; the two
+  `render()` branches in the sheet share a shape but not a type. 119 tests pass.

@@ -123,7 +123,10 @@ final class AddEntryViewController: UIViewController {
             content.text = meal.name
             content.secondaryText = FoodText.macroLine(meal.macros)
             cell.contentConfiguration = content
-            cell.accessories = [.customView(configuration: .init(customView: makeQuickAddButton(name: meal.name) { [weak self] in self?.quickAddMeal(id) }, placement: .trailing()))]
+            // A Meal with a line whose Serving is gone would undercount: the log page says why.
+            let quickAdd = makeQuickAddButton(name: meal.name) { [weak self] in self?.quickAddMeal(id) }
+            quickAdd.isEnabled = meal.isLoggable
+            cell.accessories = [.customView(configuration: .init(customView: quickAdd, placement: .trailing()))]
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let archivedCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { [weak self] cell, _, item in
@@ -204,8 +207,8 @@ final class AddEntryViewController: UIViewController {
             let active: [FoodItemRecord]
             let archived: [FoodItemRecord]
             do {
-                active = try dependencies.store.foodItems().filter(matchesFilter)
-                archived = filterText.isEmpty ? [] : try dependencies.store.archivedFoodItems().filter(matchesFilter)
+                active = try dependencies.store.foodItems().filter { matchesFilter($0.name) }
+                archived = filterText.isEmpty ? [] : try dependencies.store.archivedFoodItems().filter { matchesFilter($0.name) }
             } catch {
                 Self.logger.error("Failed to read Food Items: \(error, privacy: .public)")
                 return
@@ -225,8 +228,8 @@ final class AddEntryViewController: UIViewController {
             let active: [MealRecord]
             let archived: [MealRecord]
             do {
-                active = try dependencies.store.meals().filter(matchesFilter)
-                archived = filterText.isEmpty ? [] : try dependencies.store.archivedMeals().filter(matchesFilter)
+                active = try dependencies.store.meals().filter { matchesFilter($0.name) }
+                archived = filterText.isEmpty ? [] : try dependencies.store.archivedMeals().filter { matchesFilter($0.name) }
             } catch {
                 Self.logger.error("Failed to read Meals: \(error, privacy: .public)")
                 return
@@ -244,14 +247,6 @@ final class AddEntryViewController: UIViewController {
             snapshot.appendItems([.newMeal], toSection: .actions)
         }
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
-    }
-
-    private func matchesFilter(_ foodItem: FoodItemRecord) -> Bool {
-        matchesFilter(foodItem.name)
-    }
-
-    private func matchesFilter(_ meal: MealRecord) -> Bool {
-        matchesFilter(meal.name)
     }
 
     private func matchesFilter(_ name: String) -> Bool {
@@ -323,6 +318,7 @@ final class AddEntryViewController: UIViewController {
     // MARK: - Meals
 
     private func quickAddMeal(_ id: MealRecord.ID) {
+        guard meals[id]?.isLoggable == true else { return }
         do {
             try dependencies.store.logEntry(meal: id, quantity: 1, at: instant)
             onLogged()

@@ -63,14 +63,7 @@ extension Store {
         in calendar: Calendar = .current
     ) throws -> EntryRecord {
         guard let meal = try fetchMeal(mealID), let record = MealRecord(meal) else { throw NotFound(what: "Meal") }
-        let entry = Entry(context: context)
-        entry.id = UUID()
-        entry.loggedAt = instant
-        entry.day = Day(instant, in: calendar).rawValue
-        entry.name = record.name
-        entry.servingName = FoodText.mealServingName
-        entry.quantity = quantity
-        entry.macros = record.macros.scaled(by: quantity)
+        let entry = makeEntry(name: record.name, servingName: EntryRecord.mealServingName, quantity: quantity, macros: record.macros.scaled(by: quantity), at: instant, in: calendar)
         entry.meal = meal
         for (position, line) in record.components.enumerated() {
             let component = EntryComponent(context: context)
@@ -89,20 +82,7 @@ extension Store {
 
     private func write(name: String, components drafts: [MealComponentDraft], to meal: Meal) throws {
         meal.name = name
-        let kept = Set(drafts.map(\.id))
-        var existing: [MealComponentRecord.ID: MealComponent] = [:]
-        for object in meal.componentObjects {
-            // A line without an id, or one the drafts leave out, is gone; should an id be held
-            // twice (two devices editing before sync), the latest-modified one is kept.
-            guard let id = object.id, kept.contains(id) else { context.delete(object); continue }
-            if let other = existing[id] {
-                let keep = (object.modifiedAt ?? .distantPast) >= (other.modifiedAt ?? .distantPast) ? object : other
-                context.delete(keep === object ? other : object)
-                existing[id] = keep
-            } else {
-                existing[id] = object
-            }
-        }
+        let existing = reconcile(meal.componentObjects, keeping: Set(drafts.map(\.id)), id: \.id)
         for (position, draft) in drafts.enumerated() {
             let component = existing[draft.id] ?? MealComponent(context: context)
             component.id = draft.id

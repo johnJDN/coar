@@ -29,8 +29,15 @@ struct MealDraft: Equatable {
 
     /// Puts the lines in the given order; ids not listed keep their relative order after.
     mutating func reorder(_ ids: [MealComponentDraft.ID]) {
-        let position = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
-        components.sort { (position[$0.id] ?? ids.count) < (position[$1.id] ?? ids.count) }
+        components.reorder(ids)
+    }
+
+    /// The Meal's macros as drafted, read from the Food Items the lines point at; a line
+    /// whose Serving is gone adds nothing.
+    func macros(in foodItems: [FoodItemRecord.ID: FoodItemRecord]) -> Macros {
+        Macros.sum(components.compactMap { line in
+            foodItems[line.foodItemID]?.serving(line.servingID)?.macros.scaled(by: line.quantity)
+        })
     }
 }
 

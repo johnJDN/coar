@@ -39,12 +39,19 @@ struct FoodItemDraft: Equatable {
 
     /// Puts the Servings in the given order; ids not listed keep their relative order after.
     mutating func reorder(_ ids: [ServingDraft.ID]) {
-        let position = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
-        servings.sort { (position[$0.id] ?? ids.count) < (position[$1.id] ?? ids.count) }
+        servings.reorder(ids)
     }
 
     private mutating func settleDefault() {
         guard !servings.isEmpty, !servings.contains(where: \.isDefault) else { return }
         servings[0].isDefault = true
+    }
+}
+
+extension Array where Element: Identifiable {
+    /// Puts the elements in the given id order; ids not listed keep their relative order after.
+    mutating func reorder(_ ids: [Element.ID]) {
+        let position = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
+        sort { (position[$0.id] ?? ids.count) < (position[$1.id] ?? ids.count) }
     }
 }

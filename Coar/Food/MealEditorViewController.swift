@@ -34,6 +34,7 @@ final class MealEditorViewController: UIViewController {
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
+    private var hasAppeared = false
 
     init(dependencies: AppDependencies, mode: Mode, onSaved: @escaping (MealRecord) -> Void) {
         self.dependencies = dependencies
@@ -64,9 +65,12 @@ final class MealEditorViewController: UIViewController {
         render()
     }
 
+    /// A new Meal starts in the name field, once; popping back from the picker leaves the
+    /// keyboard down.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if case .create = mode, draft.components.isEmpty, let cell = nameCell() {
+        defer { hasAppeared = true }
+        if !hasAppeared, case .create = mode, let cell = nameCell() {
             cell.field.becomeFirstResponder()
         }
     }
@@ -117,7 +121,7 @@ final class MealEditorViewController: UIViewController {
         let componentCell = UICollectionView.CellRegistration<UICollectionViewListCell, MealComponentDraft.ID> { [weak self] cell, _, id in
             guard let self, let component = draft.components.first(where: { $0.id == id }) else { return }
             let foodItem = foodItems[component.foodItemID]
-            let serving = foodItem?.servings.first { $0.id == component.servingID }
+            let serving = foodItem?.serving(component.servingID)
             var content = UIListContentConfiguration.listRow()
             content.text = foodItem?.name ?? "—"
             if let serving {
@@ -143,7 +147,7 @@ final class MealEditorViewController: UIViewController {
         }
         let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, _ in
             var content = UIListContentConfiguration.groupedHeader()
-            content.text = self.map { "Foods · \(FoodText.calories($0.draftMacros))" } ?? "Foods"
+            content.text = self.map { "Foods · \(FoodText.calories($0.draft.macros(in: $0.foodItems)))" } ?? "Foods"
             view.contentConfiguration = content
         }
 
@@ -171,13 +175,6 @@ final class MealEditorViewController: UIViewController {
             }
             self?.draft.reorder(ids)
         }
-    }
-
-    /// The Meal's macros as drafted: lines whose Serving is gone add nothing.
-    private var draftMacros: Macros {
-        Macros.sum(draft.components.compactMap { component in
-            foodItems[component.foodItemID]?.servings.first { $0.id == component.servingID }?.macros.scaled(by: component.quantity)
-        })
     }
 
     private func nameCell() -> TextFieldCell? {

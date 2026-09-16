@@ -13,6 +13,7 @@ final class LogMealViewController: UIHostingController<LogMealForm> {
     private let mealID: MealRecord.ID
     private let onLogged: () -> Void
     private var draft: LogMealForm.Draft
+    private var isLoggable = false
     private let addItem = UIBarButtonItem()
 
     init(dependencies: AppDependencies, mealID: MealRecord.ID, at instant: Date, onLogged: @escaping () -> Void) {
@@ -54,6 +55,7 @@ final class LogMealViewController: UIHostingController<LogMealForm> {
                 return
             }
             title = meal.name
+            isLoggable = meal.isLoggable
             rootView = LogMealForm(meal: meal, draft: draft) { [weak self] in self?.draftChanged($0) }
             draftChanged(draft)
         } catch {
@@ -63,13 +65,13 @@ final class LogMealViewController: UIHostingController<LogMealForm> {
 
     private func draftChanged(_ draft: LogMealForm.Draft) {
         self.draft = draft
-        addItem.isEnabled = draft.quantity != nil
+        addItem.isEnabled = draft.quantity != nil && isLoggable
     }
 
     // MARK: - Actions
 
     private func add() {
-        guard let quantity = draft.quantity else { return }
+        guard let quantity = draft.quantity, isLoggable else { return }
         do {
             try dependencies.store.logEntry(meal: mealID, quantity: quantity, at: draft.loggedAt)
             onLogged()

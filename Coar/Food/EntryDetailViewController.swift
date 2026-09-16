@@ -31,7 +31,7 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         }
         original = EntryDraft(entry)
         draft = original
-        super.init(rootView: EntryForm(draft: original, servingName: entry.servingName, onChange: { _ in }, onDelete: {}))
+        super.init(rootView: EntryForm(draft: original, servingName: entry.servingName, components: entry.components, onChange: { _ in }, onDelete: {}))
         rootView = EntryForm(
             draft: original,
             servingName: entry.servingName,

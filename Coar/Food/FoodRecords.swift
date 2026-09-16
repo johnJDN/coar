@@ -14,6 +14,10 @@ struct FoodItemRecord: Hashable, Identifiable {
     var defaultServing: ServingRecord? {
         servings.first { $0.isDefault } ?? servings.first
     }
+
+    func serving(_ id: ServingRecord.ID?) -> ServingRecord? {
+        servings.first { $0.id == id }
+    }
 }
 
 /// A Serving as read through the façade (CONTEXT.md "Serving"): a named portion with the
@@ -62,6 +66,11 @@ struct MealRecord: Hashable, Identifiable {
     var macros: Macros {
         Macros.sum(components.map(\.macros))
     }
+
+    /// Every line still has its Serving, so logging the Meal counts all of it.
+    var isLoggable: Bool {
+        components.allSatisfy { $0.servingID != nil }
+    }
 }
 
 /// One line of a Meal: a Food Item, one of its Servings, and how many of it.
@@ -109,6 +118,9 @@ struct MealComponentDraft: Hashable, Identifiable {
 /// the Food Item or Meal it came from, for re-logging only. A Meal Entry also keeps its
 /// component breakdown.
 struct EntryRecord: Hashable, Identifiable {
+    /// What a Meal Entry carries as its Serving name: "0.5 × meal".
+    static let mealServingName = "meal"
+
     let id: UUID
     let loggedAt: Date
     let day: Day
@@ -131,4 +143,11 @@ struct EntryComponentRecord: Hashable {
     let servingName: String
     let quantity: Double
     let macros: Macros
+}
+
+extension EntryComponentRecord {
+    /// The line as an Entry would snapshot it now.
+    init(_ line: MealComponentRecord) {
+        self.init(name: line.name, servingName: line.servingName, quantity: line.quantity, macros: line.macros)
+    }
 }

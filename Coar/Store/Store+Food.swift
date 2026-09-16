@@ -70,18 +70,25 @@ extension Store {
         in calendar: Calendar = .current
     ) throws -> EntryRecord {
         guard let item = try fetchFoodItem(foodItemID), let record = FoodItemRecord(item) else { throw NotFound(what: "Food Item") }
-        guard let serving = record.servings.first(where: { $0.id == servingID }) else { throw NotFound(what: "Serving") }
+        guard let serving = record.serving(servingID) else { throw NotFound(what: "Serving") }
+        let entry = makeEntry(name: record.name, servingName: serving.name, quantity: quantity, macros: serving.macros.scaled(by: quantity), at: instant, in: calendar)
+        entry.foodItem = item
+        try save()
+        return EntryRecord(entry)!
+    }
+
+    /// A new Entry with its snapshot filled in (ADR 0003) and its Day fixed (ADR 0005); the
+    /// caller sets the reference and saves. For the `Store+<Domain>` extensions only.
+    func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, at instant: Date, in calendar: Calendar) -> Entry {
         let entry = Entry(context: context)
         entry.id = UUID()
         entry.loggedAt = instant
         entry.day = Day(instant, in: calendar).rawValue
-        entry.name = record.name
-        entry.servingName = serving.name
+        entry.name = name
+        entry.servingName = servingName
         entry.quantity = quantity
-        entry.macros = serving.macros.scaled(by: quantity)
-        entry.foodItem = item
-        try save()
-        return EntryRecord(entry)!
+        entry.macros = macros
+        return entry
     }
 
     /// The Day's Entries, earliest first.
@@ -120,20 +127,7 @@ extension Store {
 
     private func write(name: String, servings drafts: [ServingDraft], to item: FoodItem) throws {
         item.name = name
-        let kept = Set(drafts.map(\.id))
-        var existing: [ServingRecord.ID: Serving] = [:]
-        for object in item.servingObjects {
-            // A Serving without an id, or one the drafts leave out, is gone; should an id be
-            // held twice (two devices editing before sync), the latest-modified one is kept.
-            guard let id = object.id, kept.contains(id) else { context.delete(object); continue }
-            if let other = existing[id] {
-                let keep = (object.modifiedAt ?? .distantPast) >= (other.modifiedAt ?? .distantPast) ? object : other
-                context.delete(keep === object ? other : object)
-                existing[id] = keep
-            } else {
-                existing[id] = object
-            }
-        }
+        let existing = reconcile(item.servingObjects, keeping: Set(drafts.map(\.id)), id: \.id)
         let defaultID = drafts.first { $0.isDefault }?.id ?? drafts.first?.id
         for (position, draft) in drafts.enumerated() {
             let serving = existing[draft.id] ?? Serving(context: context)
@@ -148,6 +142,25 @@ extension Store {
         try save()
     }
 
+    /// Syncs a parent's child objects with the drafts about to be written: a child without
+    /// an id, or one whose id `kept` leaves out, is deleted; should an id be held twice (two
+    /// devices editing before sync), the latest-modified one is kept. Returns the survivors
+    /// by id, for the drafts to update in place. For the `Store+<Domain>` extensions only.
+    func reconcile<Child: NSManagedObject & ModifiedAtStamped>(_ children: [Child], keeping kept: Set<UUID>, id: KeyPath<Child, UUID?>) -> [UUID: Child] {
+        var existing: [UUID: Child] = [:]
+        for object in children {
+            guard let objectID = object[keyPath: id], kept.contains(objectID) else { context.delete(object); continue }
+            if let other = existing[objectID] {
+                let keep = (object.modifiedAt ?? .distantPast) >= (other.modifiedAt ?? .distantPast) ? object : other
+                context.delete(keep === object ? other : object)
+                existing[objectID] = keep
+            } else {
+                existing[objectID] = object
+            }
+        }
+        return existing
+    }
+
     // MARK: - Fetches
 
     private func fetchFoodItems(archived: Bool) throws -> [FoodItemRecord] {
@@ -157,6 +170,7 @@ extension Store {
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
+    /// For the `Store+<Domain>` extensions only.
     func fetchFoodItem(_ id: FoodItemRecord.ID) throws -> FoodItem? {
         let request = FoodItem.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -188,6 +202,7 @@ private extension FoodItemRecord {
 }
 
 extension FoodItem {
+    /// For the `Store+<Domain>` extensions only.
     var servingObjects: [Serving] {
         Array(servings as? Set<Serving> ?? [])
     }

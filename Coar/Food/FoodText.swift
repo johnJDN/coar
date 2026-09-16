@@ -19,9 +19,6 @@ enum FoodText {
         return value
     }
 
-    /// What a Meal Entry carries as its Serving name: "0.5 × meal".
-    static let mealServingName = "meal"
-
     /// "140 kcal".
     static func calories(_ macros: Macros) -> String {
         "\(macros.calories.formatted(.number.precision(.fractionLength(0)))) kcal"

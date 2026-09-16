@@ -19,7 +19,7 @@ final class MealComponentFormViewController: UIHostingController<MealComponentFo
         draft = MealComponentForm.Draft(
             id: component?.id ?? UUID(),
             foodItemID: foodItem.id,
-            servingID: servings.contains { $0.id == servingID } ? servingID : foodItem.defaultServing?.id,
+            servingID: foodItem.serving(servingID)?.id ?? foodItem.defaultServing?.id,
             typedQuantity: component?.quantity ?? 1
         )
         self.onSave = onSave

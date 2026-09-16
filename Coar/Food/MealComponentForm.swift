@@ -28,7 +28,6 @@ struct MealComponentForm: View {
     let onChange: (Draft) -> Void
 
     @State private var draft: Draft
-    @FocusState private var quantityFocused: Bool
 
     init(servings: [ServingRecord], draft: Draft, onChange: @escaping (Draft) -> Void) {
         self.servings = servings
@@ -64,21 +63,8 @@ struct MealComponentForm: View {
             }
 
             Section {
-                HStack(spacing: Metrics.spaceInner) {
-                    Text("Quantity").foregroundStyle(Color.textPrimary)
-                    Spacer()
-                    TextField("—", value: $draft.typedQuantity, format: .number)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                        .font(Font.metricNumber)
-                        .foregroundStyle(Color.accentGreen)
-                        .focused($quantityFocused)
-                        .accessibilityLabel("Quantity")
-                    if let serving {
-                        Text("× \(serving.name)").foregroundStyle(Color.textSecondary)
-                    }
-                }
-                .formRow()
+                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name, autofocus: true)
+                    .formRow()
             } footer: {
                 Text(preview.map { "In the meal: \(FoodText.macroLine($0))" } ?? "Pick a serving and a quantity.")
             }
@@ -87,7 +73,6 @@ struct MealComponentForm: View {
         .scrollContentBackground(.hidden)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
-        .onAppear { quantityFocused = true }
     }
 }
 
