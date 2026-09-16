@@ -191,6 +191,7 @@ extension MacroAttributes {
 extension MacroTarget: MacroAttributes {}
 extension Serving: MacroAttributes {}
 extension Entry: MacroAttributes {}
+extension EntryComponent: MacroAttributes {}
 
 // MARK: - modifiedAt
 

@@ -19,9 +19,17 @@ enum FoodText {
         return value
     }
 
+    /// What a Meal Entry carries as its Serving name: "0.5 × meal".
+    static let mealServingName = "meal"
+
     /// "140 kcal".
     static func calories(_ macros: Macros) -> String {
         "\(macros.calories.formatted(.number.precision(.fractionLength(0)))) kcal"
+    }
+
+    /// "140 kcal · P 12 · F 10 · C 0": the four macros on one line.
+    static func macroLine(_ macros: Macros) -> String {
+        ([calories(macros)] + [Macro.protein, .fat, .carbs].map { "\($0.abbreviation) \(amount(macros[$0]))" }).joined(separator: " · ")
     }
 
     /// "70 kcal • 1 egg": a Serving's line in the picker (DESIGN.md §7 `ListRow`).

@@ -1,9 +1,10 @@
 import UIKit
 import os
 
-/// The Food tab (DESIGN.md §11): the week date strip, then the selected Day's hourly
-/// timeline with a "+" per hour and its Entries at their time. Reads through the façade on
-/// every appearance, after every day change, and after every write from a sheet.
+/// The Food tab (DESIGN.md §11): the week date strip, the macro summary row against the
+/// Target in force on the selected Day, then that Day's hourly timeline with a "+" per hour
+/// and its Entries at their time. Reads through the façade on every appearance, after every
+/// day change, and after every write from a sheet.
 final class FoodViewController: UIViewController {
 
     private static let logger = Logger(category: "Food")
@@ -12,6 +13,7 @@ final class FoodViewController: UIViewController {
     private var today = Day.today()
     private var selectedDay: Day
     private let strip: WeekStripView
+    private let summary = MacroSummaryView()
     private var timeObserver: NSObjectProtocol?
     private var timeline: UICollectionView!
     /// Sections are the 24 hours of the Day; items are the Entries in each.
@@ -50,13 +52,18 @@ final class FoodViewController: UIViewController {
         strip.onSelect = { [weak self] day in self?.select(day) }
         strip.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(strip)
+        summary.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(summary)
 
         configureTimeline()
         NSLayoutConstraint.activate([
             strip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             strip.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             strip.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            timeline.topAnchor.constraint(equalTo: strip.bottomAnchor),
+            summary.topAnchor.constraint(equalTo: strip.bottomAnchor),
+            summary.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            summary.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            timeline.topAnchor.constraint(equalTo: summary.bottomAnchor),
             timeline.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             timeline.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             timeline.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -133,12 +140,15 @@ final class FoodViewController: UIViewController {
 
     private func render() {
         let dayEntries: [EntryRecord]
+        let target: Macros?
         do {
             dayEntries = try dependencies.store.entries(on: selectedDay)
+            target = try dependencies.store.target(inForceOn: selectedDay)?.macros
         } catch {
-            Self.logger.error("Failed to read Entries: \(error, privacy: .public)")
+            Self.logger.error("Failed to read the Day: \(error, privacy: .public)")
             return
         }
+        summary.configure(with: MacroSummary(consumed: Macros.sum(dayEntries.map(\.macros)), target: target))
         entries = Dictionary(uniqueKeysWithValues: dayEntries.map { ($0.id, $0) })
         let byHour = Dictionary(grouping: dayEntries) { Calendar.current.component(.hour, from: $0.loggedAt) }
 

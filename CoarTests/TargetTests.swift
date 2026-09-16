@@ -75,4 +75,31 @@ final class TargetTests: XCTestCase {
         XCTAssertEqual(try store.target(inForceOn: sep13)?.macros, corrected)
         XCTAssertEqual(try store.target(inForceOn: sep12)?.macros, cut)
     }
+
+    // MARK: The Food summary row
+
+    func test_aDayBeforeTheFirstTarget_hasNoTarget_andTheSummaryRowRendersItsEmptyForm() throws {
+        let store = Store.inMemory()
+        try store.setTarget(cut, effectiveFrom: sep11)
+        let eggs = try store.createFoodItem(name: "Eggs", servings: [ServingDraft(name: "1 egg", macros: Macros(calories: 70, protein: 6, fat: 5, carbs: 0))])
+        try store.logEntry(foodItem: eggs.id, serving: eggs.servings[0].id, quantity: 2, at: sep10.start().addingTimeInterval(8 * 3600))
+        try store.logEntry(foodItem: eggs.id, serving: eggs.servings[0].id, quantity: 1, at: sep10.start().addingTimeInterval(13 * 3600))
+
+        XCTAssertNil(try store.target(inForceOn: sep10))
+        let before = MacroSummary(
+            consumed: Macros.sum(try store.entries(on: sep10).map(\.macros)),
+            target: try store.target(inForceOn: sep10)?.macros
+        )
+        XCTAssertEqual(before.bars[0].consumed, "210")
+        XCTAssertEqual(before.bars.map(\.target), ["—", "—", "—", "—"])
+        XCTAssertEqual(before.bars.map(\.fraction), [nil, nil, nil, nil])
+
+        let after = MacroSummary(
+            consumed: Macros.sum(try store.entries(on: sep11).map(\.macros)),
+            target: try store.target(inForceOn: sep11)?.macros
+        )
+        XCTAssertEqual(after.bars[0].consumed, "0")
+        XCTAssertEqual(after.bars[0].target, "2,100")
+        XCTAssertEqual(after.bars[0].fraction, 0)
+    }
 }

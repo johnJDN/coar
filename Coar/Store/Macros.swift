@@ -55,6 +55,13 @@ extension Macros {
         }
     }
 
+    /// The four values added up; zero for nothing.
+    static func sum(_ all: [Macros]) -> Macros {
+        all.reduce(.zero) { total, next in
+            Macros(calories: total.calories + next.calories, protein: total.protein + next.protein, fat: total.fat + next.fat, carbs: total.carbs + next.carbs)
+        }
+    }
+
     /// The macros for `quantity` of something whose macros for one are `self`.
     func scaled(by quantity: Double) -> Macros {
         Macros(calories: calories * quantity, protein: protein * quantity, fat: fat * quantity, carbs: carbs * quantity)

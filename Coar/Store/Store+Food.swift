@@ -157,7 +157,7 @@ extension Store {
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
-    private func fetchFoodItem(_ id: FoodItemRecord.ID) throws -> FoodItem? {
+    func fetchFoodItem(_ id: FoodItemRecord.ID) throws -> FoodItem? {
         let request = FoodItem.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
@@ -187,7 +187,7 @@ private extension FoodItemRecord {
     }
 }
 
-private extension FoodItem {
+extension FoodItem {
     var servingObjects: [Serving] {
         Array(servings as? Set<Serving> ?? [])
     }
@@ -212,7 +212,16 @@ private extension FoodItem {
     }
 }
 
-private extension EntryRecord {
+private extension Entry {
+    /// The breakdown in the order it was logged.
+    var componentRecords: [EntryComponentRecord] {
+        (components as? Set<EntryComponent> ?? [])
+            .sorted { ($0.sortOrder, $0.modifiedAt ?? .distantPast) < ($1.sortOrder, $1.modifiedAt ?? .distantPast) }
+            .map { EntryComponentRecord(name: $0.name ?? "", servingName: $0.servingName ?? "", quantity: $0.quantity, macros: $0.macros) }
+    }
+}
+
+extension EntryRecord {
     init?(_ object: Entry) {
         guard let id = object.id, let loggedAt = object.loggedAt, let raw = object.day, let day = Day(rawValue: raw),
               let modifiedAt = object.modifiedAt
@@ -226,6 +235,8 @@ private extension EntryRecord {
             quantity: object.quantity,
             macros: object.macros,
             foodItemID: object.foodItem?.id,
+            mealID: object.meal?.id,
+            components: object.componentRecords,
             modifiedAt: modifiedAt
         )
     }

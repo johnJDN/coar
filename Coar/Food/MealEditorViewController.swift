@@ -1,51 +1,54 @@
 import UIKit
 import os
 
-/// The Food Item editor, pushed inside the "+" sheet: the name, then the Servings as
-/// reorderable rows (drag the handle; swipe to delete; tap to edit) and an Add serving row.
-/// Save creates or updates the Food Item through the façade; Entries logged before keep their
-/// own copy of everything (ADR 0003).
-final class FoodItemEditorViewController: UIViewController {
+/// The Meal editor, pushed inside the "+" sheet: the name, then the lines as reorderable
+/// rows (drag the handle; swipe to delete; tap to change the Serving or quantity) and an
+/// Add food row that picks a Food Item from the catalogue. Save creates or updates the Meal
+/// through the façade; Entries logged before keep their own copy of everything (ADR 0003).
+final class MealEditorViewController: UIViewController {
 
     enum Mode {
         case create(name: String)
-        case edit(FoodItemRecord)
+        case edit(MealRecord)
     }
 
     private static let logger = Logger(category: "Food")
 
     private enum Section: Hashable {
-        case name, servings
+        case name, components
     }
 
     private enum Item: Hashable {
         case name
-        case serving(ServingDraft.ID)
-        case addServing
+        case component(MealComponentDraft.ID)
+        case addFood
     }
 
     private let dependencies: AppDependencies
     private let mode: Mode
-    private let onSaved: (FoodItemRecord) -> Void
-    private var draft: FoodItemDraft
+    private let onSaved: (MealRecord) -> Void
+    private var draft: MealDraft
+    /// The Food Items the lines point at, read as the editor renders (archived ones too, so a
+    /// line whose Food Item has been archived still shows).
+    private var foodItems: [FoodItemRecord.ID: FoodItemRecord] = [:]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
 
-    init(dependencies: AppDependencies, mode: Mode, onSaved: @escaping (FoodItemRecord) -> Void) {
+    init(dependencies: AppDependencies, mode: Mode, onSaved: @escaping (MealRecord) -> Void) {
         self.dependencies = dependencies
         self.mode = mode
         self.onSaved = onSaved
         switch mode {
         case .create(let name):
-            draft = FoodItemDraft(name: name)
-        case .edit(let foodItem):
-            draft = FoodItemDraft(name: foodItem.name, servings: foodItem.servings.map(ServingDraft.init))
+            draft = MealDraft(name: name)
+        case .edit(let meal):
+            draft = MealDraft(name: meal.name, components: meal.components.map(MealComponentDraft.init))
         }
         super.init(nibName: nil, bundle: nil)
         switch mode {
-        case .create: title = "New Food"
-        case .edit: title = "Edit Food"
+        case .create: title = "New Meal"
+        case .edit: title = "Edit Meal"
         }
     }
 
@@ -63,7 +66,7 @@ final class FoodItemEditorViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if case .create = mode, draft.servings.isEmpty, let cell = nameCell() {
+        if case .create = mode, draft.components.isEmpty, let cell = nameCell() {
             cell.field.becomeFirstResponder()
         }
     }
@@ -75,9 +78,9 @@ final class FoodItemEditorViewController: UIViewController {
             var configuration = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
             configuration.showsSeparators = false
             configuration.backgroundColor = .clear
-            configuration.headerMode = self?.dataSource.sectionIdentifier(for: sectionIndex) == .servings ? .supplementary : .none
+            configuration.headerMode = self?.dataSource.sectionIdentifier(for: sectionIndex) == .components ? .supplementary : .none
             configuration.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
-                guard case .serving(let id) = self?.dataSource.itemIdentifier(for: indexPath) else { return nil }
+                guard case .component(let id) = self?.dataSource.itemIdentifier(for: indexPath) else { return nil }
                 return UISwipeActionsConfiguration(actions: [
                     UIContextualAction(style: .destructive, title: "Delete") { _, _, done in
                         self?.draft.remove(id)
@@ -104,7 +107,6 @@ final class FoodItemEditorViewController: UIViewController {
         let nameCell = UICollectionView.CellRegistration<TextFieldCell, Item> { [weak self] cell, _, _ in
             guard let self else { return }
             cell.field.placeholder = "Name"
-            // A re-render while the user is typing must not move the cursor.
             if !cell.field.isFirstResponder { cell.field.text = draft.name }
             cell.field.accessibilityLabel = "Name"
             cell.onChange = { [weak self] text in
@@ -112,23 +114,26 @@ final class FoodItemEditorViewController: UIViewController {
                 self?.updateSaveState()
             }
         }
-        let servingCell = UICollectionView.CellRegistration<UICollectionViewListCell, ServingDraft.ID> { [weak self] cell, _, id in
-            guard let serving = self?.draft.servings.first(where: { $0.id == id }) else { return }
+        let componentCell = UICollectionView.CellRegistration<UICollectionViewListCell, MealComponentDraft.ID> { [weak self] cell, _, id in
+            guard let self, let component = draft.components.first(where: { $0.id == id }) else { return }
+            let foodItem = foodItems[component.foodItemID]
+            let serving = foodItem?.servings.first { $0.id == component.servingID }
             var content = UIListContentConfiguration.listRow()
-            content.text = Self.title(for: serving)
-            content.secondaryText = FoodText.macroLine(serving.macros)
-            cell.contentConfiguration = content
-            var accessories: [UICellAccessory] = [.reorder(displayed: .always, options: .init(showsVerticalSeparator: false))]
-            if serving.isDefault {
-                accessories.insert(.checkmark(displayed: .always, options: .init(tintColor: UIColor.accentGreen)), at: 0)
+            content.text = foodItem?.name ?? "—"
+            if let serving {
+                content.secondaryText = "\(FoodText.quantity(component.quantity, of: serving.name)) · \(FoodText.calories(serving.macros.scaled(by: component.quantity)))"
+            } else {
+                content.secondaryText = "Serving removed · tap to pick another"
+                content.secondaryTextProperties.color = UIColor.accentCoral
             }
-            cell.accessories = accessories
+            cell.contentConfiguration = content
+            cell.accessories = [.reorder(displayed: .always, options: .init(showsVerticalSeparator: false))]
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
-            cell.accessibilityLabel = [serving.name, FoodText.macroLine(serving.macros), serving.isDefault ? "default" : nil].compactMap { $0 }.joined(separator: ", ")
+            cell.accessibilityLabel = [content.text, content.secondaryText].compactMap { $0 }.joined(separator: ", ")
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
             var content = UIListContentConfiguration.listRow()
-            content.text = "Add serving"
+            content.text = "Add food"
             content.image = UIImage(systemName: "plus.circle.fill")
             content.imageProperties.tintColor = UIColor.accentGreen
             content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
@@ -136,9 +141,9 @@ final class FoodItemEditorViewController: UIViewController {
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
-        let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { view, _, _ in
+        let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, _ in
             var content = UIListContentConfiguration.groupedHeader()
-            content.text = "Servings"
+            content.text = self.map { "Foods · \(FoodText.calories($0.draftMacros))" } ?? "Foods"
             view.contentConfiguration = content
         }
 
@@ -146,9 +151,9 @@ final class FoodItemEditorViewController: UIViewController {
             switch item {
             case .name:
                 return collectionView.dequeueConfiguredReusableCell(using: nameCell, for: indexPath, item: item)
-            case .serving(let id):
-                return collectionView.dequeueConfiguredReusableCell(using: servingCell, for: indexPath, item: id)
-            case .addServing:
+            case .component(let id):
+                return collectionView.dequeueConfiguredReusableCell(using: componentCell, for: indexPath, item: id)
+            case .addFood:
                 return collectionView.dequeueConfiguredReusableCell(using: addCell, for: indexPath, item: item)
             }
         }
@@ -156,23 +161,23 @@ final class FoodItemEditorViewController: UIViewController {
             collectionView.dequeueConfiguredReusableSupplementary(using: header, for: indexPath)
         }
         dataSource.reorderingHandlers.canReorderItem = { item in
-            if case .serving = item { return true }
+            if case .component = item { return true }
             return false
         }
         dataSource.reorderingHandlers.didReorder = { [weak self] transaction in
-            let ids = transaction.finalSnapshot.itemIdentifiers(inSection: .servings).compactMap { item -> ServingDraft.ID? in
-                if case .serving(let id) = item { return id }
+            let ids = transaction.finalSnapshot.itemIdentifiers(inSection: .components).compactMap { item -> MealComponentDraft.ID? in
+                if case .component(let id) = item { return id }
                 return nil
             }
             self?.draft.reorder(ids)
         }
     }
 
-    /// "1 egg · 50 g"; a Serving named by its weight ("100 g") is not told it twice.
-    private static func title(for serving: ServingDraft) -> String {
-        guard let grams = serving.grams else { return serving.name }
-        let weight = "\(FoodText.amount(grams)) g"
-        return serving.name.localizedCaseInsensitiveContains(weight) ? serving.name : "\(serving.name) · \(weight)"
+    /// The Meal's macros as drafted: lines whose Serving is gone add nothing.
+    private var draftMacros: Macros {
+        Macros.sum(draft.components.compactMap { component in
+            foodItems[component.foodItemID]?.servings.first { $0.id == component.servingID }?.macros.scaled(by: component.quantity)
+        })
     }
 
     private func nameCell() -> TextFieldCell? {
@@ -182,56 +187,78 @@ final class FoodItemEditorViewController: UIViewController {
     // MARK: - Rendering
 
     private func render() {
+        loadFoodItems()
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        snapshot.appendSections([.name, .servings])
+        snapshot.appendSections([.name, .components])
         snapshot.appendItems([.name], toSection: .name)
-        snapshot.appendItems(draft.servings.map { .serving($0.id) } + [.addServing], toSection: .servings)
-        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
+        snapshot.appendItems(draft.components.map { .component($0.id) } + [.addFood], toSection: .components)
+        snapshot.reloadSections([.components])
+        dataSource.apply(snapshot, animatingDifferences: viewIfLoaded?.window != nil)
         updateSaveState()
     }
 
+    private func loadFoodItems() {
+        for id in Set(draft.components.map(\.foodItemID)) {
+            do {
+                foodItems[id] = try dependencies.store.foodItem(id)
+            } catch {
+                Self.logger.error("Failed to read Food Item: \(error, privacy: .public)")
+            }
+        }
+    }
+
     private func updateSaveState() {
-        saveItem.isEnabled = draft.isComplete
+        saveItem.isEnabled = draft.isComplete && draft.components.allSatisfy { foodItems[$0.foodItemID] != nil }
     }
 
     // MARK: - Actions
 
-    private func pushServingForm(_ serving: ServingDraft?) {
-        let form = ServingFormViewController(serving: serving, isFirst: draft.servings.isEmpty) { [weak self] saved in
-            self?.draft.upsert(saved)
-            self?.render()
+    private func pushComponentForm(foodItem: FoodItemRecord, component: MealComponentDraft?) {
+        let form = MealComponentFormViewController(foodItem: foodItem, component: component) { [weak self] saved in
+            guard let self else { return }
+            draft.upsert(saved)
+            render()
+            navigationController?.popToViewController(self, animated: true)
         }
         navigationController?.pushViewController(form, animated: true)
+    }
+
+    private func pushPicker() {
+        let picker = FoodItemPickerViewController(dependencies: dependencies) { [weak self] foodItem in
+            self?.pushComponentForm(foodItem: foodItem, component: nil)
+        }
+        navigationController?.pushViewController(picker, animated: true)
     }
 
     private func save() {
         guard draft.isComplete else { return }
         do {
-            let saved: FoodItemRecord
+            let saved: MealRecord
             switch mode {
             case .create:
-                saved = try dependencies.store.createFoodItem(name: draft.trimmedName, servings: draft.servings)
-            case .edit(let foodItem):
-                try dependencies.store.updateFoodItem(foodItem.id, name: draft.trimmedName, servings: draft.servings)
-                guard let read = try dependencies.store.foodItem(foodItem.id) else { return }
+                saved = try dependencies.store.createMeal(name: draft.trimmedName, components: draft.components)
+            case .edit(let meal):
+                try dependencies.store.updateMeal(meal.id, name: draft.trimmedName, components: draft.components)
+                guard let read = try dependencies.store.meal(meal.id) else { return }
                 saved = read
             }
             onSaved(saved)
         } catch {
-            Self.logger.error("Failed to save Food Item: \(error, privacy: .public)")
+            Self.logger.error("Failed to save Meal: \(error, privacy: .public)")
         }
     }
 }
 
-extension FoodItemEditorViewController: UICollectionViewDelegate {
+extension MealEditorViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         switch dataSource.itemIdentifier(for: indexPath) {
-        case .serving(let id):
-            pushServingForm(draft.servings.first { $0.id == id })
-        case .addServing:
-            pushServingForm(nil)
+        case .component(let id):
+            guard let component = draft.components.first(where: { $0.id == id }), let foodItem = foodItems[component.foodItemID] else { return }
+            pushComponentForm(foodItem: foodItem, component: component)
+        case .addFood:
+            pushPicker()
         case .name, nil:
             break
         }
@@ -241,49 +268,17 @@ extension FoodItemEditorViewController: UICollectionViewDelegate {
         dataSource.itemIdentifier(for: indexPath) != .name
     }
 
-    /// Reordering stays among the Serving rows, above Add serving.
+    /// Reordering stays among the lines, above Add food.
     func collectionView(
         _ collectionView: UICollectionView,
         targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
         atCurrentIndexPath currentIndexPath: IndexPath,
         toProposedIndexPath proposedIndexPath: IndexPath
     ) -> IndexPath {
-        let last = max(draft.servings.count - 1, 0)
+        let last = max(draft.components.count - 1, 0)
         guard proposedIndexPath.section == originalIndexPath.section, proposedIndexPath.item <= last else {
             return IndexPath(item: proposedIndexPath.section < originalIndexPath.section ? 0 : last, section: originalIndexPath.section)
         }
         return proposedIndexPath
     }
-}
-
-/// A list row holding one text field in the card-title style; reports edits through
-/// `onChange`.
-final class TextFieldCell: UICollectionViewListCell {
-
-    let field = UITextField()
-    var onChange: ((String) -> Void)?
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        field.font = UIFont.cardTitle
-        field.textColor = UIColor.textPrimary
-        field.adjustsFontForContentSizeCategory = true
-        field.clearButtonMode = .whileEditing
-        field.autocapitalizationType = .sentences
-        field.returnKeyType = .done
-        field.addAction(UIAction { [weak self] _ in self?.onChange?(self?.field.text ?? "") }, for: .editingChanged)
-        field.addAction(UIAction { [weak self] _ in self?.field.resignFirstResponder() }, for: .editingDidEndOnExit)
-        field.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(field)
-        NSLayoutConstraint.activate([
-            field.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
-            field.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Metrics.spaceInner),
-            field.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Metrics.spaceInner),
-            field.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -14),
-        ])
-        backgroundConfiguration = UIBackgroundConfiguration.listRow()
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 }

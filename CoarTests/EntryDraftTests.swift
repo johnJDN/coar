@@ -11,7 +11,7 @@ final class EntryDraftTests: XCTestCase {
     private func entry(quantity: Double, macros: Macros) -> EntryRecord {
         EntryRecord(
             id: UUID(), loggedAt: noon, day: Day(year: 2026, month: 9, day: 13), name: "Eggs", servingName: "1 egg",
-            quantity: quantity, macros: macros, foodItemID: nil, modifiedAt: noon
+            quantity: quantity, macros: macros, foodItemID: nil, mealID: nil, components: [], modifiedAt: noon
         )
     }
 

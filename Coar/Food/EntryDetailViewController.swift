@@ -35,6 +35,7 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         rootView = EntryForm(
             draft: original,
             servingName: entry.servingName,
+            components: entry.components,
             onChange: { [weak self] in self?.draftChanged($0) },
             onDelete: { [weak self] in self?.confirmDelete(entry) }
         )
