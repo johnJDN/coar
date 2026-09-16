@@ -39,8 +39,8 @@ final class FoodItemEditorViewController: UIViewController {
         switch mode {
         case .create(let name):
             draft = FoodItemDraft(name: name)
-        case .edit(let food):
-            draft = FoodItemDraft(name: food.name, servings: food.servings.map(ServingDraft.init))
+        case .edit(let foodItem):
+            draft = FoodItemDraft(name: foodItem.name, servings: foodItem.servings.map(ServingDraft.init))
         }
         super.init(nibName: nil, bundle: nil)
         switch mode {
@@ -104,7 +104,8 @@ final class FoodItemEditorViewController: UIViewController {
         let nameCell = UICollectionView.CellRegistration<TextFieldCell, Item> { [weak self] cell, _, _ in
             guard let self else { return }
             cell.field.placeholder = "Name"
-            cell.field.text = draft.name
+            // A re-render while the user is typing must not move the cursor.
+            if !cell.field.isFirstResponder { cell.field.text = draft.name }
             cell.field.accessibilityLabel = "Name"
             cell.onChange = { [weak self] text in
                 self?.draft.name = text
@@ -113,7 +114,7 @@ final class FoodItemEditorViewController: UIViewController {
         }
         let servingCell = UICollectionView.CellRegistration<UICollectionViewListCell, ServingDraft.ID> { [weak self] cell, _, id in
             guard let serving = self?.draft.servings.first(where: { $0.id == id }) else { return }
-            var content = Self.rowContent()
+            var content = UIListContentConfiguration.listRow()
             content.text = Self.title(for: serving)
             content.secondaryText = Self.macroLine(serving.macros)
             cell.contentConfiguration = content
@@ -122,18 +123,18 @@ final class FoodItemEditorViewController: UIViewController {
                 accessories.insert(.checkmark(displayed: .always, options: .init(tintColor: UIColor.accentGreen)), at: 0)
             }
             cell.accessories = accessories
-            cell.backgroundConfiguration = Self.rowBackground()
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
             cell.accessibilityLabel = [serving.name, Self.macroLine(serving.macros), serving.isDefault ? "default" : nil].compactMap { $0 }.joined(separator: ", ")
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
-            var content = Self.rowContent()
+            var content = UIListContentConfiguration.listRow()
             content.text = "Add serving"
             content.image = UIImage(systemName: "plus.circle.fill")
             content.imageProperties.tintColor = UIColor.accentGreen
             content.imageProperties.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
             cell.contentConfiguration = content
             cell.accessories = []
-            cell.backgroundConfiguration = Self.rowBackground()
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { view, _, _ in
             var content = UIListContentConfiguration.groupedHeader()
@@ -167,23 +168,6 @@ final class FoodItemEditorViewController: UIViewController {
         }
     }
 
-    private static func rowContent() -> UIListContentConfiguration {
-        var content = UIListContentConfiguration.subtitleCell()
-        content.textProperties.font = UIFont.cardTitle
-        content.textProperties.color = UIColor.textPrimary
-        content.secondaryTextProperties.font = UIFont.label
-        content.secondaryTextProperties.color = UIColor.textSecondary
-        content.textToSecondaryTextVerticalPadding = 2
-        content.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: Metrics.spaceInner, bottom: 12, trailing: Metrics.spaceInner)
-        return content
-    }
-
-    private static func rowBackground() -> UIBackgroundConfiguration {
-        var background = UIBackgroundConfiguration.listCell()
-        background.backgroundColor = UIColor.surface
-        return background
-    }
-
     /// "1 egg · 50 g"; a Serving named by its weight ("100 g") is not told it twice.
     private static func title(for serving: ServingDraft) -> String {
         guard let grams = serving.grams else { return serving.name }
@@ -193,7 +177,7 @@ final class FoodItemEditorViewController: UIViewController {
 
     /// "70 kcal · P 6 · F 5 · C 0".
     private static func macroLine(_ macros: Macros) -> String {
-        ([FoodText.calories(macros)] + [Macro.protein, .fat, .carbs].map { "\($0.letter) \(FoodText.amount(macros[$0]))" }).joined(separator: " · ")
+        ([FoodText.calories(macros)] + [Macro.protein, .fat, .carbs].map { "\($0.abbreviation) \(FoodText.amount(macros[$0]))" }).joined(separator: " · ")
     }
 
     private func nameCell() -> TextFieldCell? {
@@ -232,9 +216,9 @@ final class FoodItemEditorViewController: UIViewController {
             switch mode {
             case .create:
                 saved = try dependencies.store.createFoodItem(name: draft.trimmedName, servings: draft.servings)
-            case .edit(let food):
-                try dependencies.store.updateFoodItem(food.id, name: draft.trimmedName, servings: draft.servings)
-                guard let read = try dependencies.store.foodItem(food.id) else { return }
+            case .edit(let foodItem):
+                try dependencies.store.updateFoodItem(foodItem.id, name: draft.trimmedName, servings: draft.servings)
+                guard let read = try dependencies.store.foodItem(foodItem.id) else { return }
                 saved = read
             }
             onSaved(saved)
@@ -302,9 +286,7 @@ final class TextFieldCell: UICollectionViewListCell {
             field.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Metrics.spaceInner),
             field.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -14),
         ])
-        var background = UIBackgroundConfiguration.listCell()
-        background.backgroundColor = UIColor.surface
-        backgroundConfiguration = background
+        backgroundConfiguration = UIBackgroundConfiguration.listRow()
     }
 
     @available(*, unavailable)

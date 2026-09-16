@@ -37,7 +37,7 @@ final class TimelineHourView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         var configuration = UIButton.Configuration.filled()
-        configuration.image = UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .bold))
+        configuration.image = UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(textStyle: .caption1).applying(UIImage.SymbolConfiguration(weight: .bold)))
         configuration.cornerStyle = .capsule
         configuration.baseBackgroundColor = UIColor.fill
         configuration.baseForegroundColor = UIColor.textSecondary
@@ -90,18 +90,31 @@ final class TimelineHourView: UICollectionReusableView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+    private var hasEntries = false
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        hasEntries = false
+        bloom.setVisible(false, animated: false)
+    }
+
+    /// Draws the hour; the dot's bloom fades in when the hour gains its first Entry on
+    /// screen (DESIGN.md §9), and is set plainly on first display.
     func configure(hourStart: Date, hasEntries: Bool) {
         let text = hourStart.formatted(.dateTime.hour())
         hourLabel.text = text
+        let changed = hasEntries != self.hasEntries
+        self.hasEntries = hasEntries
         dot.backgroundColor = hasEntries ? UIColor.accentGreen : UIColor.fill
-        bloom.setVisible(hasEntries, animated: false)
+        bloom.setVisible(hasEntries, animated: changed && window != nil)
         addButton.accessibilityLabel = "Add entry at \(text)"
     }
 }
 
 /// An Entry on the timeline: name, "2 × 1 egg" with the three gram macros in their accents,
-/// and the calories as the metric number (DESIGN.md §1.2, §3). A `surface` card with the
-/// §6 elevation, indented past the rail. Tapping opens the Entry's detail.
+/// and the calories as the metric number (DESIGN.md §1.2, §3). A row on `surface` with
+/// `radiusInner` (a list row, not a `Card`) and the §6 card shadow, indented past the rail.
+/// Tapping opens the Entry's detail.
 final class EntryCell: UICollectionViewCell {
 
     private let cardView = UIView()
@@ -199,7 +212,7 @@ final class EntryCell: UICollectionViewCell {
         let text = NSMutableAttributedString(string: FoodText.quantity(entry.quantity, of: entry.servingName))
         for macro in [Macro.protein, .fat, .carbs] {
             text.append(NSAttributedString(string: " · "))
-            text.append(NSAttributedString(string: macro.letter, attributes: [.foregroundColor: macro.uiAccent]))
+            text.append(NSAttributedString(string: macro.abbreviation, attributes: [.foregroundColor: macro.uiAccent]))
             text.append(NSAttributedString(string: " \(FoodText.amount(entry.macros[macro]))"))
         }
         return text

@@ -136,12 +136,14 @@ final class FoodTests: XCTestCase {
         let lateSnack = losAngeles.date(from: DateComponents(year: 2026, month: 9, day: 13, hour: 23, minute: 30))!
         XCTAssertEqual(Day(lateSnack, in: tokyo), Day(year: 2026, month: 9, day: 14))
 
-        let entry = try store.logEntry(foodItem: eggs.id, serving: serving.id, quantity: 1, at: lateSnack, in: losAngeles)
+        let atHome = try store.logEntry(foodItem: eggs.id, serving: serving.id, quantity: 1, at: lateSnack, in: losAngeles)
+        let inTokyo = try store.logEntry(foodItem: eggs.id, serving: serving.id, quantity: 1, at: lateSnack, in: tokyo)
 
-        XCTAssertEqual(entry.day, sep13)
-        XCTAssertEqual(try store.entries(on: sep13).map(\.id), [entry.id])
-        XCTAssertEqual(try store.entries(on: Day(year: 2026, month: 9, day: 14)), [])
-        XCTAssertEqual(entry.loggedAt, lateSnack)
+        XCTAssertEqual(atHome.day, sep13)
+        XCTAssertEqual(inTokyo.day, Day(year: 2026, month: 9, day: 14))
+        XCTAssertEqual(try store.entries(on: sep13).map(\.id), [atHome.id])
+        XCTAssertEqual(try store.entries(on: Day(year: 2026, month: 9, day: 14)).map(\.id), [inTokyo.id])
+        XCTAssertEqual(atHome.loggedAt, lateSnack)
     }
 
     func test_entriesOnADay_comeBackEarliestFirst_andOnlyForThatDay() throws {

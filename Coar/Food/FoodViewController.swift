@@ -9,9 +9,10 @@ final class FoodViewController: UIViewController {
     private static let logger = Logger(category: "Food")
 
     private let dependencies: AppDependencies
-    private let today = Day.today()
+    private var today = Day.today()
     private var selectedDay: Day
     private let strip: WeekStripView
+    private var timeObserver: NSObjectProtocol?
     private var timeline: UICollectionView!
     /// Sections are the 24 hours of the Day; items are the Entries in each.
     private var dataSource: UICollectionViewDiffableDataSource<Int, EntryRecord.ID>!
@@ -28,10 +29,19 @@ final class FoodViewController: UIViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+    deinit {
+        if let timeObserver { NotificationCenter.default.removeObserver(timeObserver) }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .always
+        timeObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.significantTimeChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshToday() }
+        }
 
         let add = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentAdd(hour: nil) })
         add.accessibilityLabel = "Add entry"
@@ -57,7 +67,18 @@ final class FoodViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refreshToday()
         render()
+    }
+
+    /// Midnight passes with the app resident: the strip's mark and the selection move to
+    /// the new today, so "+" never logs onto yesterday.
+    private func refreshToday() {
+        let now = Day.today()
+        guard now != today else { return }
+        today = now
+        strip.today = now
+        select(now)
     }
 
     // MARK: - Timeline
@@ -126,17 +147,17 @@ final class FoodViewController: UIViewController {
         for hour in 0..<24 {
             snapshot.appendItems((byHour[hour] ?? []).map(\.id), toSection: hour)
         }
-        // Hour rows are supplementary views: reloading their sections redraws the dots.
-        let changedHours = (0..<24).filter { hour in
-            dataSource.snapshot().indexOfSection(hour) == nil
-                || dataSource.snapshot().itemIdentifiers(inSection: hour) != snapshot.itemIdentifiers(inSection: hour)
-        }
-        snapshot.reloadSections(changedHours)
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
+        // Hour rows are supplementary views a snapshot does not reconfigure: redraw the ones
+        // on screen so their dots follow the Entries (with the §9 fade, not a reload's pop).
+        for indexPath in timeline.indexPathsForVisibleSupplementaryElements(ofKind: UICollectionView.elementKindSectionHeader) {
+            guard let view = timeline.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: indexPath) as? TimelineHourView else { continue }
+            view.configure(hourStart: instant(hour: indexPath.section, minute: 0), hasEntries: snapshot.numberOfItems(inSection: indexPath.section) > 0)
+        }
     }
 
     private func updateSubtitle() {
-        navigationItem.subtitle = selectedDay == today ? "Today" : selectedDay.start().formatted(.dateTime.weekday(.wide).month(.wide).day())
+        navigationItem.subtitle = selectedDay.title(relativeTo: today)
     }
 
     private func select(_ day: Day) {
@@ -165,7 +186,9 @@ extension FoodViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        guard let id = dataSource.itemIdentifier(for: indexPath) else { return }
-        present(EntryDetailViewController.sheet(dependencies: dependencies, entryID: id) { [weak self] in self?.render() }, animated: true)
+        guard let id = dataSource.itemIdentifier(for: indexPath),
+              let sheet = EntryDetailViewController.sheet(dependencies: dependencies, entryID: id, onChange: { [weak self] in self?.render() })
+        else { return render() }
+        present(sheet, animated: true)
     }
 }

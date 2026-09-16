@@ -40,7 +40,7 @@ final class HabitAmountViewController: UIViewController {
         view.backgroundColor = UIColor.background
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in self?.done() })
-        navigationItem.subtitle = day == .today() ? "Today" : day.start().formatted(.dateTime.weekday(.wide).month(.wide).day())
+        navigationItem.subtitle = day.title()
 
         field.font = UIFont.heroNumber
         field.textColor = UIColor.textPrimary

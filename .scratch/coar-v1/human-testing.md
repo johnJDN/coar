@@ -73,4 +73,6 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] `FoodItem`, `Serving`, `Entry` each gained an optional `id: UUID` (additive).
 - [?] The rail (a `fill` bar with hour dots) is a timeline axis, not a divider.
 - [?] The sheet is titled "Add Entry" with a "Filter" field; the Meals segment is present but empty until ticket 07.
+- [?] The Entry row is a `surface` row with the inner radius and card shadow, not a full `Card` (no dark top highlight); rows have no thumbnail.
+- [ ] Leave the app open across midnight (or change the clock): the strip's green mark and the selection move to the new day and the toolbar `+` logs onto it.
 

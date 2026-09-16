@@ -3,7 +3,7 @@ import SwiftUI
 /// The log page's content (ADR 0001: SwiftUI leaf, values in, closures out): which Serving,
 /// how many, and when; the macros the Entry will carry, shown as a preview. Every edit
 /// reports the whole draft so the host can enable Add.
-struct LogFoodForm: View {
+struct LogFoodItemForm: View {
 
     struct Draft: Equatable {
         var servingID: ServingRecord.ID
@@ -13,8 +13,7 @@ struct LogFoodForm: View {
 
         /// The valid quantity, or nil while the field is empty or not positive.
         var quantity: Double? {
-            guard let typedQuantity, typedQuantity > 0, typedQuantity.isFinite else { return nil }
-            return typedQuantity
+            FoodText.quantity(typed: typedQuantity)
         }
     }
 
@@ -87,13 +86,18 @@ struct LogFoodForm: View {
             } header: {
                 Text("This entry")
             } footer: {
-                Text("Kept with the entry as logged. Editing the food later never changes it.")
+                Text("Kept with the entry as logged. Editing the food item later never changes it.")
             }
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
+        .onChange(of: servings) { _, servings in
+            // The Food Item was edited underneath: a Serving that is gone falls back to the default.
+            guard !servings.contains(where: { $0.id == draft.servingID }), let fallback = servings.first(where: \.isDefault) ?? servings.first else { return }
+            draft.servingID = fallback.id
+        }
         .onAppear { quantityFocused = true }
     }
 }
@@ -123,5 +127,5 @@ struct MacroPreviewRow: View {
         ServingRecord(id: UUID(), name: "1 egg", macros: Macros(calories: 70, protein: 6, fat: 5, carbs: 0), grams: 50, isDefault: true),
         ServingRecord(id: UUID(), name: "100 g", macros: Macros(calories: 140, protein: 12, fat: 10, carbs: 1), grams: 100, isDefault: false),
     ]
-    LogFoodForm(servings: servings, draft: .init(servingID: servings[0].id, loggedAt: Date())) { _ in }
+    LogFoodItemForm(servings: servings, draft: .init(servingID: servings[0].id, loggedAt: Date())) { _ in }
 }

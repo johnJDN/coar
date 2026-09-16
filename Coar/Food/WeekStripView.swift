@@ -13,8 +13,12 @@ final class WeekStripView: UIView {
     var onSelect: ((Day) -> Void)?
 
     private(set) var selectedDay: Day
-    private let today: Day
-    private let days: [Day]
+    /// The marked Day; moving it (midnight with the app resident) rebuilds the strip around
+    /// the new current week.
+    var today: Day {
+        didSet { if today != oldValue { rebuild() } }
+    }
+    private var days: [Day] = []
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, Day>!
     private var hasScrolledToSelection = false
@@ -22,11 +26,9 @@ final class WeekStripView: UIView {
     init(today: Day, selected: Day) {
         self.today = today
         selectedDay = selected
-        let first = today.startOfWeek.advanced(by: -7 * Self.weeksOfHistory)
-        let count = 7 * (Self.weeksOfHistory + 1)
-        days = (0..<count).map { first.advanced(by: $0) }
         super.init(frame: .zero)
         configureCollectionView()
+        rebuild()
     }
 
     @available(*, unavailable)
@@ -76,10 +78,21 @@ final class WeekStripView: UIView {
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, day in
             collectionView.dequeueConfiguredReusableCell(using: cell, for: indexPath, item: day)
         }
+    }
+
+    /// The Days from `weeksOfHistory` Mondays back through the Sunday of today's week, then
+    /// the page holding the selection.
+    private func rebuild() {
+        let first = today.startOfWeek.advanced(by: -7 * Self.weeksOfHistory)
+        days = (0..<(7 * (Self.weeksOfHistory + 1))).map { first.advanced(by: $0) }
+        if selectedDay > today { selectedDay = today }
         var snapshot = NSDiffableDataSourceSnapshot<Int, Day>()
         snapshot.appendSections([0])
         snapshot.appendItems(days)
+        snapshot.reconfigureItems(days.filter(dataSource.snapshot().itemIdentifiers.contains))
         dataSource.apply(snapshot, animatingDifferences: false)
+        hasScrolledToSelection = false
+        setNeedsLayout()
     }
 
     private func indexPath(of day: Day) -> IndexPath {

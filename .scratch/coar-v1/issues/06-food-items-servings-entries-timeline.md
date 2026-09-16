@@ -70,4 +70,29 @@
   it; removing the default promotes the first). (12) The strip's "today" is fixed when the tab
   is created. (13) The rail is a `fill` bar with hour dots, read as a timeline axis rather
   than a divider (§1.1). (14) The sheet is titled "Add Entry" (CONTEXT.md's term).
+- 2026-09-15 (agent, after /code-review): the log page now follows a Food Item edited
+  underneath it (a Serving that is gone falls back to the default, and Add is disabled until
+  a real Serving is picked; before, Add could throw with no feedback); the strip's "today"
+  rolls over at midnight or on foregrounding (`significantTimeChangeNotification`), so "+"
+  never logs onto yesterday; the hour dot's bloom fades in instead of popping (hour rows are
+  redrawn in place rather than reloaded); the editor's name field keeps its cursor across
+  re-renders; the Entry detail reads its Entry before the form is built (a hosted view keeps
+  its state across `rootView` swaps); "+" symbols scale with Dynamic Type; the time-zone test
+  now logs the same instant in two calendars and asserts different Days, so a façade that
+  ignored the calendar would fail it. CONTEXT.md: identifiers no longer say "food" for a Food
+  Item (`LogFoodItemViewController`, `LogFoodItemForm`, `foodItems`); the "New food" copy
+  stays (spec story 36). Duplication pulled out: `UIListContentConfiguration.listRow()` /
+  `UIBackgroundConfiguration.listRow()` (`Design/ListRow.swift`), `MacroAttributes` (one
+  `macros` accessor for `MacroTarget`, `Serving`, `Entry`), `Macros(typed:)`,
+  `FoodText.quantity(typed:)`, `Day.title(relativeTo:)` (Habits' number sheet uses it too),
+  `FoodText` in its own file with `when(_:)`; `Macro.letter` is `abbreviation`; the SwiftUI
+  leaf and its UIKit host are separate files as in Habits; `updateFoodItem` / `updateEntry`
+  no-op on an unknown id like the Habits surface (only `logEntry`, which must return a
+  record, throws). 104 tests pass. Left as deliberate: (15) archived Food Items surface only
+  under a matching filter as the restore path (the ticket says "hidden from the sheet"; the
+  default sheet hides them, and there is no other catalogue screen to restore from); (16) the
+  Entry row is a `surface` row with `radiusInner` and the card shadow, not a full `Card`
+  with the dark top highlight; (17) `ListRow`'s thumbnail is omitted since Food Items carry
+  no image; (18) stored Entry macros are totals for the whole quantity, so ticket 07 sums
+  them directly.
 

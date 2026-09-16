@@ -40,3 +40,23 @@ struct Macros: Hashable {
         set { self[keyPath: macro.keyPath] = newValue }
     }
 }
+
+extension Macros {
+    static let zero = Macros(calories: 0, protein: 0, fat: 0, carbs: 0)
+
+    /// The four values as typed into a form: an empty field is 0; a negative or non-finite
+    /// value makes the whole thing invalid.
+    init?(typed fields: [Macro: Double?]) {
+        self = .zero
+        for macro in Macro.allCases {
+            let value = (fields[macro] ?? nil) ?? 0
+            guard value >= 0, value.isFinite else { return nil }
+            self[macro] = value
+        }
+    }
+
+    /// The macros for `quantity` of something whose macros for one are `self`.
+    func scaled(by quantity: Double) -> Macros {
+        Macros(calories: calories * quantity, protein: protein * quantity, fat: fat * quantity, carbs: carbs * quantity)
+    }
+}

@@ -3,7 +3,8 @@ import CoreData
 /// The façade's Food surface: Food Items with their Servings, and Entries.
 extension Store {
 
-    /// A write named something the store does not hold.
+    /// A write that must return a record named something the store does not hold. Other
+    /// writes on an unknown id do nothing, as the Habits surface does.
     struct NotFound: Error {
         let what: String
     }
@@ -25,7 +26,7 @@ extension Store {
     /// update it, new ids insert, and Servings left out are removed. Entries logged before
     /// keep their own copy of everything (ADR 0003).
     func updateFoodItem(_ id: FoodItemRecord.ID, name: String, servings: [ServingDraft]) throws {
-        guard let item = try fetchFoodItem(id) else { throw NotFound(what: "Food Item") }
+        guard let item = try fetchFoodItem(id) else { return }
         try write(name: name, servings: servings, to: item)
     }
 
@@ -101,7 +102,7 @@ extension Store {
     /// Corrects the past on the past (ADR 0003): the instant, the quantity, and the
     /// snapshotted macros. The Entry keeps the Day it was logged into (ADR 0005).
     func updateEntry(_ id: EntryRecord.ID, loggedAt: Date, quantity: Double, macros: Macros) throws {
-        guard let entry = try fetchEntry(id) else { throw NotFound(what: "Entry") }
+        guard let entry = try fetchEntry(id) else { return }
         entry.loggedAt = loggedAt
         entry.quantity = quantity
         entry.macros = macros
@@ -211,18 +212,6 @@ private extension FoodItem {
     }
 }
 
-private extension Serving {
-    var macros: Macros {
-        get { Macros(calories: calories, protein: protein, fat: fat, carbs: carbs) }
-        set {
-            calories = newValue.calories
-            protein = newValue.protein
-            fat = newValue.fat
-            carbs = newValue.carbs
-        }
-    }
-}
-
 private extension EntryRecord {
     init?(_ object: Entry) {
         guard let id = object.id, let loggedAt = object.loggedAt, let raw = object.day, let day = Day(rawValue: raw),
@@ -239,17 +228,5 @@ private extension EntryRecord {
             foodItemID: object.foodItem?.id,
             modifiedAt: modifiedAt
         )
-    }
-}
-
-private extension Entry {
-    var macros: Macros {
-        get { Macros(calories: calories, protein: protein, fat: fat, carbs: carbs) }
-        set {
-            calories = newValue.calories
-            protein = newValue.protein
-            fat = newValue.fat
-            carbs = newValue.carbs
-        }
     }
 }

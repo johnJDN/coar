@@ -24,8 +24,8 @@ extension Macro {
         }
     }
 
-    /// The gram macros' one-letter form in a compact line: "P 12 · F 10 · C 0".
-    var letter: String {
+    /// The short form for a compact line: "P 12 · F 10 · C 0", "140 kcal".
+    var abbreviation: String {
         switch self {
         case .calories: return "kcal"
         case .protein: return "P"

@@ -19,7 +19,7 @@ final class AddEntryViewController: UIViewController {
     }
 
     private enum Item: Hashable {
-        case food(FoodItemRecord.ID)
+        case foodItem(FoodItemRecord.ID)
         case archived(FoodItemRecord.ID)
         case newFood
         case noMeals
@@ -33,7 +33,7 @@ final class AddEntryViewController: UIViewController {
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private var segment = Segment.foods
-    private var foods: [FoodItemRecord.ID: FoodItemRecord] = [:]
+    private var foodItems: [FoodItemRecord.ID: FoodItemRecord] = [:]
 
     init(dependencies: AppDependencies, at instant: Date, onLogged: @escaping () -> Void) {
         self.dependencies = dependencies
@@ -54,7 +54,7 @@ final class AddEntryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.background
-        navigationItem.subtitle = Self.subtitle(for: instant)
+        navigationItem.subtitle = FoodText.when(instant)
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
         })
@@ -92,13 +92,6 @@ final class AddEntryViewController: UIViewController {
         render()
     }
 
-    /// "Today at 8:00 AM" / "Monday, September 7 at 12:00 PM".
-    static func subtitle(for instant: Date) -> String {
-        let day = Day(instant)
-        let dayText = day == .today() ? "Today" : instant.formatted(.dateTime.weekday(.wide).month(.wide).day())
-        return "\(dayText) at \(instant.formatted(.dateTime.hour().minute()))"
-    }
-
     // MARK: - Collection view
 
     private func configureCollectionView() {
@@ -112,27 +105,27 @@ final class AddEntryViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
 
-        let foodCell = UICollectionView.CellRegistration<UICollectionViewListCell, FoodItemRecord.ID> { [weak self] cell, _, id in
-            guard let self, let food = foods[id] else { return }
-            var content = Self.rowContent()
-            content.text = food.name
-            content.secondaryText = food.defaultServing.map(FoodText.summary(of:))
+        let foodItemCell = UICollectionView.CellRegistration<UICollectionViewListCell, FoodItemRecord.ID> { [weak self] cell, _, id in
+            guard let self, let foodItem = foodItems[id] else { return }
+            var content = UIListContentConfiguration.listRow()
+            content.text = foodItem.name
+            content.secondaryText = foodItem.defaultServing.map(FoodText.summary(of:))
             cell.contentConfiguration = content
             cell.accessories = [.customView(configuration: .init(customView: makeQuickAddButton(id), placement: .trailing()))]
-            cell.backgroundConfiguration = Self.rowBackground()
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let archivedCell = UICollectionView.CellRegistration<UICollectionViewListCell, FoodItemRecord.ID> { [weak self] cell, _, id in
-            guard let self, let food = foods[id] else { return }
-            var content = Self.rowContent()
-            content.text = food.name
+            guard let self, let foodItem = foodItems[id] else { return }
+            var content = UIListContentConfiguration.listRow()
+            content.text = foodItem.name
             content.textProperties.color = UIColor.textSecondary
             content.secondaryText = "Archived • Tap to restore"
             cell.contentConfiguration = content
             cell.accessories = []
-            cell.backgroundConfiguration = Self.rowBackground()
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let actionCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { [weak self] cell, _, item in
-            var content = Self.rowContent()
+            var content = UIListContentConfiguration.listRow()
             switch item {
             case .newFood:
                 let typed = self?.filterText ?? ""
@@ -143,18 +136,18 @@ final class AddEntryViewController: UIViewController {
             case .noMeals:
                 content.text = "No meals yet"
                 content.textProperties.color = UIColor.textTertiary
-            case .food, .archived:
+            case .foodItem, .archived:
                 break
             }
             cell.contentConfiguration = content
             cell.accessories = []
-            cell.backgroundConfiguration = Self.rowBackground()
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
 
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, item in
             switch item {
-            case .food(let id):
-                return collectionView.dequeueConfiguredReusableCell(using: foodCell, for: indexPath, item: id)
+            case .foodItem(let id):
+                return collectionView.dequeueConfiguredReusableCell(using: foodItemCell, for: indexPath, item: id)
             case .archived(let id):
                 return collectionView.dequeueConfiguredReusableCell(using: archivedCell, for: indexPath, item: id)
             case .newFood, .noMeals:
@@ -163,35 +156,17 @@ final class AddEntryViewController: UIViewController {
         }
     }
 
-    /// A `ListRow` (DESIGN.md §7): title in the card-title style over a `label` subtitle.
-    private static func rowContent() -> UIListContentConfiguration {
-        var content = UIListContentConfiguration.subtitleCell()
-        content.textProperties.font = UIFont.cardTitle
-        content.textProperties.color = UIColor.textPrimary
-        content.secondaryTextProperties.font = UIFont.label
-        content.secondaryTextProperties.color = UIColor.textSecondary
-        content.textToSecondaryTextVerticalPadding = 2
-        content.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: Metrics.spaceInner, bottom: 12, trailing: Metrics.spaceInner)
-        return content
-    }
-
-    private static func rowBackground() -> UIBackgroundConfiguration {
-        var background = UIBackgroundConfiguration.listCell()
-        background.backgroundColor = UIColor.surface
-        return background
-    }
-
     /// The row's trailing square "+" (DESIGN.md §7 `ListRow`): logs the default Serving once.
     private func makeQuickAddButton(_ id: FoodItemRecord.ID) -> UIButton {
         var configuration = UIButton.Configuration.filled()
-        configuration.image = UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: 14, weight: .bold))
+        configuration.image = UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(textStyle: .footnote).applying(UIImage.SymbolConfiguration(weight: .bold)))
         configuration.cornerStyle = .fixed
         configuration.background.cornerRadius = Metrics.radiusTile
         configuration.baseBackgroundColor = UIColor.fill
         configuration.baseForegroundColor = UIColor.textPrimary
         configuration.contentInsets = .zero
         let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.quickAdd(id) })
-        button.accessibilityLabel = "Add \(foods[id]?.name ?? "") now"
+        button.accessibilityLabel = "Add \(foodItems[id]?.name ?? "") now"
         NSLayoutConstraint.activate([
             button.widthAnchor.constraint(equalToConstant: 32),
             button.heightAnchor.constraint(equalToConstant: 32),
@@ -218,10 +193,10 @@ final class AddEntryViewController: UIViewController {
                 Self.logger.error("Failed to read Food Items: \(error, privacy: .public)")
                 return
             }
-            foods = Dictionary(uniqueKeysWithValues: (active + archived).map { ($0.id, $0) })
+            foodItems = Dictionary(uniqueKeysWithValues: (active + archived).map { ($0.id, $0) })
             if !active.isEmpty {
                 snapshot.appendSections([.foods])
-                snapshot.appendItems(active.map { .food($0.id) }, toSection: .foods)
+                snapshot.appendItems(active.map { .foodItem($0.id) }, toSection: .foods)
             }
             if !archived.isEmpty {
                 snapshot.appendSections([.archived])
@@ -243,7 +218,7 @@ final class AddEntryViewController: UIViewController {
     // MARK: - Actions
 
     private func quickAdd(_ id: FoodItemRecord.ID) {
-        guard let food = foods[id], let serving = food.defaultServing else { return }
+        guard let serving = foodItems[id]?.defaultServing else { return }
         do {
             try dependencies.store.logEntry(foodItem: id, serving: serving.id, quantity: 1, at: instant)
             onLogged()
@@ -258,18 +233,18 @@ final class AddEntryViewController: UIViewController {
     }
 
     private func makeLog(_ id: FoodItemRecord.ID) -> UIViewController {
-        LogFoodViewController(dependencies: dependencies, foodItemID: id, at: instant) { [weak self] in
+        LogFoodItemViewController(dependencies: dependencies, foodItemID: id, at: instant) { [weak self] in
             self?.onLogged()
             self?.dismiss(animated: true)
         }
     }
 
-    private func pushEditor(_ food: FoodItemRecord?) {
-        let mode: FoodItemEditorViewController.Mode = food.map { .edit($0) } ?? .create(name: filterText)
+    private func pushEditor(_ foodItem: FoodItemRecord?) {
+        let mode: FoodItemEditorViewController.Mode = foodItem.map { .edit($0) } ?? .create(name: filterText)
         let editor = FoodItemEditorViewController(dependencies: dependencies, mode: mode) { [weak self] saved in
             guard let self, let navigation = navigationController else { return }
             // A new Food Item goes straight on to being logged; an edit returns to the list.
-            if food == nil {
+            if foodItem == nil {
                 navigation.setViewControllers([self, makeLog(saved.id)], animated: true)
             } else {
                 navigation.popViewController(animated: true)
@@ -287,12 +262,12 @@ final class AddEntryViewController: UIViewController {
         render()
     }
 
-    private func confirmRestore(_ food: FoodItemRecord) {
-        let alert = UIAlertController(title: "Restore \(food.name)?", message: nil, preferredStyle: .actionSheet)
+    private func confirmRestore(_ foodItem: FoodItemRecord) {
+        let alert = UIAlertController(title: "Restore \(foodItem.name)?", message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Restore", style: .default) { [weak self] _ in
             guard let self else { return }
             do {
-                try dependencies.store.restoreFoodItem(food.id)
+                try dependencies.store.restoreFoodItem(foodItem.id)
             } catch {
                 Self.logger.error("Failed to restore Food Item: \(error, privacy: .public)")
             }
@@ -308,10 +283,10 @@ extension AddEntryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         switch dataSource.itemIdentifier(for: indexPath) {
-        case .food(let id):
+        case .foodItem(let id):
             pushLog(id)
         case .archived(let id):
-            if let food = foods[id] { confirmRestore(food) }
+            if let foodItem = foodItems[id] { confirmRestore(foodItem) }
         case .newFood:
             pushEditor(nil)
         case .noMeals, nil:
@@ -324,10 +299,10 @@ extension AddEntryViewController: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        guard case .food(let id) = dataSource.itemIdentifier(for: indexPath), let food = foods[id] else { return nil }
+        guard case .foodItem(let id) = dataSource.itemIdentifier(for: indexPath), let foodItem = foodItems[id] else { return nil }
         return UIContextMenuConfiguration(actionProvider: { [weak self] _ in
             UIMenu(children: [
-                UIAction(title: "Edit", image: UIImage(systemName: "pencil")) { _ in self?.pushEditor(food) },
+                UIAction(title: "Edit", image: UIImage(systemName: "pencil")) { _ in self?.pushEditor(foodItem) },
                 UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { _ in self?.archive(id) },
             ])
         })

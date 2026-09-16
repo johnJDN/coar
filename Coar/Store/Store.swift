@@ -166,7 +166,17 @@ private extension TargetRecord {
     }
 }
 
-private extension MacroTarget {
+// MARK: - Macros
+
+/// An entity holding the four Macro attributes, read and written together as a `Macros`.
+protocol MacroAttributes: AnyObject {
+    var calories: Double { get set }
+    var protein: Double { get set }
+    var fat: Double { get set }
+    var carbs: Double { get set }
+}
+
+extension MacroAttributes {
     var macros: Macros {
         get { Macros(calories: calories, protein: protein, fat: fat, carbs: carbs) }
         set {
@@ -177,6 +187,10 @@ private extension MacroTarget {
         }
     }
 }
+
+extension MacroTarget: MacroAttributes {}
+extension Serving: MacroAttributes {}
+extension Entry: MacroAttributes {}
 
 // MARK: - modifiedAt
 

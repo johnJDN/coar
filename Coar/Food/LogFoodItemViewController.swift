@@ -5,22 +5,23 @@ import os
 /// The log page, pushed from the "+" sheet: pick a Serving and a quantity, then Add creates
 /// the Entry through the façade at the sheet's instant. The `…` menu edits or archives the
 /// Food Item. Re-reads the Food Item on every appearance, so an edit shows at once.
-final class LogFoodViewController: UIHostingController<LogFoodForm> {
+final class LogFoodItemViewController: UIHostingController<LogFoodItemForm> {
 
     private static let logger = Logger(category: "Food")
 
     private let dependencies: AppDependencies
     private let foodItemID: FoodItemRecord.ID
     private let onLogged: () -> Void
-    private var draft: LogFoodForm.Draft
+    private var draft: LogFoodItemForm.Draft
+    private var servings: [ServingRecord] = []
     private let addItem = UIBarButtonItem()
 
     init(dependencies: AppDependencies, foodItemID: FoodItemRecord.ID, at instant: Date, onLogged: @escaping () -> Void) {
         self.dependencies = dependencies
         self.foodItemID = foodItemID
         self.onLogged = onLogged
-        draft = LogFoodForm.Draft(servingID: UUID(), loggedAt: instant)
-        super.init(rootView: LogFoodForm(servings: [], draft: draft) { _ in })
+        draft = LogFoodItemForm.Draft(servingID: UUID(), loggedAt: instant)
+        super.init(rootView: LogFoodItemForm(servings: [], draft: draft) { _ in })
 
         addItem.primaryAction = UIAction(title: "Add") { [weak self] _ in self?.add() }
         addItem.style = .prominent
@@ -48,24 +49,25 @@ final class LogFoodViewController: UIHostingController<LogFoodForm> {
 
     private func load() {
         do {
-            guard let food = try dependencies.store.foodItem(foodItemID), let defaultServing = food.defaultServing else {
+            guard let foodItem = try dependencies.store.foodItem(foodItemID), let defaultServing = foodItem.defaultServing else {
                 navigationController?.popViewController(animated: true)
                 return
             }
-            title = food.name
-            if !food.servings.contains(where: { $0.id == draft.servingID }) {
+            title = foodItem.name
+            servings = foodItem.servings
+            if !servings.contains(where: { $0.id == draft.servingID }) {
                 draft.servingID = defaultServing.id
             }
-            rootView = LogFoodForm(servings: food.servings, draft: draft) { [weak self] in self?.draftChanged($0) }
+            rootView = LogFoodItemForm(servings: servings, draft: draft) { [weak self] in self?.draftChanged($0) }
             draftChanged(draft)
         } catch {
             Self.logger.error("Failed to read Food Item: \(error, privacy: .public)")
         }
     }
 
-    private func draftChanged(_ draft: LogFoodForm.Draft) {
+    private func draftChanged(_ draft: LogFoodItemForm.Draft) {
         self.draft = draft
-        addItem.isEnabled = draft.quantity != nil
+        addItem.isEnabled = draft.quantity != nil && servings.contains { $0.id == draft.servingID }
     }
 
     // MARK: - Actions
@@ -81,8 +83,8 @@ final class LogFoodViewController: UIHostingController<LogFoodForm> {
     }
 
     private func pushEditor() {
-        guard let food = try? dependencies.store.foodItem(foodItemID) else { return }
-        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: .edit(food)) { [weak self] _ in
+        guard let foodItem = try? dependencies.store.foodItem(foodItemID) else { return }
+        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: .edit(foodItem)) { [weak self] _ in
             self?.navigationController?.popViewController(animated: true)
         }
         navigationController?.pushViewController(editor, animated: true)

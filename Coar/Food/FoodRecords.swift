@@ -63,12 +63,3 @@ struct EntryRecord: Hashable, Identifiable {
     let foodItemID: FoodItemRecord.ID?
     let modifiedAt: Date
 }
-
-extension Macros {
-    static let zero = Macros(calories: 0, protein: 0, fat: 0, carbs: 0)
-
-    /// The macros for `quantity` of something whose macros for one are `self`.
-    func scaled(by quantity: Double) -> Macros {
-        Macros(calories: calories * quantity, protein: protein * quantity, fat: fat * quantity, carbs: carbs * quantity)
-    }
-}
