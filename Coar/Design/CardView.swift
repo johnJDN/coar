@@ -75,11 +75,7 @@ final class CardView: UIView {
     }
 
     private func applyElevation() {
-        let shadow = Elevation.cardShadow(for: traitCollection.userInterfaceStyle)
-        layer.shadowColor = shadow.color.cgColor
-        layer.shadowOpacity = shadow.opacity
-        layer.shadowOffset = shadow.offset
-        layer.shadowRadius = shadow.blur / 2
+        Elevation.cardShadow(for: traitCollection.userInterfaceStyle).apply(to: layer)
     }
 
     private static func header(title: String, systemImage: String?, iconTint: UIColor, accessory: Accessory) -> UIView {

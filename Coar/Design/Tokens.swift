@@ -235,6 +235,13 @@ enum Elevation {
         let offset: CGSize
         /// Design blur value; a `CALayer.shadowRadius` is half of it.
         let blur: CGFloat
+
+        func apply(to layer: CALayer) {
+            layer.shadowColor = color.cgColor
+            layer.shadowOpacity = opacity
+            layer.shadowOffset = offset
+            layer.shadowRadius = blur / 2
+        }
     }
 
     /// Card shadow for a given appearance.

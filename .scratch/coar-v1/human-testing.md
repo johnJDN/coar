@@ -46,3 +46,31 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Kind is fixed at creation; Change Target edits amount and period only.
 - [?] The Target card shows "20 a day" / "3 days a week" with a Change button and no "since" date.
 - [?] A daily yes/no habit is met by any check-in even if its stored target amount is 2 (ticket 04's form allowed it); the amount row no longer appears for that combination.
+
+## 06: Food: Items, Servings, Entries, timeline
+
+- [ ] Food tab: large title "Food" with "Today" under it; the week strip shows this Monday–Sunday week with today's number green and a dot; swipe right pages back a week at a time; tap a past day: the well moves, the subtitle shows the date, the timeline reloads; future days in this week are muted and do nothing.
+- [ ] Tap `+` on the 7 AM row: the sheet's subtitle reads "Today at 7:00 AM"; the toolbar `+` reads the current time instead. Tap "New food", type a name, Add serving, fill it in, Save, Save: the log page for the new food opens; Add: the Entry lands on the 7 AM row, the hour's dot turns green, the card shows "1 × <serving>", the macro letters in blue / pink / orange, and the kcal on the right.
+- [ ] Sheet row `+` (the square one): logs the default serving once at the sheet's time and closes the sheet at once.
+- [ ] Log page: pick the other serving (checkmark moves, the preview macros change), type 1.5, change the time; Add is disabled while the quantity is empty or 0.
+- [ ] Filter field: typing narrows the list as you type; "New food “chicken”" pre-fills the name; the Meals tab says "No meals yet".
+- [ ] Long-press a food row → Edit: rename it, add a serving, drag the handle to reorder, swipe a serving left to delete, toggle Default on a serving (the checkmark moves), Save; a food with no servings cannot be saved. Reopen: the order and default stick.
+- [ ] Long-press a food row → Archive: it leaves the list; its Entries on the timeline are unchanged; type its name in the filter: it appears dimmed with "Tap to restore"; tap → Restore brings it back.
+- [ ] Edit a food's serving macros (e.g. egg 70 → 78 kcal): Entries already logged keep 70; new ones get 78.
+- [ ] Tap an Entry: the detail opens with quantity, time, and the four macros; change 3 → 4: calories and grams scale; overtype a macro; Save is disabled until something changes; Save updates the card; Delete entry asks first and removes only that Entry.
+- [ ] Log at 11:50 PM: the Entry sits on the 11 PM row of today and does not appear on tomorrow.
+- [ ] Dynamic Type: the strip, hour rows, Entry cards, list rows and all three forms scale without clipping; check light and dark throughout, and that the tab bar minimises when the timeline scrolls.
+- [?] The timeline starts at 12 AM with all 24 hours and no auto-scroll; say if it should open at 6 AM or the current hour.
+- [?] The log page previews macros but does not edit them; corrections happen on the Entry detail.
+- [?] Stored Entry macros are totals for the whole quantity; changing the quantity on the detail scales them.
+- [?] The detail edits the time of day only; the Day never moves.
+- [?] Archived foods surface only under a matching filter (dimmed, tap to restore); no Archived section.
+- [?] Archive does not confirm; Delete entry does.
+- [?] Saving a new food goes straight to its log page rather than back to the list.
+- [?] Foods list alphabetically; no manual reorder.
+- [?] A serving's empty macro field means 0; grams optional; the first serving is the default until another is toggled.
+- [?] The strip's "today" is fixed when the tab is created (relaunch after midnight).
+- [?] `FoodItem`, `Serving`, `Entry` each gained an optional `id: UUID` (additive).
+- [?] The rail (a `fill` bar with hour dots) is a timeline axis, not a divider.
+- [?] The sheet is titled "Add Entry" with a "Filter" field; the Meals segment is present but empty until ticket 07.
+

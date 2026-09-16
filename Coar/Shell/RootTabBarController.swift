@@ -17,8 +17,8 @@ final class RootTabBarController: UITabBarController {
             UITab(title: "Habits", image: UIImage(systemName: "checkmark.circle.fill"), identifier: "habits") { [dependencies] _ in
                 Self.navigation(root: HabitsViewController(dependencies: dependencies))
             },
-            UITab(title: "Food", image: UIImage(systemName: "fork.knife"), identifier: "food") { _ in
-                Self.navigation(root: ScreenViewController(title: "Food"))
+            UITab(title: "Food", image: UIImage(systemName: "fork.knife"), identifier: "food") { [dependencies] _ in
+                Self.navigation(root: FoodViewController(dependencies: dependencies))
             },
             UITab(title: "Train", image: UIImage(systemName: "dumbbell.fill"), identifier: "train") { [dependencies] _ in
                 Self.navigation(root: TrainViewController(dependencies: dependencies))
