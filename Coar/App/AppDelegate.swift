@@ -14,6 +14,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             store: isTestHost ? Store.inMemory() : Store.live(),
             preferences: Preferences(),
             health: health,
+            healthReader: health,
             bodyWeightWriter: health,
             restTimer: RestTimer()
         )

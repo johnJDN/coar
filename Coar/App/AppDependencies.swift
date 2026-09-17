@@ -7,6 +7,7 @@ struct AppDependencies {
     let store: Store
     let preferences: Preferences
     let health: HealthAccess
+    let healthReader: HealthReader
     let bodyWeightWriter: BodyWeightWriter
     /// The one rest timer, shared by the logger that starts it and the shell that shows it.
     let restTimer: RestTimer

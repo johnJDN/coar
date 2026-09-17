@@ -80,3 +80,70 @@ extension HealthKitAccess: BodyWeightWriter {
         try await healthStore.save(HKQuantitySample(type: type, quantity: quantity, start: instant, end: instant))
     }
 }
+
+// MARK: - Sleep and steps read
+
+extension HealthKitAccess: HealthReader {
+
+    /// Every sleep sample touching the nights that end on `days`, reduced per wake Day by
+    /// `SleepNight`. A read HealthKit has not been allowed simply returns no samples.
+    func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval] {
+        guard HKHealthStore.isHealthDataAvailable(), let first = days.min(), let last = days.max() else { return [:] }
+        let calendar = Calendar.current
+        let start = SleepNight.window(wakingOn: first, in: calendar).lowerBound
+        let end = SleepNight.window(wakingOn: last, in: calendar).upperBound
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.categorySample(type: HKCategoryType(.sleepAnalysis), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: []
+        )
+        let samples = try await descriptor.result(for: healthStore).compactMap(SleepSample.init)
+        var result: [Day: TimeInterval] = [:]
+        for day in days {
+            result[day] = SleepNight.timeAsleep(wakingOn: day, from: samples, in: calendar)
+        }
+        return result
+    }
+
+    /// The step sum per Day, from HealthKit's own statistics so a watch and a phone that
+    /// both counted the same walk are not added twice.
+    func steps(on days: [Day]) async throws -> [Day: Int] {
+        guard HKHealthStore.isHealthDataAvailable(), let first = days.min(), let last = days.max() else { return [:] }
+        let calendar = Calendar.current
+        let start = first.start(in: calendar)
+        let end = last.advanced(by: 1).start(in: calendar)
+        let descriptor = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(type: HKQuantityType(.stepCount), predicate: HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)),
+            options: .cumulativeSum,
+            anchorDate: start,
+            intervalComponents: DateComponents(day: 1)
+        )
+        let collection = try await descriptor.result(for: healthStore)
+        let wanted = Set(days)
+        var result: [Day: Int] = [:]
+        collection.enumerateStatistics(from: start, to: end) { statistics, _ in
+            guard let sum = statistics.sumQuantity() else { return }
+            let day = Day(statistics.startDate, in: calendar)
+            guard wanted.contains(day) else { return }
+            result[day] = Int(sum.doubleValue(for: .count()).rounded())
+        }
+        return result
+    }
+}
+
+private extension SleepSample {
+    /// A HealthKit sleep-analysis sample as the rule sees it; nil for a value this build
+    /// does not know.
+    init?(_ sample: HKCategorySample) {
+        let stage: Stage
+        switch HKCategoryValueSleepAnalysis(rawValue: sample.value) {
+        case .inBed: stage = .inBed
+        case .awake: stage = .awake
+        case .asleepUnspecified: stage = .asleepUnspecified
+        case .asleepCore: stage = .asleepCore
+        case .asleepDeep: stage = .asleepDeep
+        case .asleepREM: stage = .asleepREM
+        default: return nil
+        }
+        self.init(start: sample.startDate, end: sample.endDate, stage: stage)
+    }
+}

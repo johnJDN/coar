@@ -80,11 +80,11 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 | Token | Hex | Used for |
 |---|---|---|
 | `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. |
-| `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. |
+| `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. Steps (square icon, bars). |
 | `accentBlue` | `#6F8CFF` | Protein. |
 | `accentOrange` | `#F2A83B` | Carbs. |
 | `accentPink` | `#F0609C` | Fat. |
-| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep. Body Weight (chart, chip tile, Settings unit tile). |
+| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep (square icon, bars). Body Weight (chart, chip tile, Settings unit tile). |
 | `accentLime` | `#B6E857` | Secondary volume groups. Exercises (chip tile) and Progression (Estimated 1RM chart, hero card icon). |
 | `accentLavender` | `#8C8DF5` | AI / coach. Progress Photos (chip tile, compare pick ring). Gradient partner: `#B49CFF`. |
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |
@@ -169,6 +169,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | Macro consumed vs target | `DotMatrix` (one per macro, colors fixed) where it is the hero (Home). A thin bar per macro where it is a compact header over other content (Food tab summary row). Same accents either way. |
 | Streaks / consistency over weeks | Calendar heatmap, `surfaceSunken` cells, accent intensity by count |
 | Trend over time | Swift Charts line hosted in a `UIHostingController`, 2pt stroke in accent, bloom on last point, no gridlines, axis labels in `textTertiary` |
+| One value per Day over weeks (sleep, steps) | Swift Charts bars hosted the same way, one per Day that has a value, in the metric accent: latest bar saturated with bloom, earlier bars muted; Days without data are gaps, not zeros; no gridlines, axis labels in `textTertiary` |
 | Distribution across categories | Radial sector chart (volume by muscle group) |
 | Single total for a period | `HeroCounter` |
 | Rest timer / in-progress | Mini-player bar in the bottom accessory slot |

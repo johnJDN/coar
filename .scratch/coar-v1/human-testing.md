@@ -220,3 +220,24 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Captions say "3 photos" / "5 photos · tap two to compare" (short noun under the Progress Photos title); the delete alert says "progress photo".
 - [?] The pick ring is a 3 pt lavender border rather than a bloom.
 - [?] Settings → kg while on Compare: captions update in place without reloading the images.
+
+## 13: Sleep and Steps from HealthKit
+
+- [ ] Fresh install (or Settings → Health → Apps → Coar → Delete data and reset): Home shows Sleep | Steps squares with `No data` and "Tap to connect Apple Health"; tapping `No data` shows the system Health prompt; Turn On All: the squares fill with last night's time asleep ("7h 32m") and today's steps ("8,432") without leaving Home.
+- [ ] Sleep square agrees with the Health app's "Time Asleep" for last night (a Watch night with stages) to the minute; a night with only iPhone in-bed tracking shows `No data`.
+- [ ] Nap after lunch: Sleep on Home grows by the nap once Health has it; a doze after 6 PM does not change today's number (it belongs to tomorrow's night).
+- [ ] Steps square matches the Health app's step total for today and updates on returning to Home after a walk.
+- [ ] Tap the Sleep square (anywhere but the value): the detail pushes within Home; title "Sleep", subtitle "Last 30 days"; hero is last night, caption "30-day average …"; 30 bars in teal, the latest bar brighter with a glow, Days with nothing are gaps; x labels about weekly; y axis in hours. Same for Steps in amber with 0 / 5K / 10K.
+- [ ] Deny sleep in the prompt but allow steps: Sleep says `No data`, Steps has a value; the Sleep detail caption reads "Nothing in Apple Health for the last 30 days. Check Coar's access in the Health app."
+- [ ] iPad (no HealthKit): both squares `No data`, tapping the value does nothing, detail caption "Apple Health is not available on this device".
+- [ ] Settings sheet's Apple Health row reads "Connected" after prompting from Home.
+- [ ] Dynamic Type: the square heroes shrink to fit rather than clip; the detail hero, captions, and axis labels scale; check light and dark throughout.
+- [?] A night runs 6 PM to 6 PM (the Health app's sleep day): an afternoon nap joins the night before it, an evening doze joins the night after.
+- [?] Hours two sources both recorded (Watch stages under a sleep app's span) count once; a sample straddling 6 PM is split.
+- [?] A night with in-bed samples only (iPhone-only tracking) is `No data`, not 0.
+- [?] Steps take amber (DESIGN §3 "strain-style effort"); Sleep is teal.
+- [?] Tapping `No data` prompts only while the prompt has never been shown; afterwards the whole square opens the detail (HealthKit will not show the prompt twice).
+- [?] Past bars are the accent at 70%; only the latest bar is full with bloom; missing Days are gaps, not zero bars.
+- [?] The 30-day average counts only Days that have data.
+- [?] Home's ticket 01 placeholder "Today" card is gone; Home is the two squares until ticket 14.
+- [?] The empty detail shows `No data` twice: the hero slot and the chart slot (each is a value slot per DESIGN §1.5).
