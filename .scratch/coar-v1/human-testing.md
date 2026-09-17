@@ -173,3 +173,24 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Tapping ✓ no longer closes the keyboard (ticket 09 did); focus stays put.
 - [?] A rest default of 0 counts as none (120 s); the Exercise form rejects 0 anyway.
 - [?] The Superset link is lavender, matching the Plan editor's link button.
+
+## 11: Train: Exercise Progression
+
+- [ ] Train → Exercises → tap an Exercise: the detail page opens titled with its name and "Chest · Dumbbell · Rest 150 s"; with no history the Progression card reads `—`, "No sets logged for this exercise yet", and `No data` with no axes; Recent sets shows `—` and "Sets you log for this exercise land here."
+- [ ] Finish one Workout with a completed set of it: the card shows the Estimated 1RM as the hero (e.g. 92.6 lbs × 8 → 117 lbs), "Estimated 1RM · Sep 16", one bloomed lime point and no line; Recent sets has one card titled by the Day with "Push · 7:28 PM" and the sets as "92.6 lbs × 8".
+- [ ] After three or more Workouts: a 2 pt lime line through one point per Workout, small dots on earlier points, bloom on the last, about four date labels along the bottom (none truncated) and three values on the right, all muted, no gridlines, no legend; latest Workout first in Recent sets.
+- [ ] In the logger, tap the card's name or its "Progression" footer button: the page opens over the logger with today's completed sets already on the chart and in the list; the accessory bar stays hidden; back returns to the logger with the keyboard state as it was.
+- [ ] Edit on the page: the sheet opens filled in; rename and save: the title updates; Archive: the page stays and the catalogue lists it under Archived.
+- [ ] Settings → kg: the hero, axis, and set lines read in kg; back in lbs they agree.
+- [ ] Body Weight screen: the chart's end date labels no longer truncate; with nothing logged the slot shows only `No data` (no 0 / 0.5 / 1.0 axis).
+- [ ] Dynamic Type: the hero, caption, section header, set lines, and the two footer buttons scale without clipping; check light and dark throughout.
+- [?] Progression's accent is lime (matching the Exercises chip), not blue.
+- [?] The Active Workout's completed sets already count on the chart and in Recent sets.
+- [?] A completed set with 0 kg or 0 reps never counts; reps of 1 follow Epley literally.
+- [?] The hero Estimated 1RM is a whole number.
+- [?] Two rows of one Exercise in a Workout pool into one point and one card.
+- [?] Recent sets lists at most 10 Workouts.
+- [?] Tapping a catalogue row opens the page; Edit moved onto it.
+- [?] Workout detail cards do not open Progression.
+- [?] The Progression line is monotone (no overshoot); Body Weight keeps Catmull-Rom.
+- [?] A single point's value axis reads in halves (padding floor of 1, shared with Body Weight).

@@ -88,8 +88,8 @@ final class BodyWeightViewController: ScreenViewController {
         setHero(hero ?? "—", isEmpty: hero == nil)
         captionLabel.text = caption
 
-        let raw = records.map { BodyWeightChart.Point(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }
-        let smoothed = zip(raw, trend).map { BodyWeightChart.Point(date: $0.date, value: unit.displayValue(fromKilograms: $1)) }
+        let raw = records.map { TrendPoint(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }
+        let smoothed = zip(raw, trend).map { TrendPoint(date: $0.date, value: unit.displayValue(fromKilograms: $1)) }
         chart.rootView = BodyWeightChart(model: .init(raw: raw, trend: smoothed, unit: unit.symbol))
     }
 

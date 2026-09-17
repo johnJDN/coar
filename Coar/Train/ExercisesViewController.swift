@@ -2,8 +2,9 @@ import UIKit
 import os
 
 /// The Exercise catalogue, pushed from the Train root's Exercises chip: active Exercises by
-/// name (tap to edit), then an Archived section (tap to restore). `+` opens the Exercise
-/// sheet. Reads through the façade on every appearance and after every write.
+/// name (tap to open the Exercise's detail page, where Edit lives), then an Archived section
+/// (tap to restore). `+` opens the Exercise sheet. Reads through the façade on every
+/// appearance and after every write.
 final class ExercisesViewController: UIViewController {
 
     private static let logger = Logger(category: "Train")
@@ -171,8 +172,7 @@ extension ExercisesViewController: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
         switch dataSource.itemIdentifier(for: indexPath) {
         case .exercise(let id):
-            guard let exercise = exercises[id] else { return }
-            presentForm(.edit(exercise))
+            navigationController?.pushViewController(ExerciseDetailViewController(dependencies: dependencies, exerciseID: id), animated: true)
         case .archived(let id):
             guard let exercise = exercises[id] else { return }
             confirmRestore(exercise)

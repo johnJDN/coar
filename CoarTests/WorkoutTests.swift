@@ -277,6 +277,23 @@ final class WorkoutTests: XCTestCase {
         XCTAssertEqual(try store.recentWorkouts(limit: 1).map(\.id), [newer.id])
     }
 
+    func test_workoutsContainingAnExercise_listEveryWorkoutWithARowForIt_earliestFirst() throws {
+        let store = Store.inMemory()
+        let catalogue = try stock(store)
+        let push = try makePush(store, catalogue)
+        let fromPlan = try store.startWorkout(from: push.id, at: noon.addingTimeInterval(-48 * 3_600))
+        try store.finishWorkout(fromPlan.id, at: noon.addingTimeInterval(-47 * 3_600))
+        let legsOnly = try store.startWorkout(from: nil, at: noon.addingTimeInterval(-24 * 3_600))
+        try store.addExercise(catalogue.squat.id, to: legsOnly.id)
+        try store.finishWorkout(legsOnly.id, at: noon.addingTimeInterval(-23 * 3_600))
+        let active = try store.startWorkout(from: nil, at: noon)
+        try store.addExercise(catalogue.bench.id, to: active.id)
+
+        XCTAssertEqual(try store.workouts(containing: catalogue.bench.id).map(\.id), [fromPlan.id, active.id], "the Active Workout counts: its completed sets are real")
+        XCTAssertEqual(try store.workouts(containing: catalogue.squat.id).map(\.id), [fromPlan.id, legsOnly.id])
+        XCTAssertEqual(try store.workouts(containing: UUID()), [])
+    }
+
     // MARK: Stale
 
     func test_anActiveWorkoutIsStaleTwelveHoursAfterItStarted() throws {

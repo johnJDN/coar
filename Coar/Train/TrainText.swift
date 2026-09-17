@@ -14,6 +14,11 @@ enum TrainText {
         return "\(weightValue(kilograms, in: unit)) \(unit.symbol)"
     }
 
+    /// "257 lbs": an Estimated 1RM in the display unit, whole, since it is an estimate.
+    static func estimatedOneRepMax(_ kilograms: Double, in unit: MassUnit) -> String {
+        "\(unit.displayValue(fromKilograms: kilograms).formatted(.number.precision(.fractionLength(0)))) \(unit.symbol)"
+    }
+
     /// The scheme of a row's Planned Sets: "3 × 8–12 · 135 lbs" when every set is the same
     /// (the weight left off when there is none), "3 sets" when they differ, "No sets".
     static func scheme(of sets: [PlannedSetDraft], in unit: MassUnit) -> String {

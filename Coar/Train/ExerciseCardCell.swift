@@ -2,9 +2,10 @@ import UIKit
 
 /// `ExerciseCard` (DESIGN.md §7) in the live logger: the row's name, "A1 · Barbell · 3 sets",
 /// a timer button (starts the rest timer with this row's rest default by hand), a `…` menu
-/// (Remove exercise), one `SetRow` per Logged Set, and an Add set footer. The Progression
-/// footer arrives with ticket 11. Set rows are kept in place across re-renders so a field
-/// being typed in never loses the keyboard; a long-press on a row offers Remove set.
+/// (Remove exercise), one `SetRow` per Logged Set, and the footer's split actions,
+/// Progression | Add set. Tapping the header opens Progression too. Set rows are kept in
+/// place across re-renders so a field being typed in never loses the keyboard; a long-press
+/// on a row offers Remove set.
 final class ExerciseCardCell: CardCell {
 
     struct Model: Equatable {
@@ -13,6 +14,8 @@ final class ExerciseCardCell: CardCell {
         /// What the timer button starts: the row's rest default, or the 120 s fallback.
         let restSeconds: Int
         let sets: [SetRowView.Model]
+        /// False when the row's Exercise is gone from the catalogue: there is no page to open.
+        let canOpenProgression: Bool
     }
 
     var onChangeSet: ((LoggedSetRecord.ID, _ weight: String, _ reps: String) -> Void)?
@@ -22,11 +25,16 @@ final class ExerciseCardCell: CardCell {
     var onRemoveExercise: (() -> Void)?
     /// The timer button, with the row's rest duration.
     var onStartRest: ((_ seconds: Int) -> Void)?
+    /// The header or the Progression footer action.
+    var onOpenProgression: (() -> Void)?
 
     private let nameLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let timerButton = UIButton(configuration: .plain())
     private let moreButton = UIButton(configuration: .plain())
+    private let headerText = UIStackView()
+    private let headerTap = UITapGestureRecognizer()
+    private let progressionButton = UIButton(configuration: .footerAction(title: "Progression", systemImage: "chart.line.uptrend.xyaxis"))
     private let setsStack = UIStackView()
     private var rows: [SetRowView] = []
     private var setIDs: [LoggedSetRecord.ID] = []
@@ -44,9 +52,13 @@ final class ExerciseCardCell: CardCell {
         subtitleLabel.textColor = UIColor.textSecondary
         subtitleLabel.adjustsFontForContentSizeCategory = true
 
-        let text = UIStackView(arrangedSubviews: [nameLabel, subtitleLabel])
-        text.axis = .vertical
-        text.spacing = 2
+        headerText.addArrangedSubview(nameLabel)
+        headerText.addArrangedSubview(subtitleLabel)
+        headerText.axis = .vertical
+        headerText.spacing = 2
+        headerTap.addTarget(self, action: #selector(headerTapped))
+        headerText.addGestureRecognizer(headerTap)
+        nameLabel.accessibilityHint = "Opens progression"
 
         timerButton.configuration?.image = UIImage(systemName: "timer")
         timerButton.configuration?.baseForegroundColor = UIColor.textSecondary
@@ -69,28 +81,22 @@ final class ExerciseCardCell: CardCell {
         moreButton.accessibilityLabel = "More"
         moreButton.setContentHuggingPriority(.required, for: .horizontal)
 
-        let header = UIStackView(arrangedSubviews: [text, timerButton, moreButton])
+        let header = UIStackView(arrangedSubviews: [headerText, timerButton, moreButton])
         header.axis = .horizontal
         header.alignment = .center
         header.spacing = 0
-        header.setCustomSpacing(Metrics.spaceTight, after: text)
+        header.setCustomSpacing(Metrics.spaceTight, after: headerText)
 
         setsStack.axis = .vertical
         setsStack.spacing = Metrics.spaceTight
 
-        var configuration = UIButton.Configuration.filled()
-        configuration.title = "Add set"
-        configuration.image = UIImage(systemName: "plus")
-        configuration.imagePadding = Metrics.spaceTight
-        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .footnote, scale: .medium)
-        configuration.cornerStyle = .capsule
-        configuration.baseBackgroundColor = UIColor.fill
-        configuration.baseForegroundColor = UIColor.textPrimary
-        configuration.buttonSize = .small
-        configuration.titleTextAttributesTransformer = .cardTitle
-        let addSet = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.onAddSet?() })
-        let footer = UIStackView(arrangedSubviews: [addSet])
+        progressionButton.addAction(UIAction { [weak self] _ in self?.onOpenProgression?() }, for: .touchUpInside)
+        let addSet = UIButton(configuration: .footerAction(title: "Add set", systemImage: "plus"), primaryAction: UIAction { [weak self] _ in self?.onAddSet?() })
+        let footer = UIStackView(arrangedSubviews: [progressionButton, addSet])
+        footer.axis = .horizontal
         footer.alignment = .leading
+        footer.distribution = .fillEqually
+        footer.spacing = Metrics.spaceTight
 
         card.contentStack.addArrangedSubview(header)
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: header)
@@ -122,7 +128,14 @@ final class ExerciseCardCell: CardCell {
             row.configure(set)
         }
         setsStack.isHidden = model.sets.isEmpty
+        progressionButton.isHidden = !model.canOpenProgression
+        headerTap.isEnabled = model.canOpenProgression
+        nameLabel.accessibilityTraits = model.canOpenProgression ? .button : .staticText
         accessibilityLabel = "\(model.name), \(model.subtitle)"
+    }
+
+    @objc private func headerTapped() {
+        onOpenProgression?()
     }
 
     private func makeRow(at index: Int) -> SetRowView {
@@ -138,6 +151,23 @@ final class ExerciseCardCell: CardCell {
         row.addInteraction(UIContextMenuInteraction(delegate: self))
         setsStack.addArrangedSubview(row)
         return row
+    }
+}
+
+private extension UIButton.Configuration {
+    /// One of the card's footer actions: a small `fill` capsule with a leading symbol.
+    static func footerAction(title: String, systemImage: String) -> UIButton.Configuration {
+        var configuration = UIButton.Configuration.filled()
+        configuration.title = title
+        configuration.image = UIImage(systemName: systemImage)
+        configuration.imagePadding = Metrics.spaceTight
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .footnote, scale: .medium)
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = UIColor.fill
+        configuration.baseForegroundColor = UIColor.textPrimary
+        configuration.buttonSize = .small
+        configuration.titleTextAttributesTransformer = .cardTitle
+        return configuration
     }
 }
 

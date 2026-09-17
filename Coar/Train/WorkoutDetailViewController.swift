@@ -64,7 +64,7 @@ final class WorkoutDetailViewController: ScreenViewController {
             card.contentStack.addArrangedSubview(subtitle)
             card.contentStack.setCustomSpacing(Metrics.spaceInner, after: subtitle)
             for (index, set) in row.sets.enumerated() {
-                card.contentStack.addArrangedSubview(Self.setLine(number: index + 1, text: TrainText.setLine(set, in: unit)))
+                card.contentStack.addArrangedSubview(UIView.setLine(number: index + 1, text: TrainText.setLine(set, in: unit)))
             }
             contentStack.addArrangedSubview(card)
         }
@@ -77,28 +77,5 @@ final class WorkoutDetailViewController: ScreenViewController {
             parts.append(TrainText.duration(from: workout.startedAt, to: finishedAt))
         }
         return parts.joined(separator: " · ")
-    }
-
-    private static func setLine(number: Int, text: String) -> UIView {
-        let numberLabel = UILabel()
-        numberLabel.text = "\(number)"
-        numberLabel.font = UIFont.label
-        numberLabel.textColor = UIColor.textTertiary
-        numberLabel.adjustsFontForContentSizeCategory = true
-        numberLabel.widthAnchor.constraint(equalToConstant: 24).isActive = true
-
-        let value = UILabel()
-        value.text = text
-        value.font = UIFont.metricNumber
-        value.textColor = UIColor.textPrimary
-        value.adjustsFontForContentSizeCategory = true
-
-        let line = UIStackView(arrangedSubviews: [numberLabel, value])
-        line.axis = .horizontal
-        line.alignment = .firstBaseline
-        line.spacing = Metrics.spaceTight
-        line.isAccessibilityElement = true
-        line.accessibilityLabel = "Set \(number), \(text)"
-        return line
     }
 }

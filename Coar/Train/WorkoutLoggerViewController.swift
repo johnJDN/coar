@@ -121,6 +121,10 @@ final class WorkoutLoggerViewController: UIViewController {
             cell.onAddSet = { [weak self] in self?.addSet(to: id) }
             cell.onRemoveExercise = { [weak self] in self?.removeExercise(id) }
             cell.onStartRest = { [weak self] seconds in self?.dependencies.restTimer.start(seconds: seconds) }
+            cell.onOpenProgression = { [weak self] in
+                guard let exerciseID = row.exerciseID else { return }
+                self?.showProgression(of: exerciseID)
+            }
         }
         let gapCell = UICollectionView.CellRegistration<CardGapCell, Item> { _, _, _ in }
         let linkCell = UICollectionView.CellRegistration<SupersetLinkCell, Item> { _, _, _ in }
@@ -215,7 +219,8 @@ final class WorkoutLoggerViewController: UIViewController {
             name: row.name,
             subtitle: subtitle,
             restSeconds: RestTimerRule.seconds(restDefault: row.restSeconds),
-            sets: sets
+            sets: sets,
+            canOpenProgression: row.exerciseID != nil
         )
     }
 
@@ -297,6 +302,13 @@ final class WorkoutLoggerViewController: UIViewController {
             Self.logger.error("Failed to remove exercise row: \(error, privacy: .public)")
         }
         render()
+    }
+
+    /// The Exercise's detail page over the logger; the logger stays in the stack, so the
+    /// accessory bar stays hidden as it does under the picker.
+    private func showProgression(of exerciseID: ExerciseRecord.ID) {
+        view.endEditing(true)
+        navigationController?.pushViewController(ExerciseDetailViewController(dependencies: dependencies, exerciseID: exerciseID), animated: true)
     }
 
     private func pushPicker() {

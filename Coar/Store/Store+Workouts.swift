@@ -173,6 +173,17 @@ extension Store {
         return Set(try context.fetch(request).compactMap { $0.day.flatMap(Day.init(rawValue:)) })
     }
 
+    /// Every Workout with a row for the Exercise, earliest started first: what Progression
+    /// charts. The Active Workout counts too, since its completed sets are real; a Workout
+    /// whose rows only carry the Exercise's name (the Exercise since deleted) does not.
+    func workouts(containing exerciseID: ExerciseRecord.ID) throws -> [WorkoutRecord] {
+        guard let exercise = try fetchExercise(exerciseID) else { return [] }
+        let request = Workout.fetchRequest()
+        request.predicate = NSPredicate(format: "ANY exercises.exercise == %@", exercise)
+        request.sortDescriptors = [NSSortDescriptor(key: "startedAt", ascending: true)]
+        return try context.fetch(request).compactMap(WorkoutRecord.init)
+    }
+
     /// The latest finished Workouts, most recent first; the Active Workout is not history yet.
     func recentWorkouts(limit: Int) throws -> [WorkoutRecord] {
         let request = Workout.fetchRequest()
