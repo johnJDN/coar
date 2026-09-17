@@ -86,7 +86,7 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 | `accentPink` | `#F0609C` | Fat. |
 | `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep. Body Weight (chart, chip tile, Settings unit tile). |
 | `accentLime` | `#B6E857` | Secondary volume groups. Exercises (chip tile) and Progression (Estimated 1RM chart, hero card icon). |
-| `accentLavender` | `#8C8DF5` | AI / coach. Gradient partner: `#B49CFF`. |
+| `accentLavender` | `#8C8DF5` | AI / coach. Progress Photos (chip tile, compare pick ring). Gradient partner: `#B49CFF`. |
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |
 
 Rule: one accent per metric, used consistently everywhere that metric appears

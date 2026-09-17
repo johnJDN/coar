@@ -4,8 +4,7 @@ import os
 /// The Train root (DESIGN.md §11): the month grid of Workout Days (tap one to open its
 /// Workout, or the list when there were several), the row of three `PillChip`s, Start (a
 /// Plan or an empty Workout; Resume while one is active), the Plans section (tap a card to
-/// edit, New plan to add), Recent workouts, and an Archived section with Restore. Exercises
-/// and Body Weight are live; Progress Photos is ticket 12.
+/// edit, New plan to add), Recent workouts, and an Archived section with Restore.
 final class TrainViewController: ScreenViewController {
 
     private static let logger = Logger(category: "Train")
@@ -15,6 +14,7 @@ final class TrainViewController: ScreenViewController {
     private let calendar = MonthCalendarView()
     private let exercisesChip = PillChipView(title: "Exercises", systemImage: "figure.strengthtraining.traditional", tint: UIColor.accentLime)
     private let bodyWeightChip = PillChipView(title: "Body Weight", systemImage: "scalemass.fill", tint: UIColor.accentTeal)
+    private let photosChip = PillChipView(title: "Progress Photos", systemImage: "camera.fill", tint: UIColor.accentLavender)
     private let startButton = UIButton(configuration: .prominentGlass())
     /// The Workout Resume opens; nil while Start offers the menu instead.
     private var activeWorkoutID: WorkoutRecord.ID?
@@ -80,12 +80,11 @@ final class TrainViewController: ScreenViewController {
     // MARK: - Chips
 
     private func chipRow() -> UIView {
-        let photos = PillChipView(title: "Progress Photos", systemImage: "camera.fill", tint: UIColor.accentLavender)
-        photos.isEnabled = false
         exercisesChip.addAction(UIAction { [weak self] _ in self?.showExercises() }, for: .touchUpInside)
         bodyWeightChip.addAction(UIAction { [weak self] _ in self?.showBodyWeight() }, for: .touchUpInside)
+        photosChip.addAction(UIAction { [weak self] _ in self?.showProgressPhotos() }, for: .touchUpInside)
 
-        let chips = UIStackView(arrangedSubviews: [exercisesChip, bodyWeightChip, photos])
+        let chips = UIStackView(arrangedSubviews: [exercisesChip, bodyWeightChip, photosChip])
         chips.axis = .horizontal
         chips.spacing = Metrics.spaceTight
         chips.translatesAutoresizingMaskIntoConstraints = false
@@ -129,6 +128,13 @@ final class TrainViewController: ScreenViewController {
         } catch {
             Self.logger.error("Failed to read Exercises: \(error, privacy: .public)")
             exercisesChip.subtitle = nil
+        }
+        do {
+            let count = try dependencies.store.progressPhotos().count
+            photosChip.subtitle = count == 0 ? nil : TrainText.count(count, "photo")
+        } catch {
+            Self.logger.error("Failed to read Progress Photos: \(error, privacy: .public)")
+            photosChip.subtitle = nil
         }
     }
 
@@ -317,6 +323,10 @@ final class TrainViewController: ScreenViewController {
 
     private func showBodyWeight() {
         navigationController?.pushViewController(BodyWeightViewController(dependencies: dependencies), animated: true)
+    }
+
+    private func showProgressPhotos() {
+        navigationController?.pushViewController(ProgressPhotosViewController(dependencies: dependencies), animated: true)
     }
 
     private func showPlanEditor(_ mode: PlanEditorViewController.Mode) {

@@ -59,7 +59,7 @@ enum TrainText {
 
     /// "Sep 10".
     static func dayText(_ day: Day) -> String {
-        day.start().formatted(.dateTime.month(.abbreviated).day())
+        day.shortText
     }
 
     /// "6:12 PM".

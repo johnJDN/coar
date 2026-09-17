@@ -77,8 +77,8 @@ final class BodyWeightViewController: ScreenViewController {
         let caption: String
         if let latest = records.last {
             caption = trend.isEmpty
-                ? "\(Self.dayText(latest.day)) · Trend —"
-                : "Trend Weight · latest \(unit.displayText(fromKilograms: latest.kilograms)), \(Self.dayText(latest.day))"
+                ? "\(latest.day.shortText) · Trend —"
+                : "Trend Weight · latest \(unit.displayText(fromKilograms: latest.kilograms)), \(latest.day.shortText)"
         } else {
             caption = "No Body Weight yet"
         }
@@ -89,10 +89,6 @@ final class BodyWeightViewController: ScreenViewController {
         let raw = records.map { TrendPoint(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }
         let smoothed = zip(raw, trend).map { TrendPoint(date: $0.date, value: unit.displayValue(fromKilograms: $1)) }
         chart.rootView = BodyWeightChart(model: .init(raw: raw, trend: smoothed, unit: unit.symbol))
-    }
-
-    private static func dayText(_ day: Day) -> String {
-        day.start().formatted(.dateTime.month(.abbreviated).day())
     }
 
     // MARK: - Log

@@ -82,6 +82,11 @@ extension Day {
         Day(Self.gregorian.date(byAdding: .day, value: days, to: gregorianDate)!, in: Self.gregorian)
     }
 
+    /// How many Days from this one to `other`: positive when `other` is later.
+    func distance(to other: Day) -> Int {
+        Self.gregorian.dateComponents([.day], from: gregorianDate, to: other.gregorianDate).day!
+    }
+
     /// ISO weekday: Monday is 1, Sunday is 7. A Period week runs Monday to Sunday
     /// (CONTEXT.md "Period").
     var weekday: Int {

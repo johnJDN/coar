@@ -70,6 +70,21 @@ final class Store {
         try fetchBodyWeight(on: day).flatMap(BodyWeightRecord.init)
     }
 
+    /// The Body Weight on the Day closest to `day`, looking both ways; the earlier one when
+    /// two are equally close, nil when none is logged. What a Progress Photo's caption shows.
+    func bodyWeight(nearest day: Day) throws -> BodyWeightRecord? {
+        let before = try fetchBodyWeight(nearest: day, ascending: false)
+        let after = try fetchBodyWeight(nearest: day, ascending: true)
+        switch (before, after) {
+        case (let before?, let after?):
+            return before.day.distance(to: day) <= day.distance(to: after.day) ? before : after
+        case (let only?, nil), (nil, let only?):
+            return only
+        case (nil, nil):
+            return nil
+        }
+    }
+
     /// Every Body Weight in Day order, earliest first: the series the weight screen charts
     /// and Trend Weight smooths.
     func bodyWeights() throws -> [BodyWeightRecord] {
@@ -84,6 +99,19 @@ final class Store {
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
         request.fetchLimit = 1
         return try context.fetch(request).first
+    }
+
+    /// The latest Body Weight on or before `day` (descending), or the earliest on or after it
+    /// (ascending). Duplicates a pre-dedupe sync can leave resolve by latest `modifiedAt`.
+    private func fetchBodyWeight(nearest day: Day, ascending: Bool) throws -> BodyWeightRecord? {
+        let request = BodyWeight.fetchRequest()
+        request.predicate = NSPredicate(format: ascending ? "day >= %@" : "day <= %@", day.rawValue)
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "day", ascending: ascending),
+            NSSortDescriptor(key: "modifiedAt", ascending: false),
+        ]
+        request.fetchLimit = 1
+        return try context.fetch(request).first.flatMap(BodyWeightRecord.init)
     }
 
     // MARK: - Target

@@ -196,3 +196,24 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A single point's value axis reads in halves (padding floor of 1, shared with Body Weight).
 - [?] DESIGN §3 now lists Progression on lime's row and drops blue's "progression dot" note.
 - [?] Recent sets lists completed sets only, so the Active Workout's unticked sets appear once ticked.
+
+## 12: Progress Photos
+
+- [ ] Train root: the Progress Photos chip is live (lavender camera tile), subtitle `—` with none, then "1 photo" / "3 photos"; tapping opens the grid; with none the grid shows the `—` card "Tap + to take a progress photo or pick one from your library."
+- [ ] `+` → Take photo: the system asks "Coar uses the camera to take Progress Photos."; capture, Use Photo: the photo appears first in the grid captioned "Today"; the grid is three columns of rounded squares with the Day under each, newest first.
+- [ ] `+` → Choose from library: pick an older camera photo: it lands in Day order captioned with the Day it was taken (e.g. "Aug 2"), not today; pick a screenshot or a saved image with no EXIF date: it is captioned "Today". No permission prompt for the library.
+- [ ] Subtitle under the title reads "2 photos · tap two to compare" once there are two.
+- [ ] Tap a thumbnail: lavender ring and check; tap it again: cleared; tap two: Compare opens at once with the earlier photo on the left, each captioned with its Day and the nearest Body Weight ("185.3 lbs" on the same Day, "185.3 lbs on Sep 11" otherwise, `—` when none is logged; a Day between two weigh-ins picks the closer, the earlier on a tie). Back: the picks are cleared.
+- [ ] Settings → kg: the compare captions read in kg.
+- [ ] Long-press a thumbnail: View opens it alone (titled Progress Photo); Delete asks "Delete this photo?"; Cancel keeps it; Delete removes it from the grid and the chip count drops.
+- [ ] iCloud: a photo added on one device appears on the other within a minute (CloudKit asset); deleting it there removes it here.
+- [ ] Dynamic Type: grid captions, the compare Day and weight lines, and the empty card scale without clipping; check light and dark throughout.
+- [?] Library photos are dated by their EXIF date (the Day the camera was on), else today; camera captures are today.
+- [?] Photos are re-encoded as JPEG capped at 2048 px (plus a 400 px thumbnail) and stripped of metadata before storing; the original in Photos is untouched.
+- [?] Compare is pick-two with the second pick opening it; no separate Compare button or select mode.
+- [?] The earlier photo is always on the left, whatever the pick order.
+- [?] Long-press is where View and Delete live; a photo is deleted outright, never archived.
+- [?] Nearest Body Weight on a tie is the earlier Day.
+- [?] Take photo is hidden (not disabled) where there is no camera.
+- [?] Lavender is Progress Photos' accent (DESIGN §3), shared with AI / coach.
+- [?] `ProgressPhoto` gained optional `id: UUID` and `thumbnailData` (additive).
