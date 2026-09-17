@@ -265,4 +265,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Card titles may shrink to 65% in a half-width square rather than truncate.
 - [?] The native large title truncates at accessibility text sizes ("Today, September…"); UIKit never shrinks it.
 - [?] Launching a debug build with `-SeedSampleData` runs it on an in-memory store of sample records (never synced), for looking at screens.
+- [?] The first paint of Home shows `—` slots with no captions for the instant before the load lands, never "No habits yet".
+- [?] Tapping a day on the Food week strip no longer scrolls the strip; only Home's macros card scrolls it to today.
+- [?] A check-in from Home reloads all of Home (including the two Apple Health reads) rather than only the habits card.
 

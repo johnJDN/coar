@@ -20,7 +20,7 @@ final class HomeViewController: ScreenViewController {
     private let stepsSquare = HomeSquareControl(metric: .steps)
     private let bodyWeightSquare = HomeSquareControl(title: "Body Weight", systemImage: "scalemass.fill", iconTint: UIColor.accentTeal)
     private let lastWorkoutSquare = HomeSquareControl(title: "Last Workout", systemImage: "dumbbell.fill", iconTint: UIColor.accentGreen)
-    private var snapshot = HomeSnapshot.empty
+    private var snapshot = HomeSnapshot.placeholder
     private var loadTask: Task<Void, Never>?
     private var unitObservation: MassUnitObservation?
     private var timeObserver: NSObjectProtocol?
@@ -121,7 +121,7 @@ final class HomeViewController: ScreenViewController {
     private func render(_ snapshot: HomeSnapshot) {
         self.snapshot = snapshot
         habitsCard.render(snapshot.habits)
-        macrosCard.render(rows: snapshot.macros, hasTarget: snapshot.hasTarget)
+        macrosCard.render(snapshot.macros)
         sleepSquare.render(snapshot.sleep)
         stepsSquare.render(snapshot.steps)
         bodyWeightSquare.render(snapshot.bodyWeight)

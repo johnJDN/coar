@@ -108,21 +108,26 @@ extension WeekStripView: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: false)
-        select(days[indexPath.item])
+        moveSelection(to: days[indexPath.item])
     }
 }
 
 extension WeekStripView {
-    /// Selects a Day as a tap would, reporting it through `onSelect`, and scrolls its week
-    /// into view.
+    /// Selects a Day as a tap would, scrolling its week into view first: what Home's macros
+    /// card does to land Food on today.
     func select(_ day: Day) {
         guard day != selectedDay, day <= today, days.contains(day) else { return }
+        collectionView.scrollToItem(at: indexPath(of: day.startOfWeek), at: .left, animated: true)
+        moveSelection(to: day)
+    }
+
+    private func moveSelection(to day: Day) {
+        guard day != selectedDay else { return }
         let previous = selectedDay
         selectedDay = day
         var snapshot = dataSource.snapshot()
         snapshot.reconfigureItems([previous, day])
         dataSource.apply(snapshot, animatingDifferences: true)
-        collectionView.scrollToItem(at: indexPath(of: day.startOfWeek), at: .left, animated: true)
         onSelect?(day)
     }
 }

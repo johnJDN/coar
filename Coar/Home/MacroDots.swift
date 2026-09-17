@@ -19,9 +19,8 @@ struct MacroDots: Hashable {
     /// How much of the macro one dot stands for, in its unit.
     let unit: Double
     let total: Int
+    /// Filled by what was eaten, to the nearest dot; every dot once past the Target.
     let filled: Int
-    /// Eaten past the Target: every dot is filled and the value reads over.
-    let isOver: Bool
 
     init?(macro: Macro, consumed: Double, target: Double?) {
         guard let target, target > 0 else { return nil }
@@ -31,7 +30,6 @@ struct MacroDots: Hashable {
         self.unit = unit
         self.total = total
         filled = min(total, max(0, Int((consumed / unit).rounded())))
-        isOver = consumed > target
     }
 
     /// The rows the dots wrap into, evened out so a second row is never a stray dot.

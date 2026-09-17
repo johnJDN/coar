@@ -6,19 +6,18 @@ import UIKit
 /// as on the Habits tab. Tapping the card opens the Habits tab; the controls report through
 /// `onToggle` and `onAmountTap`, and the owner writes and re-renders. With no Habit the hero
 /// is `—` and the card stays (§1.5).
-final class HabitsCardControl: UIControl {
+final class HabitsCardControl: CardControl {
 
     var onToggle: ((HabitRecord.ID, Bool) -> Void)?
     var onAmountTap: ((HabitRecord.ID) -> Void)?
 
-    private let card = CardView(title: "Habits", systemImage: "checkmark.circle.fill", iconTint: UIColor.accentGreen, accessory: .navigates)
     private let heroLabel = HeroNumberLabel()
     private let captionLabel = UILabel()
     private let rowsStack = UIStackView()
     private var rows: [HabitRecord.ID: HabitRow] = [:]
 
     init() {
-        super.init(frame: .zero)
+        super.init(card: CardView(title: "Habits", systemImage: "checkmark.circle.fill", iconTint: UIColor.accentGreen, accessory: .navigates), interactiveContent: true)
 
         heroLabel.setContentHuggingPriority(.required, for: .horizontal)
         captionLabel.font = UIFont.label
@@ -37,21 +36,8 @@ final class HabitsCardControl: UIControl {
         card.contentStack.addArrangedSubview(hero)
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: hero)
         card.contentStack.addArrangedSubview(rowsStack)
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
-
-        accessibilityTraits = .button
-        render(HomeSnapshot.empty.habits)
+        render(HomeSnapshot.placeholder.habits)
     }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     /// Rows keep their views between renders, so a toggle's spring is not cut short by the
     /// re-render its own write triggers; the stack is rebuilt only when the Habits change.
@@ -83,33 +69,26 @@ final class HabitsCardControl: UIControl {
         rows[id] = row
         return row
     }
-
-    override var isHighlighted: Bool {
-        didSet { card.alpha = isHighlighted ? 0.85 : 1 }
-    }
 }
 
-/// One Habit as a `MetricRow`: emoji, name, and today's control, configured as the Habits
-/// tab's card header is.
+/// One Habit as a `MetricRow`: emoji, name, and today's control, the same
+/// `HabitCheckInControls` the Habits tab's card has.
 private final class HabitRow: UIView {
 
     let id: HabitRecord.ID
     var onToggle: ((Bool) -> Void)?
     var onAmountTap: (() -> Void)?
 
-    private let toggle = CheckToggleView()
-    private let amountControl = AmountControlView()
+    private let controls = HabitCheckInControls()
     private let row: MetricRowView
 
     init(id: HabitRecord.ID) {
         self.id = id
-        let controls = UIStackView(arrangedSubviews: [toggle, amountControl])
-        controls.axis = .horizontal
         row = MetricRowView(trailing: controls)
         super.init(frame: .zero)
 
-        toggle.onToggle = { [weak self] on in self?.onToggle?(on) }
-        amountControl.onTap = { [weak self] in self?.onAmountTap?() }
+        controls.onToggle = { [weak self] on in self?.onToggle?(on) }
+        controls.onAmountTap = { [weak self] in self?.onAmountTap?() }
 
         row.translatesAutoresizingMaskIntoConstraints = false
         addSubview(row)
@@ -126,15 +105,6 @@ private final class HabitRow: UIView {
 
     func configure(with model: HabitCardModel) {
         row.configure(leading: .emoji(model.emoji), title: model.name)
-        toggle.isHidden = model.kind != .yesNo
-        amountControl.isHidden = model.kind != .quantitative
-        switch model.kind {
-        case .yesNo:
-            toggle.setOn(model.isDoneToday, animated: false)
-            toggle.accessibilityLabel = "Check in \(model.name)"
-        case .quantitative:
-            amountControl.setAmount(model.todayAmount, isMet: model.isDoneToday, animated: true)
-            amountControl.accessibilityLabel = "Check in \(model.name)"
-        }
+        controls.configure(with: model)
     }
 }

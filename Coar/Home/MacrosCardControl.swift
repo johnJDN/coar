@@ -7,49 +7,34 @@ import UIKit
 /// their accents. With no Target the numbers stay, the captions read `— target`, there are
 /// no dot rows, and a Set targets action opens Settings (`.scratch/data-model/issues/02`).
 /// Tapping the card opens Food on today.
-final class MacrosCardControl: UIControl {
+final class MacrosCardControl: CardControl {
 
     var onSetTargets: (() -> Void)?
 
-    private let card = CardView(title: "Macros", systemImage: "fork.knife", accessory: .navigates)
     private let rows = Macro.allCases.map(MacroRowView.init)
-    private lazy var setTargets = UIButton.inCardAction(title: "Set targets", systemImage: "target") { [weak self] in self?.onSetTargets?() }
+    /// The Set targets row, shown only while no Target is in force.
+    private let actions = UIStackView()
 
     init() {
-        super.init(frame: .zero)
+        super.init(card: CardView(title: "Macros", systemImage: "fork.knife", accessory: .navigates), interactiveContent: true)
 
         for row in rows {
             card.contentStack.addArrangedSubview(row)
             card.contentStack.setCustomSpacing(Metrics.spaceInner, after: row)
         }
-        let actions = UIStackView(arrangedSubviews: [setTargets, UIView()])
+        let setTargets = UIButton.inCardAction(title: "Set targets", systemImage: "target") { [weak self] in self?.onSetTargets?() }
         actions.axis = .horizontal
+        actions.addArrangedSubview(setTargets)
+        actions.addArrangedSubview(UIView())
         card.contentStack.addArrangedSubview(actions)
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
-
-        accessibilityTraits = .button
-        render(rows: HomeSnapshot.empty.macros, hasTarget: false)
+        render(HomeSnapshot.placeholder.macros)
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    func render(rows models: [HomeSnapshot.MacroRow], hasTarget: Bool) {
-        for (row, model) in zip(rows, models) {
+    func render(_ macros: HomeSnapshot.Macros) {
+        for (row, model) in zip(rows, macros.rows) {
             row.configure(with: model, animated: window != nil)
         }
-        setTargets.superview?.isHidden = hasTarget
-    }
-
-    override var isHighlighted: Bool {
-        didSet { card.alpha = isHighlighted ? 0.85 : 1 }
+        actions.isHidden = macros.hasTarget
     }
 }
 
@@ -82,8 +67,9 @@ private final class MacroRowView: UIView {
         header.spacing = Metrics.spaceTight / 2
 
         // Calories is the card's hero (DESIGN.md §10); the others are metric numbers in their accent (§5).
-        valueLabel.font = macro == .calories ? UIFont.heroNumber : UIFont.metricNumber
-        valueLabel.textColor = macro == .calories ? UIColor.textPrimary : macro.uiAccent
+        let isHero = macro == .calories
+        valueLabel.font = isHero ? UIFont.heroNumber : UIFont.metricNumber
+        valueLabel.textColor = isHero ? UIColor.textPrimary : macro.uiAccent
         valueLabel.adjustsFontForContentSizeCategory = true
         valueLabel.setContentHuggingPriority(.required, for: .horizontal)
         captionLabel.font = UIFont.label

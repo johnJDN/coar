@@ -2,13 +2,10 @@ import UIKit
 
 /// A Plan on the Train root (DESIGN.md §7 `Card` with a trailing `→`): its name, how many
 /// Exercises it has, and their names. Tapping opens the editor.
-final class PlanCardControl: UIControl {
-
-    private let card: CardView
+final class PlanCardControl: CardControl {
 
     init(plan: PlanRecord) {
-        card = CardView(title: plan.name, systemImage: "list.bullet.rectangle.fill", accessory: .navigates)
-        super.init(frame: .zero)
+        super.init(card: CardView(title: plan.name, systemImage: "list.bullet.rectangle.fill", accessory: .navigates))
 
         let count = UILabel()
         count.text = TrainText.count(plan.exercises.count, "exercise")
@@ -25,26 +22,9 @@ final class PlanCardControl: UIControl {
 
         card.contentStack.addArrangedSubview(count)
         card.contentStack.addArrangedSubview(names)
-        card.isUserInteractionEnabled = false
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
 
         isAccessibilityElement = true
-        accessibilityTraits = .button
         accessibilityLabel = "\(plan.name), \(count.text ?? "")"
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    override var isHighlighted: Bool {
-        didSet { card.alpha = isHighlighted ? 0.85 : 1 }
     }
 }
 

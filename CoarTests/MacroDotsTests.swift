@@ -12,7 +12,6 @@ final class MacroDotsTests: XCTestCase {
         XCTAssertEqual(dots.unit, 5)
         XCTAssertEqual(dots.total, 36)
         XCTAssertEqual(dots.filled, 28)
-        XCTAssertFalse(dots.isOver)
     }
 
     func test_caloriesAreOneDotPerFiftyKilocalories_inTwoEvenRows() throws {
@@ -33,11 +32,10 @@ final class MacroDotsTests: XCTestCase {
         XCTAssertEqual(dots.columns, 20)
     }
 
-    func test_overTheTarget_everyDotIsFilled_andTheMatrixSaysSo() throws {
+    func test_overTheTarget_everyDotIsFilled() throws {
         let dots = try XCTUnwrap(MacroDots(macro: .calories, consumed: 2_500, target: 2_100))
 
         XCTAssertEqual(dots.filled, dots.total)
-        XCTAssertTrue(dots.isOver)
     }
 
     func test_aShortRow_fitsOneLine() throws {

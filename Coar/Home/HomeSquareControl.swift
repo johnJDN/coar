@@ -5,7 +5,7 @@ import UIKit
 /// square is a control: tapping it opens the screen behind it. A Health square can also let
 /// the empty value slot show the Apple Health prompt (spec story 80). Wrapped as a control
 /// the way the Train root's cards are.
-final class HomeSquareControl: UIControl {
+final class HomeSquareControl: CardControl {
 
     /// Runs when the empty value slot is tapped while the square `connects`.
     var onTapEmpty: (() -> Void)?
@@ -13,7 +13,6 @@ final class HomeSquareControl: UIControl {
     private let title: String
     private let emptyText: String
     private let emptyActionName: String?
-    private let card: CardView
     private let heroLabel = HeroNumberLabel()
     private let captionLabel = UILabel()
 
@@ -23,8 +22,7 @@ final class HomeSquareControl: UIControl {
         self.title = title
         self.emptyText = emptyText
         self.emptyActionName = emptyActionName
-        card = CardView(title: title, systemImage: systemImage, iconTint: iconTint, accessory: .navigates)
-        super.init(frame: .zero)
+        super.init(card: CardView(title: title, systemImage: systemImage, iconTint: iconTint, accessory: .navigates), interactiveContent: true)
 
         heroLabel.adjustsFontSizeToFitWidth = true
         heroLabel.minimumScaleFactor = 0.5
@@ -39,23 +37,11 @@ final class HomeSquareControl: UIControl {
         card.contentStack.addArrangedSubview(spacer)
         card.contentStack.addArrangedSubview(heroLabel)
         card.contentStack.addArrangedSubview(captionLabel)
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-            heightAnchor.constraint(equalTo: widthAnchor),
-        ])
+        heightAnchor.constraint(equalTo: widthAnchor).isActive = true
 
         isAccessibilityElement = true
-        accessibilityTraits = .button
         render(HomeSquare(value: nil, caption: ""))
     }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     func render(_ square: HomeSquare) {
         heroLabel.setValue(square.value ?? emptyText, isEmpty: square.value == nil)
@@ -63,13 +49,11 @@ final class HomeSquareControl: UIControl {
         captionLabel.text = square.caption
 
         accessibilityLabel = "\(title), \(square.value ?? emptyText), \(square.caption)"
-        accessibilityCustomActions = square.connects && emptyActionName != nil
-            ? [UIAccessibilityCustomAction(name: emptyActionName ?? "") { [weak self] _ in self?.onTapEmpty?(); return true }]
-            : []
-    }
-
-    override var isHighlighted: Bool {
-        didSet { card.alpha = isHighlighted ? 0.85 : 1 }
+        if square.connects, let emptyActionName {
+            accessibilityCustomActions = [UIAccessibilityCustomAction(name: emptyActionName) { [weak self] _ in self?.onTapEmpty?(); return true }]
+        } else {
+            accessibilityCustomActions = []
+        }
     }
 }
 

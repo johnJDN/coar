@@ -3,13 +3,10 @@ import UIKit
 /// A Workout on the Train root's Recent workouts section or a Day's list (DESIGN.md §7
 /// `Card` with a trailing `→`): its title (the Plan's name, or "Empty workout"), when it
 /// ran, and what it held. Tapping opens the Workout.
-final class WorkoutCardControl: UIControl {
-
-    private let card: CardView
+final class WorkoutCardControl: CardControl {
 
     init(workout: WorkoutRecord) {
-        card = CardView(title: workout.title, systemImage: "dumbbell.fill", iconTint: workout.isActive ? UIColor.accentGreen : UIColor.textPrimary, accessory: .navigates)
-        super.init(frame: .zero)
+        super.init(card: CardView(title: workout.title, systemImage: "dumbbell.fill", iconTint: workout.isActive ? UIColor.accentGreen : UIColor.textPrimary, accessory: .navigates))
 
         let when = UILabel()
         when.text = Self.whenText(workout)
@@ -26,26 +23,9 @@ final class WorkoutCardControl: UIControl {
 
         card.contentStack.addArrangedSubview(when)
         card.contentStack.addArrangedSubview(caption)
-        card.isUserInteractionEnabled = false
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
 
         isAccessibilityElement = true
-        accessibilityTraits = .button
         accessibilityLabel = "\(workout.title), \(when.text ?? ""), \(caption.text ?? "")"
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    override var isHighlighted: Bool {
-        didSet { card.alpha = isHighlighted ? 0.85 : 1 }
     }
 
     /// "6:12 PM · 50 min" once finished; "Active · since 6:12 PM" while it is the Active Workout.

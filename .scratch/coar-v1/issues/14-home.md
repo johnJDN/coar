@@ -51,3 +51,23 @@
   of 0 for one macro renders that row as no-target; `— target` captions in `textTertiary`;
   card titles shrink to fit in the squares; the Home cards are `UIControl`s so inline controls
   take their own taps and the card takes the rest.
+- 2026-09-16 (agent, after /code-review): `CardControl` (Design) is the one card-as-control
+  wrapper, now under the three Home cards and the Train root's Plan and Workout cards;
+  `HabitCheckInControls` is the one toggle-or-amount control, shared by `HabitCardCell` and
+  Home's rows; the glass and in-card capsule actions share one builder; `HomeSnapshot.Macros`
+  bundles the rows with `hasTarget` (mirroring `Habits`), the empty-form strings live once,
+  and the first paint is a caption-less placeholder rather than a false "No habits yet";
+  `MacroDots.isOver` (used only by a test) is gone; the week strip's tap path no longer
+  scrolls (only Home's programmatic `select(_:)` does); `removeCheckIn` has its doc comment
+  back; DESIGN's hosting line now names `UIHostingConfiguration.makeContentView()` for a
+  leaf under a UIKit header (the `DotMatrix` rows), which the review had flagged against the
+  older wording. Left as deliberate: the greeting varies by time of day; the Last Workout
+  hero is "how long ago" and the Plan name its caption (story 8 names both; the Day is what
+  answers "am I due"); `DebugSeed` stays as a debug-only aid; a check-in from Home reloads
+  the whole snapshot (two quick Health reads) rather than just the habits card; the nearest-
+  dot fill (30 kcal lights a 50 kcal dot); the card-title shrink applies to every `CardView`
+  header, though only the squares ever need it; Home's Body Weight caption logic restates
+  the weight screen's shorter form rather than sharing a type; Home routes through
+  `RootTabBarController.select(_:)` and a cast to `FoodViewController` rather than a
+  Food-specific method on the root.
+

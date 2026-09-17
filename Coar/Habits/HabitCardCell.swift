@@ -11,8 +11,7 @@ final class HabitCardCell: CardCell {
 
     private let emojiLabel = UILabel()
     private let nameLabel = UILabel()
-    private let toggle = CheckToggleView()
-    private let amountControl = AmountControlView()
+    private let controls = HabitCheckInControls()
     private let streak = StreakHeroView()
     private let heatmap = HeatmapView()
 
@@ -28,12 +27,10 @@ final class HabitCardCell: CardCell {
         nameLabel.adjustsFontForContentSizeCategory = true
         nameLabel.numberOfLines = 2
 
-        toggle.onToggle = { [weak self] on in self?.onToggle?(on) }
-        toggle.setContentHuggingPriority(.required, for: .horizontal)
-        amountControl.onTap = { [weak self] in self?.onAmountTap?() }
-        amountControl.setContentHuggingPriority(.required, for: .horizontal)
+        controls.onToggle = { [weak self] on in self?.onToggle?(on) }
+        controls.onAmountTap = { [weak self] in self?.onAmountTap?() }
 
-        let header = UIStackView(arrangedSubviews: [emojiLabel, nameLabel, toggle, amountControl])
+        let header = UIStackView(arrangedSubviews: [emojiLabel, nameLabel, controls])
         header.axis = .horizontal
         header.alignment = .center
         header.spacing = Metrics.spaceTight
@@ -47,23 +44,13 @@ final class HabitCardCell: CardCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         streak.reset()
-        toggle.reset()
-        amountControl.reset()
+        controls.reset()
     }
 
     func configure(with model: HabitCardModel) {
         emojiLabel.text = model.emoji
         nameLabel.text = model.name
-        toggle.isHidden = model.kind != .yesNo
-        amountControl.isHidden = model.kind != .quantitative
-        switch model.kind {
-        case .yesNo:
-            toggle.setOn(model.isDoneToday, animated: false)
-            toggle.accessibilityLabel = "Check in \(model.name)"
-        case .quantitative:
-            amountControl.setAmount(model.todayAmount, isMet: model.isDoneToday, animated: true)
-            amountControl.accessibilityLabel = "Check in \(model.name)"
-        }
+        controls.configure(with: model)
         streak.setStreak(model.streak, unit: model.streakUnit, caption: model.weekCaption)
         heatmap.cells = model.heatmap
         heatmap.weekDots = model.weekDots

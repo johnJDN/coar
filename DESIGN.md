@@ -16,8 +16,9 @@ minimalist "one hero card per domain" density. Every screen is checked against t
   It never owns navigation, never fetches data, and never keeps state UIKit also reads.
 - **Tokens are exposed twice:** every colour and font token has a `UIColor`/`UIFont` form
   and a `Color`/`Font` form generated from the same source, so the halves cannot drift.
-- Hosting: `UIHostingConfiguration` for cells (self-sizing); `UIHostingController` with
-  explicit `sizingOptions` when embedded in a scroll view.
+- Hosting: `UIHostingConfiguration` for cells (self-sizing) and, via `makeContentView()`,
+  for a small leaf inside a UIKit view (a `DotMatrix` under its UIKit header); a
+  `UIHostingController` with explicit `sizingOptions` for a chart embedded in a scroll view.
 
 ## 1. Principles
 
