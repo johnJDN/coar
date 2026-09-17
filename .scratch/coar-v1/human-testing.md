@@ -217,3 +217,6 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Take photo is hidden (not disabled) where there is no camera.
 - [?] Lavender is Progress Photos' accent (DESIGN §3), shared with AI / coach.
 - [?] `ProgressPhoto` gained optional `id: UUID` and `thumbnailData` (additive).
+- [?] Captions say "3 photos" / "5 photos · tap two to compare" (short noun under the Progress Photos title); the delete alert says "progress photo".
+- [?] The pick ring is a 3 pt lavender border rather than a bloom.
+- [?] Settings → kg while on Compare: captions update in place without reloading the images.

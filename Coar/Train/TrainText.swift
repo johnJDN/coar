@@ -54,12 +54,7 @@ enum TrainText {
     /// "Sep 10 · 3 exercises · 12 sets": what a Workout card says under its title.
     static func caption(of workout: WorkoutRecord) -> String {
         let sets = workout.exercises.reduce(0) { $0 + $1.sets.count }
-        return [dayText(workout.day), count(workout.exercises.count, "exercise"), count(sets, "set")].joined(separator: " · ")
-    }
-
-    /// "Sep 10".
-    static func dayText(_ day: Day) -> String {
-        day.shortText
+        return [workout.day.shortText, count(workout.exercises.count, "exercise"), count(sets, "set")].joined(separator: " · ")
     }
 
     /// "6:12 PM".

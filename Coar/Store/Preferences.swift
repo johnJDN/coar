@@ -27,4 +27,26 @@ final class Preferences {
             NotificationCenter.default.post(name: Self.massUnitDidChange, object: self)
         }
     }
+
+    /// Calls `handler` on the main actor whenever the unit changes, for as long as the returned
+    /// token lives. A screen keeps the token in a property and forgets about it.
+    func observeMassUnit(_ handler: @escaping @MainActor () -> Void) -> MassUnitObservation {
+        let token = NotificationCenter.default.addObserver(forName: Self.massUnitDidChange, object: self, queue: .main) { _ in
+            MainActor.assumeIsolated { handler() }
+        }
+        return MassUnitObservation(token: token)
+    }
+}
+
+/// A live `observeMassUnit` subscription; releasing it ends the subscription.
+final class MassUnitObservation {
+    private let token: NSObjectProtocol
+
+    fileprivate init(token: NSObjectProtocol) {
+        self.token = token
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(token)
+    }
 }

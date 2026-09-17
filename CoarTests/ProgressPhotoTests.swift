@@ -47,6 +47,15 @@ final class ProgressPhotoTests: XCTestCase {
         XCTAssertEqual(try Store.inMemory().progressPhotos(), [])
     }
 
+    func test_progressPhotoCount_countsWhatIsStored() throws {
+        let store = Store.inMemory()
+        XCTAssertEqual(try store.progressPhotoCount(), 0)
+        try store.addProgressPhoto(image: image, thumbnail: thumbnail, on: sep12)
+        try store.addProgressPhoto(image: image, thumbnail: thumbnail, on: sep12)
+
+        XCTAssertEqual(try store.progressPhotoCount(), 2)
+    }
+
     // MARK: - Bytes
 
     func test_progressPhotoImageAndThumbnail_readBackTheBytesThatWereStored() throws {

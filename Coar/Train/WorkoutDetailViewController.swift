@@ -10,7 +10,7 @@ final class WorkoutDetailViewController: ScreenViewController {
 
     private let dependencies: AppDependencies
     private let workoutID: WorkoutRecord.ID
-    private var unitObserver: NSObjectProtocol?
+    private var unitObservation: MassUnitObservation?
 
     init(dependencies: AppDependencies, workoutID: WorkoutRecord.ID) {
         self.dependencies = dependencies
@@ -18,18 +18,10 @@ final class WorkoutDetailViewController: ScreenViewController {
         super.init(title: "")
     }
 
-    deinit {
-        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.largeTitleDisplayMode = .never
-        unitObserver = NotificationCenter.default.addObserver(
-            forName: Preferences.massUnitDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.render() }
-        }
+        unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -62,7 +54,7 @@ final class WorkoutDetailViewController: ScreenViewController {
 
     /// "Sep 10 · 6:12 PM · 50 min".
     private static func subtitle(for workout: WorkoutRecord) -> String {
-        var parts = [TrainText.dayText(workout.day), TrainText.timeText(workout.startedAt)]
+        var parts = [workout.day.shortText, TrainText.timeText(workout.startedAt)]
         if let finishedAt = workout.finishedAt {
             parts.append(TrainText.duration(from: workout.startedAt, to: finishedAt))
         }

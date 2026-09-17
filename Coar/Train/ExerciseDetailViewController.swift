@@ -21,16 +21,12 @@ final class ExerciseDetailViewController: ScreenViewController {
     private let chart = UIHostingController(rootView: ProgressionChart(model: .init(points: [], unit: "")))
     private let recentStack = UIStackView()
     private var exercise: ExerciseRecord?
-    private var unitObserver: NSObjectProtocol?
+    private var unitObservation: MassUnitObservation?
 
     init(dependencies: AppDependencies, exerciseID: ExerciseRecord.ID) {
         self.dependencies = dependencies
         self.exerciseID = exerciseID
         super.init(title: "")
-    }
-
-    deinit {
-        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
     }
 
     override func viewDidLoad() {
@@ -70,11 +66,7 @@ final class ExerciseDetailViewController: ScreenViewController {
         recentStack.spacing = Metrics.spaceCard
         contentStack.addArrangedSubview(recentStack)
 
-        unitObserver = NotificationCenter.default.addObserver(
-            forName: Preferences.massUnitDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.render() }
-        }
+        unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -102,7 +94,7 @@ final class ExerciseDetailViewController: ScreenViewController {
         let points = Progression.points(for: exerciseID, in: workouts)
         if let latest = points.last, let workout = workouts.first(where: { $0.id == latest.workoutID }) {
             heroLabel.setValue(TrainText.estimatedOneRepMax(latest.kilograms, in: unit), isEmpty: false)
-            captionLabel.text = "Estimated 1RM · \(TrainText.dayText(workout.day))"
+            captionLabel.text = "Estimated 1RM · \(workout.day.shortText)"
         } else {
             heroLabel.setValue("—", isEmpty: true)
             captionLabel.text = "No sets logged for this exercise yet"
@@ -127,7 +119,7 @@ final class ExerciseDetailViewController: ScreenViewController {
         }
         for (workout, sets) in recent {
             let subtitle = "\(workout.title) · \(TrainText.timeText(workout.startedAt))"
-            recentStack.addArrangedSubview(CardView.setHistory(title: TrainText.dayText(workout.day), subtitle: subtitle, sets: sets, in: unit))
+            recentStack.addArrangedSubview(CardView.setHistory(title: workout.day.shortText, subtitle: subtitle, sets: sets, in: unit))
         }
     }
 

@@ -14,15 +14,11 @@ final class BodyWeightViewController: ScreenViewController {
     private let heroLabel = HeroNumberLabel()
     private let captionLabel = UILabel()
     private let chart = UIHostingController(rootView: BodyWeightChart(model: .init(raw: [], trend: [], unit: "")))
-    private var unitObserver: NSObjectProtocol?
+    private var unitObservation: MassUnitObservation?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
         super.init(title: "Body Weight")
-    }
-
-    deinit {
-        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
     }
 
     override func viewDidLoad() {
@@ -49,11 +45,7 @@ final class BodyWeightViewController: ScreenViewController {
         contentStack.addArrangedSubview(card)
         chart.didMove(toParent: self)
 
-        unitObserver = NotificationCenter.default.addObserver(
-            forName: Preferences.massUnitDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.render() }
-        }
+        unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {

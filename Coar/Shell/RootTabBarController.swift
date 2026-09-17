@@ -152,7 +152,7 @@ final class RootTabBarController: UITabBarController {
     /// as the logger's own Finish does.
     private func checkStaleWorkout() {
         guard let active = activeWorkout(), active.isStale(at: Date()) else { return }
-        let started = "started \(TrainText.dayText(active.day)) at \(TrainText.timeText(active.startedAt))"
+        let started = "started \(active.day.shortText) at \(TrainText.timeText(active.startedAt))"
         let hasCompletedSets = active.completedSetCount > 0
         let alert = UIAlertController(
             title: "Still working out?",

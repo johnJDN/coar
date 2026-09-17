@@ -30,7 +30,7 @@ final class WorkoutLoggerViewController: UIViewController {
     private var equipment: [ExerciseRecord.ID: String] = [:]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, Item>!
-    private var unitObserver: NSObjectProtocol?
+    private var unitObservation: MassUnitObservation?
     /// False once a render finds the Workout gone (finished or discarded elsewhere); the
     /// screen pops itself once fully on screen, never mid-transition.
     private var workoutExists = true
@@ -43,10 +43,6 @@ final class WorkoutLoggerViewController: UIViewController {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    deinit {
-        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,11 +59,7 @@ final class WorkoutLoggerViewController: UIViewController {
         navigationItem.rightBarButtonItems = [finish, more]
 
         configureCollectionView()
-        unitObserver = NotificationCenter.default.addObserver(
-            forName: Preferences.massUnitDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.render() }
-        }
+        unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
         render()
     }
 

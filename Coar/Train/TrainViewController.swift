@@ -130,7 +130,7 @@ final class TrainViewController: ScreenViewController {
             exercisesChip.subtitle = nil
         }
         do {
-            let count = try dependencies.store.progressPhotos().count
+            let count = try dependencies.store.progressPhotoCount()
             photosChip.subtitle = count == 0 ? nil : TrainText.count(count, "photo")
         } catch {
             Self.logger.error("Failed to read Progress Photos: \(error, privacy: .public)")

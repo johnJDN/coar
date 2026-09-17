@@ -44,10 +44,14 @@ final class ProgressPhotoPicker: NSObject {
         presenter?.present(picker, animated: true)
     }
 
-    private func finish(_ picked: PickedPhoto?) {
-        let completion = completion
-        self.completion = nil
-        completion?(picked)
+    /// Dismisses the picker, then hands the result to the waiting completion.
+    private func dismiss(_ picker: UIViewController, returning picked: PickedPhoto?) {
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            let completion = completion
+            self.completion = nil
+            completion?(picked)
+        }
     }
 }
 
@@ -55,13 +59,11 @@ extension ProgressPhotoPicker: UIImagePickerControllerDelegate, UINavigationCont
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         let image = info[.originalImage] as? UIImage
-        picker.dismiss(animated: true) { [weak self] in
-            self?.finish(image.map { PickedPhoto(image: $0, day: .today()) })
-        }
+        dismiss(picker, returning: image.map { PickedPhoto(image: $0, day: .today()) })
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true) { [weak self] in self?.finish(nil) }
+        dismiss(picker, returning: nil)
     }
 }
 
@@ -71,7 +73,7 @@ extension ProgressPhotoPicker: PHPickerViewControllerDelegate {
         guard let provider = results.first?.itemProvider,
               provider.hasItemConformingToTypeIdentifier(UTType.image.identifier)
         else {
-            picker.dismiss(animated: true) { [weak self] in self?.finish(nil) }
+            dismiss(picker, returning: nil)
             return
         }
         // The original bytes, so the EXIF date survives to key the Day; decoded off the main thread.
@@ -80,9 +82,7 @@ extension ProgressPhotoPicker: PHPickerViewControllerDelegate {
                 guard let image = UIImage(data: data) else { return nil }
                 return PickedPhoto(image: image, day: ProgressPhotoEncoder.dayTaken(from: data) ?? .today())
             }
-            DispatchQueue.main.async {
-                picker.dismiss(animated: true) { self?.finish(picked) }
-            }
+            DispatchQueue.main.async { self?.dismiss(picker, returning: picked) }
         }
     }
 }

@@ -12,16 +12,14 @@ final class ProgressPhotoCompareViewController: ScreenViewController {
     private let dependencies: AppDependencies
     private let photoIDs: [ProgressPhotoRecord.ID]
     private let panes = UIStackView()
-    private var unitObserver: NSObjectProtocol?
+    /// Decoded once; only the captions change with the unit.
+    private var images: [ProgressPhotoRecord.ID: UIImage] = [:]
+    private var unitObservation: MassUnitObservation?
 
     init(dependencies: AppDependencies, photoIDs: [ProgressPhotoRecord.ID]) {
         self.dependencies = dependencies
         self.photoIDs = photoIDs
         super.init(title: photoIDs.count > 1 ? "Compare" : "Progress Photo")
-    }
-
-    deinit {
-        if let unitObserver { NotificationCenter.default.removeObserver(unitObserver) }
     }
 
     override func viewDidLoad() {
@@ -36,11 +34,7 @@ final class ProgressPhotoCompareViewController: ScreenViewController {
         card.contentStack.addArrangedSubview(panes)
         contentStack.addArrangedSubview(card)
 
-        unitObserver = NotificationCenter.default.addObserver(
-            forName: Preferences.massUnitDidChange, object: nil, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.render() }
-        }
+        unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -54,26 +48,37 @@ final class ProgressPhotoCompareViewController: ScreenViewController {
         let unit = dependencies.preferences.massUnit
         let photos: [ProgressPhotoRecord]
         do {
-            photos = try photoIDs.compactMap { try dependencies.store.progressPhoto($0) }.sorted { $0.day < $1.day }
+            photos = try photoIDs.compactMap { try dependencies.store.progressPhoto($0) }
+                .sorted { ($0.day, $0.modifiedAt) < ($1.day, $1.modifiedAt) }
         } catch {
             Self.logger.error("Failed to read Progress Photos: \(error, privacy: .public)")
             return
         }
         panes.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for photo in photos {
-            var image: UIImage?
             var weight: BodyWeightRecord?
             do {
-                image = try dependencies.store.progressPhotoImage(photo.id).flatMap(UIImage.init)
                 weight = try dependencies.store.bodyWeight(nearest: photo.day)
             } catch {
-                Self.logger.error("Failed to read a Progress Photo's image or Body Weight: \(error, privacy: .public)")
+                Self.logger.error("Failed to read the nearest Body Weight: \(error, privacy: .public)")
             }
             panes.addArrangedSubview(ProgressPhotoPaneView(
-                image: image,
+                image: image(for: photo.id),
                 dayText: photo.day.shortTitle(),
                 weightText: Self.weightText(weight, for: photo.day, in: unit)
             ))
+        }
+    }
+
+    private func image(for id: ProgressPhotoRecord.ID) -> UIImage? {
+        if let cached = images[id] { return cached }
+        do {
+            let image = try dependencies.store.progressPhotoImage(id).flatMap(UIImage.init)
+            images[id] = image
+            return image
+        } catch {
+            Self.logger.error("Failed to read a Progress Photo's image: \(error, privacy: .public)")
+            return nil
         }
     }
 

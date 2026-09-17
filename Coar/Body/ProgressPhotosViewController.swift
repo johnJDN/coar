@@ -208,7 +208,7 @@ final class ProgressPhotosViewController: UIViewController {
 
     private func confirmDelete(_ id: ProgressPhotoRecord.ID) {
         let alert = UIAlertController(
-            title: "Delete this photo?",
+            title: "Delete this progress photo?",
             message: "It is removed from every device. This cannot be undone.",
             preferredStyle: .alert
         )

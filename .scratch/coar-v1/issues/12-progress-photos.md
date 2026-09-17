@@ -50,3 +50,19 @@
   became the shared "Sep 13" / "Today" caption; `TrainText.dayText` and the Body Weight caption now
   use it. (10) No caption editing: the `caption` attribute stays unused (the spec calls it optional
   and the ticket does not ask for it).
+- 2026-09-16 (agent, after /code-review): `progressPhotos()` now fetches only `id`/`day`/
+  `modifiedAt` as rows (the inline thumbnail was being loaded with every fault) and the Train chip
+  counts with `progressPhotoCount()` (`context.count(for:)`); Compare tie-breaks same-Day photos by
+  `modifiedAt` and decodes each image once (a unit change re-reads only captions);
+  `Preferences.observeMassUnit` returns a `MassUnitObservation` token that removes itself, replacing
+  the observer + `deinit` block copied across five screens; the picker's three dismissals fold into
+  one; `TrainText.dayText` (a pure pass-through to `Day.shortText`) is gone; the delete alert says
+  "progress photo"; `ProgressPhotoEncoderTests` (pure) covers the EXIF Day parse (valid, missing,
+  malformed) and the 2048 / 400 px caps. Left as deliberate: the chip subtitle "3 photos" and the
+  grid subtitle "5 photos · tap two to compare" keep the short noun (the chip and screen are titled
+  Progress Photos, so the term is qualified in place; the CONTEXT.md avoid-list guards the domain
+  term, not every caption); the pick ring is a 3 pt lavender border (DESIGN §1.1 "no borders" is
+  about separating surfaces; this is a selection state, and §3 now names it) rather than a bloom;
+  EXIF-dated library picks stay (ADR 0005 keys by the Day the user lived, which for a library photo is
+  the Day it was taken, not the Day it was imported); a transparent PNG picked from the library is
+  flattened onto black (JPEG has no alpha, body photos never do).

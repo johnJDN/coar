@@ -1,8 +1,8 @@
 import CoreData
 
 /// The façade's Progress Photo surface (CONTEXT.md "Progress Photo"). A photo's bytes are an
-/// external-binary attribute so CloudKit syncs them as an asset (ADR 0002); the listing never
-/// touches them, and the grid reads the small inline thumbnail instead of the image.
+/// external-binary attribute so CloudKit syncs them as an asset (ADR 0002); the grid reads
+/// the small inline thumbnail instead, and the listing and count read neither.
 extension Store {
 
     /// Stores a photo taken on `day` (the local Day at write time, ADR 0005). `image` is the
@@ -18,14 +18,22 @@ extension Store {
         return ProgressPhotoRecord(photo)!
     }
 
-    /// Every Progress Photo, newest Day first (latest added first within a Day).
+    /// Every Progress Photo, newest Day first (latest added first within a Day). Fetched as
+    /// rows of just the record's columns, so neither the image nor the thumbnail is loaded.
     func progressPhotos() throws -> [ProgressPhotoRecord] {
-        let request = ProgressPhoto.fetchRequest()
+        let request = NSFetchRequest<NSDictionary>(entityName: "ProgressPhoto")
+        request.resultType = .dictionaryResultType
+        request.propertiesToFetch = ["id", "day", "modifiedAt"]
         request.sortDescriptors = [
             NSSortDescriptor(key: "day", ascending: false),
             NSSortDescriptor(key: "modifiedAt", ascending: false),
         ]
         return try context.fetch(request).compactMap(ProgressPhotoRecord.init)
+    }
+
+    /// How many Progress Photos there are: the Train chip's subtitle.
+    func progressPhotoCount() throws -> Int {
+        try context.count(for: ProgressPhoto.fetchRequest())
     }
 
     func progressPhoto(_ id: ProgressPhotoRecord.ID) throws -> ProgressPhotoRecord? {
@@ -69,6 +77,12 @@ struct ProgressPhotoRecord: Hashable, Identifiable {
 private extension ProgressPhotoRecord {
     init?(_ object: ProgressPhoto) {
         guard let id = object.id, let raw = object.day, let day = Day(rawValue: raw), let modifiedAt = object.modifiedAt else { return nil }
+        self.init(id: id, day: day, modifiedAt: modifiedAt)
+    }
+
+    /// From a `propertiesToFetch` row of the listing.
+    init?(_ row: NSDictionary) {
+        guard let id = row["id"] as? UUID, let raw = row["day"] as? String, let day = Day(rawValue: raw), let modifiedAt = row["modifiedAt"] as? Date else { return nil }
         self.init(id: id, day: day, modifiedAt: modifiedAt)
     }
 }
