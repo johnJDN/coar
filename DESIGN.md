@@ -79,7 +79,7 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 
 | Token | Hex | Used for |
 |---|---|---|
-| `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. |
+| `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. Home's Habits card icon and Last Workout square icon. |
 | `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. Steps (square icon, bars). |
 | `accentBlue` | `#6F8CFF` | Protein. |
 | `accentOrange` | `#F2A83B` | Carbs. |
@@ -118,7 +118,7 @@ row: teal, lavender, orange, yellow, green, blue. Use accent colors at ~85% satu
 | Page title | `.largeTitle` | bold | e.g. "Today, September 3" |
 | Page subtitle | `.subheadline` | regular, `textSecondary` | e.g. "Last 30 days" |
 | Section header | `.title2` | semibold | e.g. "Nutrition" |
-| Card title | `.headline` | semibold | leading icon optional |
+| Card title | `.headline` | semibold | leading icon optional; in a half-width Home square it may shrink to fit, to 65%, rather than truncate |
 | Hero number | `UIFont.systemFont(ofSize: 40, weight: .bold)` with `.rounded` descriptor design | | monospaced digits; in a half-width Home square it may shrink to fit, to 50%, rather than clip |
 | Metric number | `.title3` | semibold | colored with metric accent |
 | Body | `.body` | regular | |
@@ -147,7 +147,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 |---|---|
 | `Card` | `surface` container, `radiusCard`, `spaceInner` padding, elevation above. Optional header row: icon + title + trailing `→` (navigates) or chevron (expands). |
 | `StatRing` | Circular gauge. `surfaceSunken` track, accent arc, rounded caps, bloom on cap. Center: hero number; below: label. Hatched arc segment for projected/estimated portion. |
-| `DotMatrix` | Grid of dots, one per unit (e.g. 5 g). Filled dots in metric accent with bloom, unfilled in `surfaceSunken`. Header: icon + value in accent. |
+| `DotMatrix` | Grid of dots, one per unit: 5 g, or 50 kcal for calories, stepping to a coarser unit when the target would need more than two rows of 24. Filled dots in metric accent with bloom, unfilled in `surfaceSunken`; fixed-size dots spread evenly across the width. Header: icon + value in accent (the calories value is the card's hero in `textPrimary`). No matrix at all without a target. |
 | `HeroCounter` | Large flip-style digits in individual `fill` boxes, unit label trailing. |
 | `MetricRow` | Leading emoji or tinted icon, label, trailing value (`textSecondary`), optional square `→` button. Used for habits and journal-style entries. |
 | `CheckToggle` | Two-state `— / ✓` capsule. Used for yes/no habit check-ins; there is no recorded "miss", an empty day is the miss. |
@@ -196,10 +196,14 @@ Charts never show a legend when color already maps to a label on screen.
 
 ## 11. Screen map (settled 2026-09-13)
 
-- **Home** — date title, then top to bottom: habits checklist (full-width, `MetricRow` +
-  `CheckToggle`, taps go to Habits), today's macros (full-width `DotMatrix`, taps go to
-  Food), a 2-column grid of squares: Sleep | Steps (push a 30-day detail in Home's own
-  stack), Body Weight | Last Workout (switch to Train and push the screen).
+- **Home** — date title ("Today, September 16") with a greeting subtitle, then top to
+  bottom: habits card (full-width; hero is how many are done today, then a `MetricRow` +
+  `CheckToggle` / `AmountControl` per Habit; taps go to Habits), today's macros (full-width
+  `DotMatrix` per macro; calories is the hero; without a target, `— target` captions, no
+  dots, and a Set targets action; taps go to Food on today), a 2-column grid of squares:
+  Sleep | Steps (push a 30-day detail in Home's own stack), Body Weight (Trend Weight) |
+  Last Workout (relative Day as the hero, Plan name as the caption); both switch to Train
+  and push the screen.
 - **Habits** — one card per habit: emoji, name, `CheckToggle` or amount, streak as the
   hero number, 7-row heatmap (Monday on top; yes/no cells binary, quantitative cells by
   intensity; weekly habits get a week-met dot per column). Detail page has a calendar

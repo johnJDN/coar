@@ -106,6 +106,16 @@ extension Store {
     }
 
     /// Removes the Day's Check-in, if any: a yes/no Habit toggled off.
+    /// A yes/no Habit's Check-in as a toggle: done writes the Day's Check-in (amount 1), not
+    /// done deletes it. There is no recorded miss (DESIGN.md §7 `CheckToggle`).
+    func setCheckedIn(_ id: HabitRecord.ID, on day: Day, done: Bool) throws {
+        if done {
+            try checkIn(id, on: day, amount: 1)
+        } else {
+            try removeCheckIn(id, on: day)
+        }
+    }
+
     func removeCheckIn(_ id: HabitRecord.ID, on day: Day) throws {
         guard let habit = try fetchHabit(id), let record = try fetchCheckIn(habit: habit, on: day) else { return }
         context.delete(record)

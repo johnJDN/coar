@@ -11,7 +11,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         let isTestHost = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         let health = HealthKitAccess()
         return AppDependencies(
-            store: isTestHost ? Store.inMemory() : Store.live(),
+            store: isTestHost ? Store.inMemory() : AppDelegate.liveStore(),
             preferences: Preferences(),
             health: health,
             healthReader: health,
@@ -19,6 +19,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             restTimer: RestTimer()
         )
     }()
+
+    /// The on-device store, or the sample-data store a debug build was launched with.
+    private static func liveStore() -> Store {
+        #if DEBUG
+        if DebugSeed.isRequested { return DebugSeed.store() }
+        #endif
+        return Store.live()
+    }
 
     func application(
         _ application: UIApplication,

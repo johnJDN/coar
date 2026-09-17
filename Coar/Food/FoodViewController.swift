@@ -78,6 +78,13 @@ final class FoodViewController: UIViewController {
         render()
     }
 
+    /// Lands on today, wherever the strip was: what Home's macros card opens.
+    func showToday() {
+        refreshToday()
+        guard selectedDay != today else { return }
+        strip.select(today)
+    }
+
     /// Midnight passes with the app resident: the strip's mark and the selection move to
     /// the new today, so "+" never logs onto yesterday.
     private func refreshToday() {

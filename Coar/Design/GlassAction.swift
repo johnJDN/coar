@@ -14,6 +14,21 @@ extension UIButton {
         configuration.titleTextAttributesTransformer = .cardTitle
         return UIButton(configuration: configuration, primaryAction: UIAction { _ in handler() })
     }
+
+    /// A capsule action inside a card (DESIGN.md §3 `fill` "secondary buttons", §4 capsule):
+    /// a leading symbol and a card-title label on `fill`. Home's Set targets.
+    static func inCardAction(title: String, systemImage: String, handler: @escaping () -> Void) -> UIButton {
+        var configuration = UIButton.Configuration.filled()
+        configuration.title = title
+        configuration.image = UIImage(systemName: systemImage)
+        configuration.imagePadding = Metrics.spaceTight
+        configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .headline)
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = UIColor.fill
+        configuration.baseForegroundColor = UIColor.textPrimary
+        configuration.titleTextAttributesTransformer = .cardTitle
+        return UIButton(configuration: configuration, primaryAction: UIAction { _ in handler() })
+    }
 }
 
 /// `UIButton.glassAction` as a leading-aligned list item.

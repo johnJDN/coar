@@ -12,7 +12,10 @@ import os
 final class RootTabBarController: UITabBarController {
 
     private static let logger = Logger(category: "Shell")
-    private static let trainTabIdentifier = "train"
+
+    enum Tab: String {
+        case home, habits, food, train
+    }
 
     let dependencies: AppDependencies
 
@@ -33,16 +36,16 @@ final class RootTabBarController: UITabBarController {
         super.init(nibName: nil, bundle: nil)
 
         tabs = [
-            UITab(title: "Home", image: UIImage(systemName: "house.fill"), identifier: "home") { [dependencies] _ in
+            UITab(title: "Home", image: UIImage(systemName: "house.fill"), identifier: Tab.home.rawValue) { [dependencies] _ in
                 Self.navigation(root: HomeViewController(dependencies: dependencies))
             },
-            UITab(title: "Habits", image: UIImage(systemName: "checkmark.circle.fill"), identifier: "habits") { [dependencies] _ in
+            UITab(title: "Habits", image: UIImage(systemName: "checkmark.circle.fill"), identifier: Tab.habits.rawValue) { [dependencies] _ in
                 Self.navigation(root: HabitsViewController(dependencies: dependencies))
             },
-            UITab(title: "Food", image: UIImage(systemName: "fork.knife"), identifier: "food") { [dependencies] _ in
+            UITab(title: "Food", image: UIImage(systemName: "fork.knife"), identifier: Tab.food.rawValue) { [dependencies] _ in
                 Self.navigation(root: FoodViewController(dependencies: dependencies))
             },
-            UITab(title: "Train", image: UIImage(systemName: "dumbbell.fill"), identifier: Self.trainTabIdentifier) { [dependencies] _ in
+            UITab(title: "Train", image: UIImage(systemName: "dumbbell.fill"), identifier: Tab.train.rawValue) { [dependencies] _ in
                 Self.navigation(root: TrainViewController(dependencies: dependencies))
             },
         ]
@@ -95,6 +98,16 @@ final class RootTabBarController: UITabBarController {
         return navigation
     }
 
+    // MARK: - Tabs
+
+    /// Switches to a tab and hands back its stack, so a screen can pop it or push onto it
+    /// (Home's cards land on the Habits, Food, and Train tabs).
+    @discardableResult
+    func select(_ tab: Tab) -> UINavigationController? {
+        selectedTab = tabs.first { $0.identifier == tab.rawValue }
+        return selectedViewController as? UINavigationController
+    }
+
     // MARK: - Active Workout
 
     private func activeWorkout() -> WorkoutRecord? {
@@ -107,7 +120,7 @@ final class RootTabBarController: UITabBarController {
     }
 
     private var isOnTrainTab: Bool {
-        selectedTab?.identifier == Self.trainTabIdentifier
+        selectedTab?.identifier == Tab.train.rawValue
     }
 
     /// The bar shows while the rest timer runs, or while a Workout is active and the logger
@@ -136,8 +149,7 @@ final class RootTabBarController: UITabBarController {
     /// or a fresh push when there is none.
     private func showActiveWorkout() {
         guard let active = activeWorkout() else { return refreshAccessory() }
-        selectedTab = tabs.first { $0.identifier == Self.trainTabIdentifier }
-        guard let navigation = selectedViewController as? UINavigationController else { return }
+        guard let navigation = select(.train) else { return }
         if let logger = navigation.viewControllers.first(where: { $0 is WorkoutLoggerViewController }) {
             navigation.popToViewController(logger, animated: true)
         } else {

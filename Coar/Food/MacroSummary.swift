@@ -24,14 +24,15 @@ struct MacroSummary: Hashable {
             let goal = target.map { $0[macro] }.flatMap { $0 > 0 ? $0 : nil }
             return Bar(
                 macro: macro,
-                consumed: Self.text(eaten),
-                target: goal.map(Self.text) ?? "—",
+                consumed: Self.amountText(eaten),
+                target: goal.map(Self.amountText) ?? "—",
                 fraction: goal.map { min(max(eaten / $0, 0), 1) }
             )
         }
     }
 
-    private static func text(_ value: Double) -> String {
+    /// "1,240": a macro amount as every summary shows it, whole with grouping.
+    static func amountText(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0)))
     }
 }

@@ -173,11 +173,7 @@ final class HabitsViewController: UIViewController {
 
     private func setToday(_ id: HabitRecord.ID, done: Bool) {
         do {
-            if done {
-                try dependencies.store.checkIn(id, on: .today(), amount: 1)
-            } else {
-                try dependencies.store.removeCheckIn(id, on: .today())
-            }
+            try dependencies.store.setCheckedIn(id, on: .today(), done: done)
         } catch {
             Self.logger.error("Failed to write Check-in: \(error, privacy: .public)")
         }

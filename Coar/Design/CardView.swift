@@ -89,6 +89,7 @@ final class CardView: UIView {
             icon.tintColor = iconTint
             icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline)
             icon.setContentHuggingPriority(.required, for: .horizontal)
+            icon.setContentCompressionResistancePriority(.required, for: .horizontal)
             row.addArrangedSubview(icon)
         }
 
@@ -97,6 +98,9 @@ final class CardView: UIView {
         label.font = UIFont.cardTitle
         label.textColor = UIColor.textPrimary
         label.adjustsFontForContentSizeCategory = true
+        // A half-width square's title ("Last Workout") shrinks a little rather than truncates.
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.65
         row.addArrangedSubview(label)
 
         let accessoryName: String? = switch accessory {
@@ -109,6 +113,7 @@ final class CardView: UIView {
             accessoryView.tintColor = UIColor.textSecondary
             accessoryView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .subheadline, scale: .medium)
             accessoryView.setContentHuggingPriority(.required, for: .horizontal)
+            accessoryView.setContentCompressionResistancePriority(.required, for: .horizontal)
             row.addArrangedSubview(accessoryView)
         }
         return row

@@ -243,3 +243,26 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The empty detail shows `No data` twice: the hero slot and the chart slot (each is a value slot per DESIGN §1.5).
 - [?] CONTEXT.md now defines Night, Time Asleep, and Steps; ADR 0006 records the 6 PM boundary.
 - [?] Story 80's tap-through is only offered while the prompt has never been shown; after a denial the detail caption says to check the Health app (an `x-apple-health://` link was not added).
+
+## 14: Home
+
+- [ ] Fresh install: the title reads "Today, <month> <day>" with "Good morning/afternoon/evening, John" under it; the avatar button opens Settings; the Habits card shows `—` "No habits yet"; the Macros card shows 0 / `— target` for each macro with no dots and a "Set targets" capsule; Sleep | Steps read `No data`; Body Weight reads `—` "No Body Weight yet"; Last Workout reads `—` "No workouts yet". Nothing collapses. Check light and dark.
+- [ ] Tap "Set targets", enter targets, save: the card now shows dots per macro (5 g / 50 kcal each) with none filled, "of 2,100 kcal" captions, and the capsule is gone.
+- [ ] Log food on the Food tab, return Home: the calories hero and the three metric numbers update and the dots fill with bloom in blue / pink / orange / amber; eating past a target fills every dot.
+- [ ] Add a yes/no Habit and a quantitative one: the card lists both with emoji and name, a `— / ✓` toggle and an amount capsule; the hero reads "0 of 2 done today". Tap the toggle: it springs green, the hero becomes 1, and the Habits tab agrees (heatmap cell filled). Tap the amount capsule: the number sheet opens for today; entering the target turns the capsule green on Home and on Habits.
+- [ ] Tap the Habits card anywhere but a control: the Habits tab opens at its root. Tap the Macros card: the Food tab opens on today, even if it was left on another day.
+- [ ] Log a Body Weight: the square reads it with "Sep 15 · Trend —"; log a second: the square reads the Trend Weight with "Trend Weight"; Settings → kg: the square switches unit at once.
+- [ ] Finish a Workout from a Plan: the square reads "Today" over the Plan name; the next day it reads "Yesterday", then "3 days ago", "2 weeks ago". An empty Workout is captioned "Workout". Tap: Train opens and the Workout's detail is pushed (the logger, if it is still active).
+- [ ] Tap Body Weight: Train opens and the weight screen is pushed. Tap Sleep or Steps: the 30-day detail pushes within Home (ticket 13).
+- [ ] Narrow phone (iPhone 17 / SE) in landscape and portrait: "Last Workout" and "Body Weight" titles fit beside their icon and arrow; at an accessibility text size the squares' heroes shrink rather than clip and the cards grow; check light and dark throughout.
+- [?] The greeting varies by time of day ("Good morning, John") rather than "Hello John"; the name is a constant, as the spec keeps a name field out of v1.
+- [?] The habits card's hero is how many Habits are done today ("1" of "3 done today"); a weekly quantitative Habit counts as done once the week is met.
+- [?] Last Workout is the last finished Workout; the Active Workout is the accessory bar's job.
+- [?] The Last Workout hero is the relative Day ("Yesterday", "3 days ago", "2 weeks ago", the plain Day past eight weeks) and the caption is the Plan name, or "Workout" for an empty one.
+- [?] Dots are 5 g / 50 kcal each; a target needing more than 48 dots steps to 10 g / 100 kcal and so on; a second row keeps the first row's column count.
+- [?] A macro whose target is 0 renders as no-target for that row (as the Food summary does); "Set targets" only shows when no Target is in force at all.
+- [?] Over the target, every dot is filled and the caption still reads "of 2,100 kcal"; nothing turns coral.
+- [?] Card titles may shrink to 65% in a half-width square rather than truncate.
+- [?] The native large title truncates at accessibility text sizes ("Today, September…"); UIKit never shrinks it.
+- [?] Launching a debug build with `-SeedSampleData` runs it on an in-memory store of sample records (never synced), for looking at screens.
+
