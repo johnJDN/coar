@@ -1,15 +1,17 @@
 import UIKit
 
 /// `ExerciseCard` (DESIGN.md §7) in the live logger: the row's name, "A1 · Barbell · 3 sets",
-/// a `…` menu (Remove exercise), one `SetRow` per Logged Set, and an Add set footer. The
-/// timer button and the Progression footer arrive with tickets 10 and 11. Set rows are kept
-/// in place across re-renders so a field being typed in never loses the keyboard; a
-/// long-press on a row offers Remove set.
+/// a timer button (starts the rest timer with this row's rest default by hand), a `…` menu
+/// (Remove exercise), one `SetRow` per Logged Set, and an Add set footer. The Progression
+/// footer arrives with ticket 11. Set rows are kept in place across re-renders so a field
+/// being typed in never loses the keyboard; a long-press on a row offers Remove set.
 final class ExerciseCardCell: CardCell {
 
     struct Model: Equatable {
         let name: String
         let subtitle: String
+        /// What the timer button starts: the row's rest default, or the 120 s fallback.
+        let restSeconds: Int
         let sets: [SetRowView.Model]
     }
 
@@ -18,9 +20,11 @@ final class ExerciseCardCell: CardCell {
     var onRemoveSet: ((LoggedSetRecord.ID) -> Void)?
     var onAddSet: (() -> Void)?
     var onRemoveExercise: (() -> Void)?
+    var onStartRest: (() -> Void)?
 
     private let nameLabel = UILabel()
     private let subtitleLabel = UILabel()
+    private let timerButton = UIButton(configuration: .plain())
     private let moreButton = UIButton(configuration: .plain())
     private let setsStack = UIStackView()
     private var rows: [SetRowView] = []
@@ -42,6 +46,12 @@ final class ExerciseCardCell: CardCell {
         text.axis = .vertical
         text.spacing = 2
 
+        timerButton.configuration?.image = UIImage(systemName: "timer")
+        timerButton.configuration?.baseForegroundColor = UIColor.textSecondary
+        timerButton.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+        timerButton.addAction(UIAction { [weak self] _ in self?.onStartRest?() }, for: .touchUpInside)
+        timerButton.setContentHuggingPriority(.required, for: .horizontal)
+
         moreButton.configuration?.image = UIImage(systemName: "ellipsis")
         moreButton.configuration?.baseForegroundColor = UIColor.textSecondary
         moreButton.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 0)
@@ -54,10 +64,11 @@ final class ExerciseCardCell: CardCell {
         moreButton.accessibilityLabel = "More"
         moreButton.setContentHuggingPriority(.required, for: .horizontal)
 
-        let header = UIStackView(arrangedSubviews: [text, moreButton])
+        let header = UIStackView(arrangedSubviews: [text, timerButton, moreButton])
         header.axis = .horizontal
         header.alignment = .center
-        header.spacing = Metrics.spaceTight
+        header.spacing = 0
+        header.setCustomSpacing(Metrics.spaceTight, after: text)
 
         setsStack.axis = .vertical
         setsStack.spacing = Metrics.spaceTight
@@ -91,6 +102,7 @@ final class ExerciseCardCell: CardCell {
     func configure(with model: Model) {
         nameLabel.text = model.name
         subtitleLabel.text = model.subtitle
+        timerButton.accessibilityLabel = "Start rest timer, \(TrainText.count(model.restSeconds, "second"))"
         setIDs = model.sets.map(\.id)
         while rows.count > model.sets.count {
             let row = rows.removeLast()

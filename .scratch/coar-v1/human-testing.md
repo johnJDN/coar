@@ -152,3 +152,21 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Remove set is a long-press menu; Remove exercise lives in the card's `…`.
 - [?] Non-Workout Days draw as empty sunken circles (like the Habits calendar); only Workout Days respond.
 - [?] `Workout`, `WorkoutExercise`, `LoggedSet` gained an optional `id: UUID` (additive).
+
+## 10: Train: rest timer and Superset logging
+
+- [ ] In the logger, complete a set on an Exercise that is not in a Superset: the bar docks above the tab bar with a green `timer` icon, the countdown ("2:00", or the Exercise's rest default, e.g. "2:30" for 150 s), "Rest · Push", and ✕; it counts down each second; ✕ removes it at once.
+- [ ] Complete A1's set: no timer. Complete A2's set: timer. With a three-Exercise group, only the third starts it.
+- [ ] While the timer runs, switch to Home / Habits / Food: the bar and countdown follow; tap it: back in the logger. Scroll down so the tab bar minimises: the bar goes inline showing the icon, countdown and ✕ (no "Rest · Push"); scroll up: it grows back.
+- [ ] Let it reach 0:00: a success haptic plays and the bar reverts (to the Workout line on other tabs; gone inside the logger). Background the app mid-count, come back a minute later: the countdown reflects the real time passed.
+- [ ] Tap the card's `timer` button: the timer starts with that Exercise's default, even on A1.
+- [ ] Complete sets in the Superset: the cards do not scroll or move; the keyboard closes on ✓ as before; the lavender link sits between A1 and A2 (and A2 and A3), no link between ungrouped cards.
+- [ ] Finish or Discard the Workout while the timer runs: the bar disappears entirely.
+- [ ] Dynamic Type: the countdown, "Rest · Push", the link glyph, and the timer button scale; the bar's two lines do not clip in light or dark.
+- [?] One accessory: the countdown replaces the Workout line everywhere while it runs (including inside the logger); tap still returns to the logger.
+- [?] The card's timer button ignores the Superset rule and always (re)starts with the row's default or 120 s.
+- [?] Completing any set restarts a running timer with the new duration.
+- [?] The rule is by row: A1's extra sets (unequal set counts) never start the timer.
+- [?] The timer ends itself with a haptic; no local notification in the background; not persisted across relaunch.
+- [?] Grouped cards sit 24 pt apart with the link; ungrouped 16 pt.
+- [?] Countdown is card-title size with monospaced digits (the accessory height fits two lines only at that size).

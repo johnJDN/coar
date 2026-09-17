@@ -5,9 +5,10 @@ import os
 /// (DESIGN.md §2). Screens receive their dependencies; they never see a managed object context.
 /// Also owns the bottom accessory: while a Workout is active and the user is away from the
 /// logger (another tab, or Train without the logger in its stack), the `ActiveWorkoutBar`
-/// sits above the tab bar and taps back into the logger. On the first
-/// appearance, an Active Workout older than `WorkoutRecord.staleAfter` is offered Finish or
-/// Discard rather than carried on.
+/// sits above the tab bar and taps back into the logger; while the rest timer runs the same
+/// bar shows the countdown everywhere, logger included, and its dismiss stops the timer. A
+/// Workout that ends takes its timer with it. On the first appearance, an Active Workout
+/// older than `WorkoutRecord.staleAfter` is offered Finish or Discard rather than carried on.
 final class RootTabBarController: UITabBarController {
 
     private static let logger = Logger(category: "Shell")
@@ -22,6 +23,9 @@ final class RootTabBarController: UITabBarController {
 
     private let activeBar = ActiveWorkoutBar()
     private var activeObserver: NSObjectProtocol?
+    private var restObserver: NSObjectProtocol?
+    private var restExpiryObserver: NSObjectProtocol?
+    private let restFeedback = UINotificationFeedbackGenerator()
     private var hasCheckedStaleWorkout = false
 
     init(dependencies: AppDependencies) {
@@ -46,10 +50,21 @@ final class RootTabBarController: UITabBarController {
         delegate = self
 
         activeBar.onTap = { [weak self] in self?.showActiveWorkout() }
+        activeBar.onDismissRest = { [weak self] in self?.dependencies.restTimer.dismiss() }
         activeObserver = NotificationCenter.default.addObserver(
             forName: Store.activeWorkoutDidChange, object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.refreshAccessory() }
+        }
+        restObserver = NotificationCenter.default.addObserver(
+            forName: RestTimer.didChange, object: dependencies.restTimer, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshAccessory() }
+        }
+        restExpiryObserver = NotificationCenter.default.addObserver(
+            forName: RestTimer.didExpire, object: dependencies.restTimer, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.restFeedback.notificationOccurred(.success) }
         }
     }
 
@@ -57,7 +72,9 @@ final class RootTabBarController: UITabBarController {
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     deinit {
-        if let activeObserver { NotificationCenter.default.removeObserver(activeObserver) }
+        for observer in [activeObserver, restObserver, restExpiryObserver].compactMap({ $0 }) {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     override func viewDidLoad() {
@@ -93,10 +110,18 @@ final class RootTabBarController: UITabBarController {
         selectedTab?.identifier == Self.trainTabIdentifier
     }
 
+    /// The bar shows while the rest timer runs, or while a Workout is active and the logger
+    /// is not on screen. A rest timer outliving its Workout (Finish or Discard) is dismissed,
+    /// which comes back through `RestTimer.didChange`.
     private func refreshAccessory() {
         guard isViewLoaded else { return }
-        if let active = activeWorkout(), !(isOnTrainTab && loggerIsInTrainStack) {
-            activeBar.configure(with: active)
+        let restTimer = dependencies.restTimer
+        let active = activeWorkout()
+        if active == nil, restTimer.isRunning {
+            return restTimer.dismiss()
+        }
+        if let active, restTimer.isRunning || !(isOnTrainTab && loggerIsInTrainStack) {
+            activeBar.configure(with: .init(title: active.title, startedAt: active.startedAt, restEndsAt: restTimer.endsAt))
             if bottomAccessory == nil {
                 setBottomAccessory(UITabAccessory(contentView: activeBar), animated: true)
             }

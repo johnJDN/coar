@@ -5,14 +5,21 @@ import os
 /// bar: one `ExerciseCard` per row of the Active Workout with its `SetRow`s, an Add exercise
 /// row over the catalogue picker, Finish in the bar, and Discard in the `…` menu. Every
 /// keystroke and check writes through the façade at once, so nothing is lost if the app
-/// closes mid-set (CONTEXT.md "Active Workout"). Finish drops the sets never completed and
-/// then offers to move today's weights into the Plan.
+/// closes mid-set (CONTEXT.md "Active Workout"). Completing a set starts the rest timer
+/// when `RestTimerRule` says so (never between the Exercises of a Superset); grouped cards
+/// stay where they are with a link between them, and nothing scrolls or moves focus on
+/// completion. Finish drops the sets never completed and then offers to move today's
+/// weights into the Plan.
 final class WorkoutLoggerViewController: UIViewController {
 
     private static let logger = Logger(category: "Train")
 
     private enum Item: Hashable {
         case exercise(WorkoutExerciseRecord.ID)
+        /// The gap under a card: air, or the Superset link when the next card is grouped
+        /// with it. The cards themselves have no spacing, so the gaps are items.
+        case gap(after: WorkoutExerciseRecord.ID)
+        case link(after: WorkoutExerciseRecord.ID)
         case addExercise
     }
 
@@ -90,7 +97,6 @@ final class WorkoutLoggerViewController: UIViewController {
         let size = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(200))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [NSCollectionLayoutItem(layoutSize: size)])
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = Metrics.spaceCard
         section.contentInsets = NSDirectionalEdgeInsets(top: Metrics.spaceCard, leading: Metrics.spaceEdge, bottom: Metrics.spaceCard, trailing: Metrics.spaceEdge)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout(section: section))
         collectionView.backgroundColor = .clear
@@ -114,7 +120,10 @@ final class WorkoutLoggerViewController: UIViewController {
             cell.onRemoveSet = { [weak self] setID in self?.removeSet(setID) }
             cell.onAddSet = { [weak self] in self?.addSet(to: id) }
             cell.onRemoveExercise = { [weak self] in self?.removeExercise(id) }
+            cell.onStartRest = { [weak self] in self?.startRest(after: id, byHand: true) }
         }
+        let gapCell = UICollectionView.CellRegistration<CardGapCell, Item> { _, _, _ in }
+        let linkCell = UICollectionView.CellRegistration<SupersetLinkCell, Item> { _, _, _ in }
         let addCell = UICollectionView.CellRegistration<GlassActionCell, Item> { [weak self] cell, _, _ in
             cell.configure(title: "Add exercise", systemImage: "plus") { [weak self] in self?.pushPicker() }
         }
@@ -122,6 +131,10 @@ final class WorkoutLoggerViewController: UIViewController {
             switch item {
             case .exercise(let id):
                 return collectionView.dequeueConfiguredReusableCell(using: exerciseCell, for: indexPath, item: id)
+            case .gap:
+                return collectionView.dequeueConfiguredReusableCell(using: gapCell, for: indexPath, item: item)
+            case .link:
+                return collectionView.dequeueConfiguredReusableCell(using: linkCell, for: indexPath, item: item)
             case .addExercise:
                 return collectionView.dequeueConfiguredReusableCell(using: addCell, for: indexPath, item: item)
             }
@@ -137,8 +150,21 @@ final class WorkoutLoggerViewController: UIViewController {
         navigationItem.subtitle = "Started \(TrainText.timeText(workout.startedAt))"
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
-        snapshot.appendItems(workout.exercises.map { .exercise($0.id) } + [.addExercise], toSection: 0)
+        snapshot.appendItems(Self.items(for: workout.exercises), toSection: 0)
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
+    }
+
+    /// One card per row, a gap after each, the gap a Superset link when the row below
+    /// shares the row's group, then Add exercise.
+    private static func items(for rows: [WorkoutExerciseRecord]) -> [Item] {
+        var items: [Item] = []
+        for (index, row) in rows.enumerated() {
+            items.append(.exercise(row.id))
+            let next = rows.indices.contains(index + 1) ? rows[index + 1] : nil
+            let linked = row.supersetGroup != nil && next?.supersetGroup == row.supersetGroup
+            items.append(linked ? .link(after: row.id) : .gap(after: row.id))
+        }
+        return items + [.addExercise]
     }
 
     /// Re-reads the Workout; false when it is gone, in which case the screen leaves.
@@ -185,7 +211,12 @@ final class WorkoutLoggerViewController: UIViewController {
                 isCompleted: set.isCompleted
             )
         }
-        return ExerciseCardCell.Model(name: row.name, subtitle: subtitle, sets: sets)
+        return ExerciseCardCell.Model(
+            name: row.name,
+            subtitle: subtitle,
+            restSeconds: RestTimerRule.seconds(restDefault: row.restSeconds),
+            sets: sets
+        )
     }
 
     // MARK: - Set writes
@@ -223,6 +254,7 @@ final class WorkoutLoggerViewController: UIViewController {
         }
     }
 
+    /// Completing a set is what starts the rest timer; un-completing never does.
     private func setToggled(_ id: LoggedSetRecord.ID, completed: Bool) {
         guard let set = loggedSet(id) else { return }
         do {
@@ -231,6 +263,18 @@ final class WorkoutLoggerViewController: UIViewController {
             Self.logger.error("Failed to complete Logged Set: \(error, privacy: .public)")
         }
         render()
+        if completed, let row = workout?.exercises.first(where: { $0.sets.contains { $0.id == id } }) {
+            startRest(after: row.id, byHand: false)
+        }
+    }
+
+    /// The rest timer for a row: by hand from the card's timer button, always with the
+    /// row's rest default (or 120 s); on completion only when the trigger rule allows it.
+    private func startRest(after rowID: WorkoutExerciseRecord.ID, byHand: Bool) {
+        guard let workout, let row = workout.exercises.first(where: { $0.id == rowID }) else { return }
+        let seconds = byHand ? RestTimerRule.seconds(restDefault: row.restSeconds) : workout.restSeconds(afterSetOn: rowID)
+        guard let seconds else { return }
+        dependencies.restTimer.start(seconds: seconds)
     }
 
     private func addSet(to rowID: WorkoutExerciseRecord.ID) {

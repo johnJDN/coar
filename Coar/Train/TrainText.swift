@@ -62,6 +62,12 @@ enum TrainText {
         date.formatted(.dateTime.hour().minute())
     }
 
+    /// "1:42" / "0:05": a rest countdown.
+    static func countdown(_ seconds: Int) -> String {
+        let clamped = Swift.max(0, seconds)
+        return "\(clamped / 60):\(String(format: "%02d", clamped % 60))"
+    }
+
     /// "42 min" / "1 h 12 min": how long a Workout has run or ran.
     static func duration(from start: Date, to end: Date) -> String {
         let minutes = Swift.max(0, Int(end.timeIntervalSince(start) / 60))

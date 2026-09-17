@@ -121,7 +121,11 @@ enum FontToken {
         }
     }
 
-    var uiFont: UIFont {
+    var uiFont: UIFont { uiFont(monospacedDigits: false) }
+
+    /// Rounded tokens always have digits of equal width; any token can ask for them (a
+    /// countdown must not jitter). Applied before the Dynamic Type scaling so it scales too.
+    func uiFont(monospacedDigits: Bool) -> UIFont {
         let spec = spec
         let metrics = UIFontMetrics(forTextStyle: spec.style)
         let baseSize = spec.fixedSize ?? UIFont.preferredFont(
@@ -129,9 +133,11 @@ enum FontToken {
             compatibleWith: UITraitCollection(preferredContentSizeCategory: .large)
         ).pointSize
         var font = UIFont.systemFont(ofSize: baseSize, weight: spec.weight)
-        if spec.rounded {
+        if spec.rounded || monospacedDigits {
             var descriptor = font.fontDescriptor
-            descriptor = descriptor.withDesign(.rounded) ?? descriptor
+            if spec.rounded {
+                descriptor = descriptor.withDesign(.rounded) ?? descriptor
+            }
             descriptor = descriptor.addingAttributes([
                 .featureSettings: [[
                     UIFontDescriptor.FeatureKey.type: kNumberSpacingType,
@@ -143,13 +149,16 @@ enum FontToken {
         return metrics.scaledFont(for: font)
     }
 
-    var font: Font {
+    var font: Font { font(monospacedDigits: false) }
+
+    func font(monospacedDigits: Bool) -> Font {
         let spec = spec
         if let size = spec.fixedSize {
             return Font.system(size: size, weight: Font.Weight(spec.weight), design: spec.rounded ? .rounded : .default)
                 .monospacedDigit()
         }
-        return Font.system(Font.TextStyle(spec.style), weight: Font.Weight(spec.weight))
+        let font = Font.system(Font.TextStyle(spec.style), weight: Font.Weight(spec.weight))
+        return monospacedDigits ? font.monospacedDigit() : font
     }
 }
 
@@ -159,6 +168,8 @@ extension UIFont {
     static var sectionHeader: UIFont { FontToken.sectionHeader.uiFont }
     static var cardTitle: UIFont { FontToken.cardTitle.uiFont }
     static var heroNumber: UIFont { FontToken.heroNumber.uiFont }
+    /// `cardTitle` with digits of equal width, for a value that ticks (the rest countdown).
+    static var cardTitleMonospaced: UIFont { FontToken.cardTitle.uiFont(monospacedDigits: true) }
     static var metricNumber: UIFont { FontToken.metricNumber.uiFont }
     static var bodyText: UIFont { FontToken.bodyText.uiFont }
     static var label: UIFont { FontToken.label.uiFont }
@@ -179,6 +190,7 @@ extension Font {
     static var sectionHeader: Font { FontToken.sectionHeader.font }
     static var cardTitle: Font { FontToken.cardTitle.font }
     static var heroNumber: Font { FontToken.heroNumber.font }
+    static var cardTitleMonospaced: Font { FontToken.cardTitle.font(monospacedDigits: true) }
     static var metricNumber: Font { FontToken.metricNumber.font }
     static var bodyText: Font { FontToken.bodyText.font }
     static var label: Font { FontToken.label.font }
