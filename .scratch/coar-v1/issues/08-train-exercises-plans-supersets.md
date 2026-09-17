@@ -6,12 +6,12 @@
 
 **Status:** ready-for-human
 
-- [ ] Exercises chip opens the catalogue; editor with name, Muscle Group picker (fixed enum), equipment text, rest default seconds; archive
-- [ ] Train root shows a Plans section (cards with name and "n exercises") and the chips row
-- [ ] Plan editor: add Exercises from the catalogue picker (archived hidden), reorder, remove; per Exercise an ordered list of Planned Sets with weight and repMin/repMax (single number entered as min = max, shown as one number)
-- [ ] Superset: link two or more adjacent Exercises into one group; unequal set counts allowed; link icon shown between grouped cards
-- [ ] Archive Plan from its editor; Archived section with restore
-- [ ] Tests (façade): Plan exercise and set ordering persists through save/reload; superset group membership persists; archived Exercises absent from the picker; Planned Set weight stored kg when lbs entered
+- [x] Exercises chip opens the catalogue; editor with name, Muscle Group picker (fixed enum), equipment text, rest default seconds; archive
+- [x] Train root shows a Plans section (cards with name and "n exercises") and the chips row
+- [x] Plan editor: add Exercises from the catalogue picker (archived hidden), reorder, remove; per Exercise an ordered list of Planned Sets with weight and repMin/repMax (single number entered as min = max, shown as one number)
+- [x] Superset: link two or more adjacent Exercises into one group; unequal set counts allowed; link icon shown between grouped cards
+- [x] Archive Plan from its editor; Archived section with restore
+- [x] Tests (façade): Plan exercise and set ordering persists through save/reload; superset group membership persists; archived Exercises absent from the picker; Planned Set weight stored kg when lbs entered
 
 ## Comments
 
