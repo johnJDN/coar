@@ -16,7 +16,17 @@ enum SleepNight {
         return start..<end
     }
 
-    /// Seconds asleep in the night that ended on `day`; nil when no asleep sample belongs
+    /// Time Asleep per wake Day, for the Days whose Night has an asleep sample. The one
+    /// reduction the live reader and the test fake share.
+    static func timeAsleep(wakingOn days: [Day], from samples: [SleepSample], in calendar: Calendar) -> [Day: TimeInterval] {
+        var result: [Day: TimeInterval] = [:]
+        for day in days {
+            result[day] = timeAsleep(wakingOn: day, from: samples, in: calendar)
+        }
+        return result
+    }
+
+    /// Seconds asleep in the Night that ended on `day`; nil when no asleep sample belongs
     /// to it. A sample that straddles the window's edge counts only for the part inside, and
     /// hours two sources both recorded (a watch's stages under a sleep app's one span) count
     /// once.

@@ -42,7 +42,7 @@ final class HealthDetailViewController: ScreenViewController {
         chart.sizingOptions = .intrinsicContentSize
         addChild(chart)
 
-        let card = CardView(title: metric.periodCaption, systemImage: metric.systemImage, iconTint: metric.accent)
+        let card = CardView(title: metric.periodCaption, systemImage: metric.systemImage, iconTint: metric.uiAccent)
         card.contentStack.addArrangedSubview(heroLabel)
         card.contentStack.addArrangedSubview(captionLabel)
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: captionLabel)
@@ -90,11 +90,7 @@ final class HealthDetailViewController: ScreenViewController {
 
     private func connect() {
         Task {
-            do {
-                try await dependencies.health.requestAccess()
-            } catch {
-                Self.logger.error("HealthKit authorisation failed: \(error, privacy: .public)")
-            }
+            await dependencies.health.connect()
             load()
         }
     }

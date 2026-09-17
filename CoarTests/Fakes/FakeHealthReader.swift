@@ -17,11 +17,7 @@ final class FakeHealthReader: HealthReader {
 
     func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval] {
         if let failure { throw failure }
-        var result: [Day: TimeInterval] = [:]
-        for day in days {
-            result[day] = SleepNight.timeAsleep(wakingOn: day, from: sleepSamples, in: calendar)
-        }
-        return result
+        return SleepNight.timeAsleep(wakingOn: days, from: sleepSamples, in: calendar)
     }
 
     func steps(on days: [Day]) async throws -> [Day: Int] {

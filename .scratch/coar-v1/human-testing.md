@@ -241,3 +241,5 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The 30-day average counts only Days that have data.
 - [?] Home's ticket 01 placeholder "Today" card is gone; Home is the two squares until ticket 14.
 - [?] The empty detail shows `No data` twice: the hero slot and the chart slot (each is a value slot per DESIGN §1.5).
+- [?] CONTEXT.md now defines Night, Time Asleep, and Steps; ADR 0006 records the 6 PM boundary.
+- [?] Story 80's tap-through is only offered while the prompt has never been shown; after a denial the detail caption says to check the Health app (an `x-apple-health://` link was not added).

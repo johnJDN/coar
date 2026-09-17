@@ -72,11 +72,7 @@ final class HomeViewController: ScreenViewController {
 
     private func connectHealth() {
         Task {
-            do {
-                try await dependencies.health.requestAccess()
-            } catch {
-                Self.logger.error("HealthKit authorisation failed: \(error, privacy: .public)")
-            }
+            await dependencies.health.connect()
             load()
         }
     }

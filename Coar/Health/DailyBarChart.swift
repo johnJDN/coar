@@ -2,8 +2,8 @@ import Charts
 import SwiftUI
 
 /// A sleep or steps detail chart (DESIGN.md §8 "One value per Day"): one bar per Day that
-/// has a value, in the metric's accent, the latest bar saturated with bloom and earlier ones
-/// muted; Days without data leave a gap; no gridlines, no legend, axis labels in
+/// has a value, in the metric's accent, the latest bar with a value saturated with bloom
+/// and earlier ones muted; Days without data leave a gap; no gridlines, no legend, axis labels in
 /// `textTertiary`; `No data` alone in the slot when nothing in the span has a value. A
 /// SwiftUI leaf: values in, nothing out (ADR 0001).
 struct DailyBarChart: View {
@@ -30,14 +30,14 @@ struct DailyBarChart: View {
         Chart {
             ForEach(model.points.dropLast()) { point in
                 BarMark(x: .value("Day", point.date, unit: .day), y: .value(model.metric.title, point.value))
-                    .foregroundStyle(model.metric.accentColor.opacity(Self.mutedOpacity))
+                    .foregroundStyle(model.metric.accent.opacity(Self.mutedOpacity))
                     .cornerRadius(3)
             }
             if let last = model.points.last {
                 BarMark(x: .value("Day", last.date, unit: .day), y: .value(model.metric.title, last.value))
-                    .foregroundStyle(model.metric.accentColor)
+                    .foregroundStyle(model.metric.accent)
                     .cornerRadius(3)
-                    .bloom(model.metric.accentColor, in: colorScheme)
+                    .bloom(model.metric.accent, in: colorScheme)
             }
         }
         .chartXAxis(model.points.isEmpty ? .hidden : .automatic)
@@ -79,14 +79,14 @@ struct DailyBarChart: View {
     let points = hours.enumerated().compactMap { offset, value in
         value == 0 ? nil : TrendPoint(date: today.advanced(by: offset - 13).start(), value: value)
     }
-    return DailyBarChart(model: .init(metric: .sleep, points: points, span: today.advanced(by: -29).start()...today.advanced(by: 1).start()))
+    return DailyBarChart(model: .init(metric: .sleep, points: points, span: HealthDetailViewController.span(endingOn: today)))
         .padding()
         .background(Color.surface)
 }
 
 #Preview("No data") {
     let today = Day.today()
-    return DailyBarChart(model: .init(metric: .steps, points: [], span: today.advanced(by: -29).start()...today.advanced(by: 1).start()))
+    return DailyBarChart(model: .init(metric: .steps, points: [], span: HealthDetailViewController.span(endingOn: today)))
         .padding()
         .background(Color.surface)
 }

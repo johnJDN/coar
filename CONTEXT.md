@@ -133,3 +133,23 @@ _Avoid_: Average weight, moving average, true weight
 **Progress Photo**:
 A photo of the user's body taken on a date to compare against later ones.
 _Avoid_: Photo, progress pic, body photo
+
+### Sleep and steps
+
+Read live from Apple Health and never stored (ADR 0002).
+
+**Night**:
+The sleep that belongs to one Day: everything between 6 PM the evening before and 6 PM
+that Day, as the Health app groups it (ADR 0006). A Night belongs to the Day the user
+woke, so an afternoon nap joins the Night before it and an evening doze the Night after.
+_Avoid_: Sleep session, sleep day, last night's sleep (as a data term)
+
+**Time Asleep**:
+A Night's value: the hours in the asleep stages (core, deep, REM, unspecified), with
+awake and in-bed excluded and hours two sources both recorded counted once. A Night with
+no asleep sample has no Time Asleep, shown as `No data`; it is never 0.
+_Avoid_: Sleep duration, sleep time, hours slept, in bed
+
+**Steps**:
+The step count Apple Health holds for a Day, its own sum across sources.
+_Avoid_: Step count, activity, walking

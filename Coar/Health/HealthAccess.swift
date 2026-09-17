@@ -1,4 +1,5 @@
 import HealthKit
+import os
 
 /// What the user has let Coar do with Apple Health. HealthKit never reveals whether a read
 /// was granted, only whether the prompt has been shown, so "connected" is the most the app
@@ -20,6 +21,20 @@ protocol HealthAccess: AnyObject {
     func status() async -> HealthAccessStatus
     /// Shows the system prompt. HealthKit shows it once; later calls return at once.
     func requestAccess() async throws
+}
+
+extension HealthAccess {
+    private static var logger: Logger { Logger(category: "Health") }
+
+    /// Shows the system prompt from a screen: a failure is logged, never surfaced, because
+    /// the screen re-reads Health either way and shows what it finds.
+    func connect() async {
+        do {
+            try await requestAccess()
+        } catch {
+            Self.logger.error("HealthKit authorisation failed: \(error, privacy: .public)")
+        }
+    }
 }
 
 final class HealthKitAccess: HealthAccess {
@@ -97,11 +112,7 @@ extension HealthKitAccess: HealthReader {
             sortDescriptors: []
         )
         let samples = try await descriptor.result(for: healthStore).compactMap(SleepSample.init)
-        var result: [Day: TimeInterval] = [:]
-        for day in days {
-            result[day] = SleepNight.timeAsleep(wakingOn: day, from: samples, in: calendar)
-        }
-        return result
+        return SleepNight.timeAsleep(wakingOn: days, from: samples, in: calendar)
     }
 
     /// The step sum per Day, from HealthKit's own statistics so a watch and a phone that

@@ -41,3 +41,16 @@
   tap only prompts while the prompt has never been shown (afterwards the whole square opens
   the detail, since HealthKit would not show it again); past bars muted at 70%; a nap's
   minutes are added to the night it follows; `HealthMetric.read` returns a `Double` for both.
+- 2026-09-16 (agent, after /code-review): CONTEXT.md gains Night, Time Asleep, and Steps
+  under "Sleep and steps"; ADR 0006 records the 6 PM to 6 PM Night; DESIGN §5 notes the
+  half-width square hero may shrink to fit. `HealthMetric` derives its `Color` from the one
+  `UIColor` switch (`uiAccent` / `accent`, the `Macro` precedent); `SleepNight.timeAsleep
+  (wakingOn: [Day])` is the one per-Day reduction the live reader and the fake share;
+  `HealthAccess.connect()` is the one log-and-carry-on prompt call for Home, the detail, and
+  Settings; the hero tap's `cancelsTouchesInView` is explicit. Left as deliberate: the rule
+  is tested through the fake because the ticket asks for it that way (the fake now holds
+  samples and calls the shared reduction, not a copy); the single-Day reader conveniences
+  stay because the ticket names them; the detail's card assembly mirrors Body Weight's
+  rather than sharing a component (two copies, not three, and ticket 14 may reshape it);
+  the caption cascade stays in the screens; after a denial the value slot no longer prompts
+  (HealthKit shows the sheet once) and the caption points at the Health app instead.

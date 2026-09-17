@@ -119,7 +119,7 @@ row: teal, lavender, orange, yellow, green, blue. Use accent colors at ~85% satu
 | Page subtitle | `.subheadline` | regular, `textSecondary` | e.g. "Last 30 days" |
 | Section header | `.title2` | semibold | e.g. "Nutrition" |
 | Card title | `.headline` | semibold | leading icon optional |
-| Hero number | `UIFont.systemFont(ofSize: 40, weight: .bold)` with `.rounded` descriptor design | | monospaced digits |
+| Hero number | `UIFont.systemFont(ofSize: 40, weight: .bold)` with `.rounded` descriptor design | | monospaced digits; in a half-width Home square it may shrink to fit, to 50%, rather than clip |
 | Metric number | `.title3` | semibold | colored with metric accent |
 | Body | `.body` | regular | |
 | Caption / label | `.footnote` | regular, `textSecondary` | |

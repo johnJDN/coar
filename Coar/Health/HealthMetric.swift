@@ -23,19 +23,14 @@ enum HealthMetric: CaseIterable {
     }
 
     /// One accent per metric (DESIGN.md §3): teal for Sleep, amber for Steps.
-    var accent: UIColor {
+    var uiAccent: UIColor {
         switch self {
         case .sleep: return UIColor.accentTeal
         case .steps: return UIColor.accentAmber
         }
     }
 
-    var accentColor: Color {
-        switch self {
-        case .sleep: return Color.accentTeal
-        case .steps: return Color.accentAmber
-        }
-    }
+    var accent: Color { Color(uiColor: uiAccent) }
 
     /// What the hero value is about: "Last night" or "Today".
     var periodCaption: String {
@@ -69,7 +64,8 @@ enum HealthMetric: CaseIterable {
         }
     }
 
-    /// The value per Day for `days`, for the Days that have one.
+    /// The value per Day for `days`, for the Days that have one. Both come back as a
+    /// `Double` (seconds, or a count) so one card and one chart serve both metrics.
     func read(_ days: [Day], from reader: HealthReader) async throws -> [Day: Double] {
         switch self {
         case .sleep: return try await reader.timeAsleep(wakingOn: days)

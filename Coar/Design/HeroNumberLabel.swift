@@ -18,6 +18,9 @@ final class HeroNumberLabel: UILabel {
         super.init(frame: frame)
         font = UIFont.heroNumber
         adjustsFontForContentSizeCategory = true
+        // The tap ends the touch for the card beneath, so a control wrapping the card
+        // does not also fire (a Home square opens its detail on every other tap).
+        tap.cancelsTouchesInView = true
         addGestureRecognizer(tap)
     }
 

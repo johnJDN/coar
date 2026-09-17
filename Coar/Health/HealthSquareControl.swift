@@ -24,7 +24,7 @@ final class HealthSquareControl: UIControl {
 
     init(metric: HealthMetric) {
         self.metric = metric
-        card = CardView(title: metric.title, systemImage: metric.systemImage, iconTint: metric.accent, accessory: .navigates)
+        card = CardView(title: metric.title, systemImage: metric.systemImage, iconTint: metric.uiAccent, accessory: .navigates)
         super.init(frame: .zero)
 
         heroLabel.adjustsFontSizeToFitWidth = true
