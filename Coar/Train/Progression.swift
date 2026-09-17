@@ -20,7 +20,7 @@ enum Progression {
     }
 
     /// The highest Estimated 1RM among the completed sets; nil when none counts. A set with
-    /// no weight (bodyweight) or no reps says nothing about a single-rep max and is skipped.
+    /// no weight lifted or no reps says nothing about a single-rep max and is skipped.
     static func best(of sets: [LoggedSetRecord]) -> Double? {
         sets.lazy
             .filter { $0.isCompleted && $0.kilograms > 0 && $0.reps > 0 }

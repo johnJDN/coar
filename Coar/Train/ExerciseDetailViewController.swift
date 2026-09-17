@@ -16,7 +16,7 @@ final class ExerciseDetailViewController: ScreenViewController {
 
     private let dependencies: AppDependencies
     private let exerciseID: ExerciseRecord.ID
-    private let heroLabel = UILabel()
+    private let heroLabel = HeroNumberLabel()
     private let captionLabel = UILabel()
     private let chart = UIHostingController(rootView: ProgressionChart(model: .init(points: [], unit: "")))
     private let recentStack = UIStackView()
@@ -41,8 +41,6 @@ final class ExerciseDetailViewController: ScreenViewController {
         edit.accessibilityLabel = "Edit exercise"
         navigationItem.rightBarButtonItem = edit
 
-        heroLabel.font = UIFont.heroNumber
-        heroLabel.adjustsFontForContentSizeCategory = true
         captionLabel.font = UIFont.label
         captionLabel.textColor = UIColor.textSecondary
         captionLabel.adjustsFontForContentSizeCategory = true
@@ -53,7 +51,6 @@ final class ExerciseDetailViewController: ScreenViewController {
         addChild(chart)
 
         let card = CardView(title: "Progression", systemImage: "chart.line.uptrend.xyaxis", iconTint: UIColor.accentLime)
-        card.contentStack.setCustomSpacing(Metrics.spaceTight, after: card.contentStack.arrangedSubviews[0])
         card.contentStack.addArrangedSubview(heroLabel)
         card.contentStack.addArrangedSubview(captionLabel)
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: captionLabel)
@@ -104,10 +101,10 @@ final class ExerciseDetailViewController: ScreenViewController {
 
         let points = Progression.points(for: exerciseID, in: workouts)
         if let latest = points.last, let workout = workouts.first(where: { $0.id == latest.workoutID }) {
-            setHero(TrainText.estimatedOneRepMax(latest.kilograms, in: unit), isEmpty: false)
+            heroLabel.setValue(TrainText.estimatedOneRepMax(latest.kilograms, in: unit), isEmpty: false)
             captionLabel.text = "Estimated 1RM · \(TrainText.dayText(workout.day))"
         } else {
-            setHero("—", isEmpty: true)
+            heroLabel.setValue("—", isEmpty: true)
             captionLabel.text = "No sets logged for this exercise yet"
         }
         chart.rootView = ProgressionChart(model: .init(
@@ -121,37 +118,17 @@ final class ExerciseDetailViewController: ScreenViewController {
     /// One card per Workout with a completed set of the Exercise, latest first.
     private func renderRecent(_ workouts: [WorkoutRecord], in unit: MassUnit) {
         recentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let recent = workouts.reversed().lazy
+        let recent = Array(workouts.reversed().lazy
             .map { ($0, $0.loggedSets(of: self.exerciseID).filter(\.isCompleted)) }
             .filter { !$0.1.isEmpty }
-            .prefix(Self.recentLimit)
+            .prefix(Self.recentLimit))
         if recent.isEmpty {
             recentStack.addArrangedSubview(CardView.emptyState(caption: "Sets you log for this exercise land here.", accessibilityLabel: "No sets yet. Sets you log for this exercise land here."))
         }
         for (workout, sets) in recent {
-            let card = CardView(title: TrainText.dayText(workout.day), systemImage: "dumbbell.fill")
-            let subtitle = UILabel()
-            subtitle.text = "\(workout.title) · \(TrainText.timeText(workout.startedAt))"
-            subtitle.font = UIFont.label
-            subtitle.textColor = UIColor.textSecondary
-            subtitle.adjustsFontForContentSizeCategory = true
-            card.contentStack.addArrangedSubview(subtitle)
-            card.contentStack.setCustomSpacing(Metrics.spaceInner, after: subtitle)
-            for (index, set) in sets.enumerated() {
-                card.contentStack.addArrangedSubview(UIView.setLine(number: index + 1, text: TrainText.setLine(set, in: unit)))
-            }
-            recentStack.addArrangedSubview(card)
+            let subtitle = "\(workout.title) · \(TrainText.timeText(workout.startedAt))"
+            recentStack.addArrangedSubview(CardView.setHistory(title: TrainText.dayText(workout.day), subtitle: subtitle, sets: sets, in: unit))
         }
-    }
-
-    /// Number changes cross-dissolve (DESIGN.md §9); the empty value takes `textTertiary` (§5).
-    private func setHero(_ text: String, isEmpty: Bool) {
-        let apply = {
-            self.heroLabel.text = text
-            self.heroLabel.textColor = isEmpty ? UIColor.textTertiary : UIColor.textPrimary
-        }
-        guard heroLabel.text != text, viewIfLoaded?.window != nil else { return apply() }
-        UIView.transition(with: heroLabel, duration: 0.25, options: .transitionCrossDissolve, animations: apply)
     }
 
     // MARK: - Edit

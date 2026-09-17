@@ -55,18 +55,8 @@ final class WorkoutDetailViewController: ScreenViewController {
             contentStack.addArrangedSubview(CardView.emptyState(caption: "No sets were logged.", accessibilityLabel: "No sets were logged."))
         }
         for row in workout.exercises {
-            let card = CardView(title: row.name, systemImage: "dumbbell.fill")
-            let subtitle = UILabel()
-            subtitle.text = [workout.supersetLabel(for: row.id), TrainText.count(row.sets.count, "set")].compactMap { $0 }.joined(separator: " · ")
-            subtitle.font = UIFont.label
-            subtitle.textColor = UIColor.textSecondary
-            subtitle.adjustsFontForContentSizeCategory = true
-            card.contentStack.addArrangedSubview(subtitle)
-            card.contentStack.setCustomSpacing(Metrics.spaceInner, after: subtitle)
-            for (index, set) in row.sets.enumerated() {
-                card.contentStack.addArrangedSubview(UIView.setLine(number: index + 1, text: TrainText.setLine(set, in: unit)))
-            }
-            contentStack.addArrangedSubview(card)
+            let subtitle = [workout.supersetLabel(for: row.id), TrainText.count(row.sets.count, "set")].compactMap { $0 }.joined(separator: " · ")
+            contentStack.addArrangedSubview(CardView.setHistory(title: row.name, subtitle: subtitle, sets: row.sets, in: unit))
         }
     }
 

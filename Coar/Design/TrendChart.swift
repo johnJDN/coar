@@ -14,8 +14,10 @@ struct TrendPoint: Hashable, Identifiable {
 /// single-point series still reads as an axis; `No data` alone in the slot, no axes, when
 /// the series is empty; a fixed height.
 struct TrendChartChrome: ViewModifier {
-    let dates: [Date]
-    let values: [Double]
+    let points: [TrendPoint]
+
+    private var dates: [Date] { points.map(\.date) }
+    private var values: [Double] { points.map(\.value) }
 
     static let height: CGFloat = 180
 
@@ -75,8 +77,8 @@ struct TrendChartChrome: ViewModifier {
 
 extension View {
     /// The DESIGN.md §8 trend-chart chrome over the series the chart draws.
-    func trendChartChrome(dates: [Date], values: [Double]) -> some View {
-        modifier(TrendChartChrome(dates: dates, values: values))
+    func trendChartChrome(over points: [TrendPoint]) -> some View {
+        modifier(TrendChartChrome(points: points))
     }
 }
 

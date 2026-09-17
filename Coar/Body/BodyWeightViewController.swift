@@ -11,7 +11,7 @@ final class BodyWeightViewController: ScreenViewController {
     private static let logger = Logger(category: "BodyWeight")
 
     private let dependencies: AppDependencies
-    private let heroLabel = UILabel()
+    private let heroLabel = HeroNumberLabel()
     private let captionLabel = UILabel()
     private let chart = UIHostingController(rootView: BodyWeightChart(model: .init(raw: [], trend: [], unit: "")))
     private var unitObserver: NSObjectProtocol?
@@ -32,8 +32,6 @@ final class BodyWeightViewController: ScreenViewController {
         log.accessibilityLabel = "Log Body Weight"
         navigationItem.rightBarButtonItem = log
 
-        heroLabel.font = UIFont.heroNumber
-        heroLabel.adjustsFontForContentSizeCategory = true
         captionLabel.font = UIFont.label
         captionLabel.textColor = UIColor.textSecondary
         captionLabel.adjustsFontForContentSizeCategory = true
@@ -85,22 +83,12 @@ final class BodyWeightViewController: ScreenViewController {
             caption = "No Body Weight yet"
         }
         let hero = TrendWeight.hero(of: records.map(\.kilograms)).map { unit.displayText(fromKilograms: $0) }
-        setHero(hero ?? "—", isEmpty: hero == nil)
+        heroLabel.setValue(hero ?? "—", isEmpty: hero == nil)
         captionLabel.text = caption
 
         let raw = records.map { TrendPoint(date: $0.day.start(), value: unit.displayValue(fromKilograms: $0.kilograms)) }
         let smoothed = zip(raw, trend).map { TrendPoint(date: $0.date, value: unit.displayValue(fromKilograms: $1)) }
         chart.rootView = BodyWeightChart(model: .init(raw: raw, trend: smoothed, unit: unit.symbol))
-    }
-
-    /// Number changes cross-dissolve (DESIGN.md §9); the empty value takes `textTertiary` (§5).
-    private func setHero(_ text: String, isEmpty: Bool) {
-        let apply = {
-            self.heroLabel.text = text
-            self.heroLabel.textColor = isEmpty ? UIColor.textTertiary : UIColor.textPrimary
-        }
-        guard heroLabel.text != text, viewIfLoaded?.window != nil else { return apply() }
-        UIView.transition(with: heroLabel, duration: 0.25, options: .transitionCrossDissolve, animations: apply)
     }
 
     private static func dayText(_ day: Day) -> String {

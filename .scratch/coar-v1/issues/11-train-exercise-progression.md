@@ -58,3 +58,20 @@
   monotone-interpolated (no overshoot between Workouts) where Body Weight keeps Catmull-Rom.
   (11) A single point's value axis reads in halves (48.5 … 50.0) because the shared padding
   floor is 1, as for Body Weight.
+- 2026-09-16 (agent, after /code-review): Fixed: DESIGN §3's accent table now names
+  Progression on `accentLime`'s row and drops `accentBlue`'s "progression dot" note, so the
+  doc and the code agree (reverse both if lime is the wrong call); CONTEXT.md avoid-words
+  ("bodyweight", "deleted") went from the comments. Duplication pulled out:
+  `HeroNumberLabel` (the §5 hero font and the §9 cross-dissolve, now shared with Body
+  Weight), `CardView.setHistory(title:subtitle:sets:in:)` (the Logged Set card shared by the
+  Workout detail and Recent sets; the misnamed `SetLineView.swift` went with it),
+  `trendChartChrome(over:)` takes the points rather than two parallel arrays; a no-op
+  spacing line that reached into the card's header, a stray `alignment` on the horizontal
+  footer, and a lazy sequence walked twice went. Left as is: the section header is
+  hand-built like the Train root's; `TrendPoint` keys by date (two Workouts started the same
+  instant cannot happen); "Add set" keeps the logger's existing casing. Flagged by the Spec
+  review, please confirm: (12) Recent sets lists completed sets only, so the Active Workout's
+  unticked sets are left out until ticked (finished Workouts hold only completed sets
+  anyway). (13) The shared chrome changes Body Weight's chart too: end date labels pulled
+  inward, axes hidden when empty (this is a behaviour change, not a pure refactor; it is on
+  the human-testing list). 174 tests pass.

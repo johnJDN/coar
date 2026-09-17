@@ -36,7 +36,7 @@ struct BodyWeightChart: View {
                     .bloom(Color.accentTeal, in: colorScheme)
             }
         }
-        .trendChartChrome(dates: model.raw.map(\.date), values: model.raw.map(\.value))
+        .trendChartChrome(over: model.raw)
         .animation(.easeIn(duration: Elevation.bloomFade), value: model)
         .accessibilityLabel("Body Weight chart in \(model.unit)")
     }

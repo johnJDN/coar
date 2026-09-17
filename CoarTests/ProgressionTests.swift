@@ -39,7 +39,7 @@ final class ProgressionTests: XCTestCase {
     }
 
     func test_bestOfSets_ignoresCompletedSetsWithNoWeightOrNoReps() {
-        // A bodyweight set or one with no reps typed says nothing about a single-rep max.
+        // A set with no weight lifted, or none with reps typed, says nothing about a single-rep max.
         let sets = [
             set(kilograms: 0, reps: 12, isCompleted: true),
             set(kilograms: 80, reps: 0, isCompleted: true),

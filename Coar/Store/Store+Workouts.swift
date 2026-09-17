@@ -174,8 +174,8 @@ extension Store {
     }
 
     /// Every Workout with a row for the Exercise, earliest started first: what Progression
-    /// charts. The Active Workout counts too, since its completed sets are real; a Workout
-    /// whose rows only carry the Exercise's name (the Exercise since deleted) does not.
+    /// charts. The Active Workout counts too, since its completed sets are real. Rows match
+    /// by their Exercise reference, so an Archived Exercise keeps its history.
     func workouts(containing exerciseID: ExerciseRecord.ID) throws -> [WorkoutRecord] {
         guard let exercise = try fetchExercise(exerciseID) else { return [] }
         let request = Workout.fetchRequest()

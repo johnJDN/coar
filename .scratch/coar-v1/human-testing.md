@@ -194,3 +194,5 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Workout detail cards do not open Progression.
 - [?] The Progression line is monotone (no overshoot); Body Weight keeps Catmull-Rom.
 - [?] A single point's value axis reads in halves (padding floor of 1, shared with Body Weight).
+- [?] DESIGN §3 now lists Progression on lime's row and drops blue's "progression dot" note.
+- [?] Recent sets lists completed sets only, so the Active Workout's unticked sets appear once ticked.

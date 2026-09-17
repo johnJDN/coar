@@ -41,7 +41,7 @@ struct ProgressionChart: View {
                     .bloom(Self.accent, in: colorScheme)
             }
         }
-        .trendChartChrome(dates: model.points.map(\.date), values: model.points.map(\.value))
+        .trendChartChrome(over: model.points)
         .animation(.easeIn(duration: Elevation.bloomFade), value: model)
         .accessibilityLabel("Progression chart, Estimated 1RM in \(model.unit)")
     }

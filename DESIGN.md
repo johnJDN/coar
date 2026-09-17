@@ -81,11 +81,11 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 |---|---|---|
 | `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. |
 | `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. |
-| `accentBlue` | `#6F8CFF` | Protein. Also generic "info" progression dot. |
+| `accentBlue` | `#6F8CFF` | Protein. |
 | `accentOrange` | `#F2A83B` | Carbs. |
 | `accentPink` | `#F0609C` | Fat. |
 | `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep. Body Weight (chart, chip tile, Settings unit tile). |
-| `accentLime` | `#B6E857` | Secondary volume groups. |
+| `accentLime` | `#B6E857` | Secondary volume groups. Exercises (chip tile) and Progression (Estimated 1RM chart, hero card icon). |
 | `accentLavender` | `#8C8DF5` | AI / coach. Gradient partner: `#B49CFF`. |
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |
 

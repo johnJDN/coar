@@ -94,7 +94,6 @@ final class ExerciseCardCell: CardCell {
         let addSet = UIButton(configuration: .footerAction(title: "Add set", systemImage: "plus"), primaryAction: UIAction { [weak self] _ in self?.onAddSet?() })
         let footer = UIStackView(arrangedSubviews: [progressionButton, addSet])
         footer.axis = .horizontal
-        footer.alignment = .leading
         footer.distribution = .fillEqually
         footer.spacing = Metrics.spaceTight
 
