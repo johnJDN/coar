@@ -120,7 +120,7 @@ final class WorkoutLoggerViewController: UIViewController {
             cell.onRemoveSet = { [weak self] setID in self?.removeSet(setID) }
             cell.onAddSet = { [weak self] in self?.addSet(to: id) }
             cell.onRemoveExercise = { [weak self] in self?.removeExercise(id) }
-            cell.onStartRest = { [weak self] in self?.startRest(after: id, byHand: true) }
+            cell.onStartRest = { [weak self] seconds in self?.dependencies.restTimer.start(seconds: seconds) }
         }
         let gapCell = UICollectionView.CellRegistration<CardGapCell, Item> { _, _, _ in }
         let linkCell = UICollectionView.CellRegistration<SupersetLinkCell, Item> { _, _, _ in }
@@ -263,18 +263,10 @@ final class WorkoutLoggerViewController: UIViewController {
             Self.logger.error("Failed to complete Logged Set: \(error, privacy: .public)")
         }
         render()
-        if completed, let row = workout?.exercises.first(where: { $0.sets.contains { $0.id == id } }) {
-            startRest(after: row.id, byHand: false)
+        if completed, let workout, let row = workout.exercises.first(where: { $0.sets.contains { $0.id == id } }),
+           let seconds = workout.restSeconds(afterSetOn: row.id) {
+            dependencies.restTimer.start(seconds: seconds)
         }
-    }
-
-    /// The rest timer for a row: by hand from the card's timer button, always with the
-    /// row's rest default (or 120 s); on completion only when the trigger rule allows it.
-    private func startRest(after rowID: WorkoutExerciseRecord.ID, byHand: Bool) {
-        guard let workout, let row = workout.exercises.first(where: { $0.id == rowID }) else { return }
-        let seconds = byHand ? RestTimerRule.seconds(restDefault: row.restSeconds) : workout.restSeconds(afterSetOn: rowID)
-        guard let seconds else { return }
-        dependencies.restTimer.start(seconds: seconds)
     }
 
     private func addSet(to rowID: WorkoutExerciseRecord.ID) {

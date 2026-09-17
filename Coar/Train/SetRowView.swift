@@ -144,8 +144,8 @@ final class SetRowView: UIView {
         checkButton.accessibilityValue = isCompleted ? "Completed" : "Not completed"
     }
 
+    /// Focus stays where it is: a field being typed in keeps its keyboard (no auto-advance).
     private func tappedCheck() {
-        endEditing(true)
         setCompleted(!isCompleted, animated: true)
         onToggleComplete?(isCompleted)
     }

@@ -160,7 +160,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [ ] While the timer runs, switch to Home / Habits / Food: the bar and countdown follow; tap it: back in the logger. Scroll down so the tab bar minimises: the bar goes inline showing the icon, countdown and ✕ (no "Rest · Push"); scroll up: it grows back.
 - [ ] Let it reach 0:00: a success haptic plays and the bar reverts (to the Workout line on other tabs; gone inside the logger). Background the app mid-count, come back a minute later: the countdown reflects the real time passed.
 - [ ] Tap the card's `timer` button: the timer starts with that Exercise's default, even on A1.
-- [ ] Complete sets in the Superset: the cards do not scroll or move; the keyboard closes on ✓ as before; the lavender link sits between A1 and A2 (and A2 and A3), no link between ungrouped cards.
+- [ ] Complete sets in the Superset: the cards do not scroll or move; with the keyboard up in a reps field, tapping ✓ leaves the keyboard and cursor where they were; the lavender link sits between A1 and A2 (and A2 and A3), no link between ungrouped cards.
 - [ ] Finish or Discard the Workout while the timer runs: the bar disappears entirely.
 - [ ] Dynamic Type: the countdown, "Rest · Push", the link glyph, and the timer button scale; the bar's two lines do not clip in light or dark.
 - [?] One accessory: the countdown replaces the Workout line everywhere while it runs (including inside the logger); tap still returns to the logger.
@@ -170,3 +170,6 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The timer ends itself with a haptic; no local notification in the background; not persisted across relaunch.
 - [?] Grouped cards sit 24 pt apart with the link; ungrouped 16 pt.
 - [?] Countdown is card-title size with monospaced digits (the accessory height fits two lines only at that size).
+- [?] Tapping ✓ no longer closes the keyboard (ticket 09 did); focus stays put.
+- [?] A rest default of 0 counts as none (120 s); the Exercise form rejects 0 anyway.
+- [?] The Superset link is lavender, matching the Plan editor's link button.

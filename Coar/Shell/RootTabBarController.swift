@@ -111,14 +111,15 @@ final class RootTabBarController: UITabBarController {
     }
 
     /// The bar shows while the rest timer runs, or while a Workout is active and the logger
-    /// is not on screen. A rest timer outliving its Workout (Finish or Discard) is dismissed,
-    /// which comes back through `RestTimer.didChange`.
+    /// is not on screen. A rest timer outliving its Workout (Finish or Discard) is dismissed
+    /// first; the dismiss posts `RestTimer.didChange`, which re-enters here and finds
+    /// nothing to show, and the fall-through then agrees.
     private func refreshAccessory() {
         guard isViewLoaded else { return }
         let restTimer = dependencies.restTimer
         let active = activeWorkout()
         if active == nil, restTimer.isRunning {
-            return restTimer.dismiss()
+            restTimer.dismiss()
         }
         if let active, restTimer.isRunning || !(isOnTrainTab && loggerIsInTrainStack) {
             activeBar.configure(with: .init(title: active.title, startedAt: active.startedAt, restEndsAt: restTimer.endsAt))

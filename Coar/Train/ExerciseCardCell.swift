@@ -20,7 +20,8 @@ final class ExerciseCardCell: CardCell {
     var onRemoveSet: ((LoggedSetRecord.ID) -> Void)?
     var onAddSet: (() -> Void)?
     var onRemoveExercise: (() -> Void)?
-    var onStartRest: (() -> Void)?
+    /// The timer button, with the row's rest duration.
+    var onStartRest: ((_ seconds: Int) -> Void)?
 
     private let nameLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -29,6 +30,7 @@ final class ExerciseCardCell: CardCell {
     private let setsStack = UIStackView()
     private var rows: [SetRowView] = []
     private var setIDs: [LoggedSetRecord.ID] = []
+    private var restSeconds: Int?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -49,7 +51,10 @@ final class ExerciseCardCell: CardCell {
         timerButton.configuration?.image = UIImage(systemName: "timer")
         timerButton.configuration?.baseForegroundColor = UIColor.textSecondary
         timerButton.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
-        timerButton.addAction(UIAction { [weak self] _ in self?.onStartRest?() }, for: .touchUpInside)
+        timerButton.addAction(UIAction { [weak self] _ in
+            guard let self, let restSeconds else { return }
+            onStartRest?(restSeconds)
+        }, for: .touchUpInside)
         timerButton.setContentHuggingPriority(.required, for: .horizontal)
 
         moreButton.configuration?.image = UIImage(systemName: "ellipsis")
@@ -102,6 +107,7 @@ final class ExerciseCardCell: CardCell {
     func configure(with model: Model) {
         nameLabel.text = model.name
         subtitleLabel.text = model.subtitle
+        restSeconds = model.restSeconds
         timerButton.accessibilityLabel = "Start rest timer, \(TrainText.count(model.restSeconds, "second"))"
         setIDs = model.sets.map(\.id)
         while rows.count > model.sets.count {

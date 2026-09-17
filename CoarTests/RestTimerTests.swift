@@ -51,6 +51,20 @@ final class RestTimerTests: XCTestCase {
         XCTAssertFalse(timer.isRunning)
     }
 
+    func test_countdownFoundOverLongAfterItsEnd_endsWithoutSayingItExpired() {
+        let timer = RestTimer()
+        let expired = expectation(forNotification: RestTimer.didExpire, object: timer)
+        expired.isInverted = true
+        let changed = expectation(forNotification: RestTimer.didChange, object: timer)
+        changed.expectedFulfillmentCount = 2
+
+        // Started as if 10 s before the end moment passed: the app was suspended across it.
+        timer.start(seconds: 0, now: Date().addingTimeInterval(-10))
+
+        wait(for: [expired, changed], timeout: 1)
+        XCTAssertFalse(timer.isRunning)
+    }
+
     func test_changes_arePostedForStartAndDismiss() {
         let timer = RestTimer()
         var posts = 0

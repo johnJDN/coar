@@ -94,8 +94,12 @@ final class ActiveWorkoutBar: UIControl {
     }
 
     func configure(with model: Model) {
+        let wasResting = self.model?.restEndsAt != nil
         let restarts = self.model?.restEndsAt != model.restEndsAt || ticker == nil
         self.model = model
+        if wasResting != (model.restEndsAt != nil) || ticker == nil {
+            applyMode(resting: model.restEndsAt != nil, animated: ticker != nil && window != nil)
+        }
         tick()
         guard restarts else { return }
         ticker?.invalidate()
@@ -112,37 +116,43 @@ final class ActiveWorkoutBar: UIControl {
         ticker = nil
     }
 
+    /// The Workout line or the countdown: what changes only when the mode does. The swap
+    /// cross-dissolves (DESIGN.md §9) once the bar is on screen.
+    private func applyMode(resting: Bool, animated: Bool) {
+        let apply = {
+            self.icon.image = UIImage(systemName: resting ? "timer" : "dumbbell.fill")
+            self.icon.tintColor = UIColor.accentGreen
+            self.titleLabel.font = resting ? UIFont.cardTitleMonospaced : UIFont.cardTitle
+            self.titleLabel.textColor = resting ? UIColor.accentGreen : UIColor.textPrimary
+            self.chevron.isHidden = resting
+            self.dismissButton.isHidden = !resting
+        }
+        if animated {
+            UIView.transition(with: self, duration: 0.2, options: .transitionCrossDissolve, animations: apply)
+        } else {
+            apply()
+        }
+        accessibilityCustomActions = resting ? [
+            UIAccessibilityCustomAction(name: "Dismiss rest timer") { [weak self] _ in
+                self?.onDismissRest?()
+                return true
+            },
+        ] : nil
+    }
+
+    /// The text that moves with the clock.
     private func tick() {
         guard let model else { return }
         let now = Date()
         if let restEndsAt = model.restEndsAt {
-            let remaining = max(0, Int(restEndsAt.timeIntervalSince(now).rounded(.up)))
-            icon.image = UIImage(systemName: "timer")
-            icon.tintColor = UIColor.accentGreen
-            titleLabel.font = UIFont.cardTitleMonospaced
-            titleLabel.textColor = UIColor.accentGreen
+            let remaining = RestTimer.remainingSeconds(until: restEndsAt, at: now)
             titleLabel.text = TrainText.countdown(remaining)
             detailLabel.text = "Rest · \(model.title)"
-            chevron.isHidden = true
-            dismissButton.isHidden = false
             accessibilityLabel = "Rest, \(TrainText.count(remaining, "second")) left, \(model.title)"
-            accessibilityCustomActions = [
-                UIAccessibilityCustomAction(name: "Dismiss rest timer") { [weak self] _ in
-                    self?.onDismissRest?()
-                    return true
-                },
-            ]
         } else {
-            icon.image = UIImage(systemName: "dumbbell.fill")
-            icon.tintColor = UIColor.accentGreen
-            titleLabel.font = UIFont.cardTitle
-            titleLabel.textColor = UIColor.textPrimary
             titleLabel.text = model.title
             detailLabel.text = "Active · \(TrainText.duration(from: model.startedAt, to: now))"
-            chevron.isHidden = false
-            dismissButton.isHidden = true
             accessibilityLabel = "\(model.title), \(detailLabel.text ?? ""). Return to workout"
-            accessibilityCustomActions = nil
         }
     }
 

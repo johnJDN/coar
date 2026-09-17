@@ -59,3 +59,20 @@
   (8) Inline (tab bar minimised) shows icon + countdown + ✕, or icon + title + chevron.
   (9) VoiceOver: the bar reads "Rest, n seconds left, Push" with a Dismiss custom action;
   the link reads "Superset, continues below".
+- 2026-09-16 (agent, after /code-review): Fixed: the expiry timer now runs on the common
+  run-loop mode like the bar's ticker, so a scroll across 0:00 no longer holds back the
+  haptic and the revert; an expiry found long after its moment (the app suspended past it)
+  ends the timer without the haptic (`RestTimer.expiryGrace`, tested); `refreshAccessory`
+  dismisses a timer that outlived its Workout and falls through instead of returning
+  through the re-entrant notification; the bar's mode swap (Workout line ↔ countdown)
+  cross-dissolves per DESIGN §9 and only the clock text is touched per tick; tapping ✓ no
+  longer closes the keyboard, so completion changes neither scroll nor focus (ticket box 3;
+  ticket 09's `endEditing` went). Duplication pulled out: `RestTimer.remainingSeconds(until:at:)`
+  serves the bar and the timer; `totalSeconds` (never read) went; the card's timer button
+  hands its seconds through `onStartRest` so the logger no longer re-derives them, and the
+  `byHand` flag argument went with it. Left as is: `RestTimerRule.seconds` treats a rest
+  default of 0 as none (→ 120 s), one more call to confirm, (10): the Exercise form rejects
+  0, and a 0 s timer would end as it began; the Superset link is `accentLavender` like the
+  Plan editor's link button (DESIGN §3 lists lavender for AI / coach; the two never share a
+  screen); the gap and link cells share the section's height estimate (self-sizing settles
+  them on first display). 167 tests pass.
