@@ -269,3 +269,18 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Tapping a day on the Food week strip no longer scrolls the strip; only Home's macros card scrolls it to today.
 - [?] A check-in from Home reloads all of Home (including the two Apple Health reads) rather than only the habits card.
 
+
+## 15: Sync dedupe pass
+
+- [ ] Two devices, both signed into the same iCloud, both in Airplane Mode: check the same Habit in on both; on the second device set a quantitative Habit's amount to 3, then on the first set it to 1 later. Turn networking back on: within a few seconds both devices show one Check-in with 1 (the later edit, not the larger), the heatmap has no doubled day, and the streak counts the day once.
+- [ ] Same with a Body Weight on one Day (84.0 on one device, 84.5 later on the other): both weight screens show one point at 84.5; Home's Body Weight square agrees.
+- [ ] Edit a Food Item's servings offline on both devices, making a different Serving the default on each: after sync both show one default (the later edit) and both Servings still exist.
+- [ ] Start a Workout offline on the phone and complete a set; start another on the iPad offline. Reconnect: the iPad's Workout stays active (accessory bar on both devices shows it); the phone's appears under Recent workouts with only the completed set. Repeat with no set completed on the phone: that Workout disappears entirely.
+- [ ] While the Habits tab is on screen, check a Habit in on the other device: the card updates in place within a few seconds with no flicker; same for Home, Food (today's entries), and Train (recent workouts).
+- [ ] Kill and relaunch after duplicates were synced while the app was closed: the launch pass heals them without any UI action.
+- [?] "Has any Logged Set" is read as "has a completed Logged Set": a Plan-started Workout with nothing ticked is deleted rather than kept as an empty finished Workout, since its pre-filled sets are prescriptions.
+- [?] The older Workout's `finishedAt` is the moment the surviving one started (deterministic across devices), not the moment the pass ran.
+- [?] Every local save also triggers a no-op pass one second later (Core Data posts the remote-change notification for the app's own writes); it is a few background fetches and never saves when there is nothing to do.
+- [?] Only the four tab roots refresh live on a remote change; a pushed screen (Habit detail, Body Weight, a Workout's detail) reads afresh on its next appearance.
+- [?] The logger left open on a Workout the pass finished keeps working on it until it is closed; it pops only when the Workout was deleted.
+- [?] Tests plant duplicates straight into the managed object context (bypassing the façade), because that is exactly what a CloudKit import does.

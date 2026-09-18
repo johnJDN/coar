@@ -8,7 +8,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// unit-test host gets an in-memory store so tests never touch CloudKit or the on-device
     /// database.
     let dependencies: AppDependencies = {
-        let isTestHost = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         let health = HealthKitAccess()
         return AppDependencies(
             store: isTestHost ? Store.inMemory() : AppDelegate.liveStore(),
@@ -19,6 +18,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             restTimer: RestTimer()
         )
     }()
+
+    /// Heals the duplicates two devices can make (ticket 15): once at launch, then after
+    /// every remote-change import. Not in the unit-test host, whose store never syncs.
+    private var syncDedupe: SyncDedupeRunner?
+
+    private static let isTestHost = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
     /// The on-device store, or the sample-data store a debug build was launched with.
     private static func liveStore() -> Store {
@@ -32,7 +37,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        true
+        if !Self.isTestHost {
+            let runner = SyncDedupeRunner(store: dependencies.store)
+            runner.start()
+            syncDedupe = runner
+        }
+        return true
     }
 
     func application(

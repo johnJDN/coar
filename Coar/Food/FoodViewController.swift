@@ -15,6 +15,7 @@ final class FoodViewController: UIViewController {
     private let strip: WeekStripView
     private let summary = MacroSummaryView()
     private var timeObserver: NSObjectProtocol?
+    private var remoteObserver: NSObjectProtocol?
     private var timeline: UICollectionView!
     /// Sections are the 24 hours of the Day; items are the Entries in each.
     private var dataSource: UICollectionViewDiffableDataSource<Int, EntryRecord.ID>!
@@ -32,7 +33,9 @@ final class FoodViewController: UIViewController {
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     deinit {
-        if let timeObserver { NotificationCenter.default.removeObserver(timeObserver) }
+        for observer in [timeObserver, remoteObserver].compactMap({ $0 }) {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     override func viewDidLoad() {
@@ -44,6 +47,7 @@ final class FoodViewController: UIViewController {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.refreshToday() }
         }
+        remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
 
         let add = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentAdd(hour: nil) })
         add.accessibilityLabel = "Add entry"

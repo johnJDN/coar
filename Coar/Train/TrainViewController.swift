@@ -22,10 +22,15 @@ final class TrainViewController: ScreenViewController {
     private let recentStack = UIStackView()
     private let archivedHeader = TrainViewController.sectionHeader("Archived")
     private let archivedStack = UIStackView()
+    private var remoteObserver: NSObjectProtocol?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
         super.init(title: "Train")
+    }
+
+    deinit {
+        if let remoteObserver { NotificationCenter.default.removeObserver(remoteObserver) }
     }
 
     override func viewDidLoad() {
@@ -66,10 +71,16 @@ final class TrainViewController: ScreenViewController {
         archivedStack.axis = .vertical
         archivedStack.spacing = Metrics.spaceCard
         contentStack.addArrangedSubview(archivedStack)
+        remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        render()
+    }
+
+    /// Every section afresh through the façade.
+    private func render() {
         refreshChips()
         renderGrid()
         renderPlans()

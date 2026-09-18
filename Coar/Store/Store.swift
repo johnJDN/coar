@@ -19,7 +19,8 @@ final class Store {
 
     private static let logger = Logger(category: "Store")
 
-    private let container: NSPersistentContainer
+    /// For `Store+Sync` only, which runs the dedupe pass off the main queue.
+    let container: NSPersistentContainer
     /// For the `Store+<Domain>` extensions only; nothing outside the façade may touch it.
     var context: NSManagedObjectContext { container.viewContext }
 

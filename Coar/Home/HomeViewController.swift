@@ -24,6 +24,7 @@ final class HomeViewController: ScreenViewController {
     private var loadTask: Task<Void, Never>?
     private var unitObservation: MassUnitObservation?
     private var timeObserver: NSObjectProtocol?
+    private var remoteObserver: NSObjectProtocol?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -31,7 +32,9 @@ final class HomeViewController: ScreenViewController {
     }
 
     deinit {
-        if let timeObserver { NotificationCenter.default.removeObserver(timeObserver) }
+        for observer in [timeObserver, remoteObserver].compactMap({ $0 }) {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     override func viewDidLoad() {
@@ -71,6 +74,7 @@ final class HomeViewController: ScreenViewController {
                 self?.load()
             }
         }
+        remoteObserver = observeRemoteChanges { [weak self] in self?.load() }
         updateTitle()
     }
 

@@ -27,6 +27,7 @@ final class HabitsViewController: UIViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private var cards: [HabitRecord.ID: HabitCardModel] = [:]
     private var archived: [HabitRecord.ID: HabitRecord] = [:]
+    private var remoteObserver: NSObjectProtocol?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -36,6 +37,10 @@ final class HabitsViewController: UIViewController {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    deinit {
+        if let remoteObserver { NotificationCenter.default.removeObserver(remoteObserver) }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,6 +52,7 @@ final class HabitsViewController: UIViewController {
         navigationItem.rightBarButtonItem = add
 
         configureCollectionView()
+        remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
