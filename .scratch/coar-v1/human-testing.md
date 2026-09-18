@@ -284,3 +284,5 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Only the four tab roots refresh live on a remote change; a pushed screen (Habit detail, Body Weight, a Workout's detail) reads afresh on its next appearance.
 - [?] The logger left open on a Workout the pass finished keeps working on it until it is closed; it pops only when the Workout was deleted.
 - [?] Tests plant duplicates straight into the managed object context (bypassing the façade), because that is exactly what a CloudKit import does.
+- [?] Two Check-ins or Body Weights tied on both `modifiedAt` and content cannot be told apart (neither entity has an id), so each device may delete a different one; the case cannot arise through the façade and was left alone.
+- [?] The runner (launch + remote-change scheduling) has no unit test, since the in-memory store posts no remote-change notifications; it was verified in the simulator log.

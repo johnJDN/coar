@@ -43,3 +43,22 @@
   remote-change notification for the app's own saves too, so every local write runs a cheap
   no-op pass a second later; a logger open on a Workout the pass finished keeps working on it
   until closed.
+- 2026-09-17 (agent, after /code-review): the pass now shares the façade's shapes rather than
+  restating them: `Store.stampAndSave(_:)` is the one stamp-then-save for any context (the
+  façade's `save()` calls it), `Workout.finish(at:)` is the one "drop uncompleted sets, stamp
+  `finishedAt`" used by Finish and by the pass, and the pass posts through
+  `notifyActiveWorkoutChanged()`. The background context takes the view context's
+  `NSMergeByPropertyObjectTrumpMergePolicy`, so a user write racing the pass on the same row
+  no longer fails the pass's save. `SyncDedupeRunner` moved to `Coar/App/` (it is app
+  lifecycle, not store) and subscribes through `Store.observeRemoteChanges`, so nothing
+  outside the façade touches the container. A survivor with no `startedAt` no longer leaves
+  the loser active. Renamed an Avoid word (`weights` → `bodyWeights`) and softened the doc
+  claim about the view context having merged before `runDedupePass` returns (queued ahead of
+  the return, not guaranteed). Left as deliberate: a Check-in or Body Weight pair tied on both
+  `modifiedAt` and content has no per-row id to break the tie, so each device may delete a
+  different row (practically impossible: both rows come from the façade with distinct
+  stamps); the runner has no unit test (the in-memory store posts no remote-change
+  notifications) and was verified in the simulator; tests plant duplicates through
+  `store.context`, now carved out in the façade rule's wording; `remoteChangesDidMerge` fires
+  after every run, including no-op ones, so Home re-reads Apple Health a second after each
+  local save.

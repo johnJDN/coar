@@ -21,7 +21,8 @@ final class Store {
 
     /// For `Store+Sync` only, which runs the dedupe pass off the main queue.
     let container: NSPersistentContainer
-    /// For the `Store+<Domain>` extensions only; nothing outside the façade may touch it.
+    /// For the `Store+<Domain>` extensions only; nothing outside the façade may touch it,
+    /// except a test planting the rows a CloudKit import would, which lands them the same way.
     var context: NSManagedObjectContext { container.viewContext }
 
     /// The on-device store mirrored to the user's private CloudKit database.
@@ -157,6 +158,12 @@ final class Store {
     /// saves. The stamp is app-set so the sync dedupe rule can compare it across devices.
     /// For the `Store+<Domain>` extensions only.
     func save() throws {
+        try Self.stampAndSave(context)
+    }
+
+    /// `save()` for any context, on that context's queue: the dedupe pass writes on a
+    /// background context and stamps the same way.
+    nonisolated static func stampAndSave(_ context: NSManagedObjectContext) throws {
         guard context.hasChanges else { return }
         let now = Date()
         for object in context.insertedObjects.union(context.updatedObjects) {

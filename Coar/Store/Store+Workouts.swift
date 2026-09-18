@@ -113,12 +113,7 @@ extension Store {
     func finishWorkout(_ id: WorkoutRecord.ID, at now: Date = Date()) throws -> WorkoutRecord {
         guard let workout = try fetchWorkout(id) else { throw WorkoutError.notFound }
         if workout.finishedAt == nil {
-            for row in workout.exerciseObjects {
-                for set in row.loggedSetObjects where !set.isCompleted {
-                    context.delete(set)
-                }
-            }
-            workout.finishedAt = now
+            workout.finish(at: now)
             try save()
             notifyActiveWorkoutChanged()
         }
@@ -242,7 +237,8 @@ extension Store {
         return set
     }
 
-    private func notifyActiveWorkoutChanged() {
+    /// For the `Store+<Domain>` extensions only.
+    func notifyActiveWorkoutChanged() {
         NotificationCenter.default.post(name: Self.activeWorkoutDidChange, object: self)
     }
 
@@ -275,6 +271,26 @@ private extension WorkoutRecord {
 extension Workout {
     var exerciseObjects: [WorkoutExercise] {
         Array(exercises as? Set<WorkoutExercise> ?? [])
+    }
+
+    /// Every Logged Set in the Workout, in no order.
+    var loggedSetObjects: [LoggedSet] {
+        exerciseObjects.flatMap(\.loggedSetObjects)
+    }
+
+    /// Whether any Logged Set was actually performed.
+    var hasCompletedSet: Bool {
+        loggedSetObjects.contains(where: \.isCompleted)
+    }
+
+    /// Finish, unsaved: Logged Sets not marked complete are deleted, so history holds only
+    /// sets actually performed, and `finishedAt` is stamped. For the façade and the dedupe
+    /// pass, which share the shape.
+    func finish(at instant: Date) {
+        for set in loggedSetObjects where !set.isCompleted {
+            managedObjectContext?.delete(set)
+        }
+        finishedAt = instant
     }
 
     /// The rows in the Workout's order.

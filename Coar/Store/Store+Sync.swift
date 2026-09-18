@@ -29,12 +29,7 @@ enum DedupePass {
         report.bodyWeightsDeleted = try dedupeBodyWeights(in: context)
         report.servingDefaultsCleared = try dedupeDefaultServings(in: context)
         (report.workoutsFinished, report.workoutsDeleted) = try dedupeActiveWorkouts(in: context)
-        guard context.hasChanges else { return report }
-        let now = Date()
-        for object in context.updatedObjects {
-            (object as? ModifiedAtStamped)?.modifiedAt = now
-        }
-        try context.save()
+        try Store.stampAndSave(context)
         return report
     }
 
@@ -60,8 +55,8 @@ enum DedupePass {
 
     /// One Body Weight per Day: the latest `modifiedAt` stays.
     private static func dedupeBodyWeights(in context: NSManagedObjectContext) throws -> Int {
-        let weights = try context.fetch(BodyWeight.fetchRequest())
-        let losers = losers(among: weights, key: \.day) {
+        let bodyWeights = try context.fetch(BodyWeight.fetchRequest())
+        let losers = losers(among: bodyWeights, key: \.day) {
             ($0.modifiedAt ?? .distantPast, $0.kilograms) > ($1.modifiedAt ?? .distantPast, $1.kilograms)
         }
         losers.forEach(context.delete)
@@ -91,18 +86,15 @@ enum DedupePass {
         let request = Workout.fetchRequest()
         request.predicate = NSPredicate(format: "finishedAt == nil")
         let active = try context.fetch(request)
+        // One global bucket: every Active Workout competes with every other.
         let losers = losers(among: active, key: { _ in 0 }) {
             ($0.startedAt ?? .distantPast, $0.id?.uuidString ?? "") > ($1.startedAt ?? .distantPast, $1.id?.uuidString ?? "")
         }
         guard let survivor = active.first(where: { !losers.contains($0) }) else { return (0, 0) }
         var finished = 0, deleted = 0
         for workout in losers {
-            let sets = workout.exerciseObjects.flatMap(\.loggedSetObjects)
-            if sets.contains(where: \.isCompleted) {
-                for set in sets where !set.isCompleted {
-                    context.delete(set)
-                }
-                workout.finishedAt = survivor.startedAt
+            if workout.hasCompletedSet {
+                workout.finish(at: survivor.startedAt ?? Date())
                 finished += 1
             } else {
                 context.delete(workout)
@@ -147,81 +139,32 @@ extension Store {
 
     private static let syncLogger = Logger(category: "Sync")
 
-    /// Runs the dedupe pass once on a background context, saving once; the view context
-    /// merges the result before this returns. Posts `activeWorkoutDidChange` when the pass
-    /// touched an Active Workout.
+    /// Runs the dedupe pass once on a background context, saving once. The view context
+    /// merges the result as it does any background save: queued on the main queue during
+    /// the save, so ahead of this call's return in practice. Posts `activeWorkoutDidChange`
+    /// when the pass touched an Active Workout.
     @discardableResult
     func runDedupePass() async throws -> DedupePass.Report {
         let context = container.newBackgroundContext()
         context.transactionAuthor = "dedupe"
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         let report = try await context.perform { try DedupePass.run(in: context) }
         if !report.isEmpty {
             Self.syncLogger.info("Dedupe pass: \(String(describing: report), privacy: .public)")
         }
         if report.workoutsFinished + report.workoutsDeleted > 0 {
-            NotificationCenter.default.post(name: Self.activeWorkoutDidChange, object: self)
+            notifyActiveWorkoutChanged()
         }
         return report
     }
-}
 
-/// Runs the dedupe pass once at launch and after every remote-change import, one run at a
-/// time. Imports arrive in bursts (and the store posts the same notification for the app's
-/// own saves, the pass's included), so a run waits a moment for the burst to settle, and a
-/// notification during a run queues one more. Owned by the app delegate for the live store.
-@MainActor
-final class SyncDedupeRunner {
-
-    private static let logger = Logger(category: "Sync")
-
-    private let store: Store
-    private var observer: NSObjectProtocol?
-    private var run: Task<Void, Never>?
-    private var isPending = false
-
-    /// How long a run waits after a remote change so a burst of imports coalesces.
-    private let settle: Duration = .seconds(1)
-
-    init(store: Store) {
-        self.store = store
-    }
-
-    deinit {
-        if let observer { NotificationCenter.default.removeObserver(observer) }
-        run?.cancel()
-    }
-
-    /// Runs the pass now, then after each remote change.
-    func start() {
-        guard observer == nil else { return }
-        observer = NotificationCenter.default.addObserver(
-            forName: .NSPersistentStoreRemoteChange, object: store.container.persistentStoreCoordinator, queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated {
-                guard let self else { return }
-                self.schedule(after: self.settle)
-            }
-        }
-        schedule(after: .zero)
-    }
-
-    private func schedule(after delay: Duration) {
-        guard run == nil else { isPending = true; return }
-        run = Task { [weak self] in
-            try? await Task.sleep(for: delay)
-            guard let self, !Task.isCancelled else { return }
-            do {
-                let report = try await store.runDedupePass()
-                Self.logger.debug("Dedupe pass ran; changed anything: \(!report.isEmpty, privacy: .public)")
-            } catch {
-                Self.logger.error("Dedupe pass failed: \(error, privacy: .public)")
-            }
-            NotificationCenter.default.post(name: Store.remoteChangesDidMerge, object: store)
-            run = nil
-            if isPending {
-                isPending = false
-                schedule(after: settle)
-            }
+    /// Calls `handler` on the main queue each time the store posts a remote change: a
+    /// CloudKit import landed, or any context saved. Keep the token and remove it when done.
+    func observeRemoteChanges(_ handler: @escaping @MainActor () -> Void) -> NSObjectProtocol {
+        NotificationCenter.default.addObserver(
+            forName: .NSPersistentStoreRemoteChange, object: container.persistentStoreCoordinator, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated(handler)
         }
     }
 }
