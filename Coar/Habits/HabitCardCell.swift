@@ -26,6 +26,8 @@ final class HabitCardCell: CardCell {
         nameLabel.textColor = UIColor.textPrimary
         nameLabel.adjustsFontForContentSizeCategory = true
         nameLabel.numberOfLines = 2
+        // The name takes the row's spare width; the emoji and the check-in control hug.
+        nameLabel.setContentHuggingPriority(.defaultLow - 1, for: .horizontal)
 
         controls.onToggle = { [weak self] on in self?.onToggle?(on) }
         controls.onAmountTap = { [weak self] in self?.onAmountTap?() }

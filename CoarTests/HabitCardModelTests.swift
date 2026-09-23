@@ -84,12 +84,18 @@ final class HabitCardModelTests: XCTestCase {
         XCTAssertEqual(model.streak, 1)
     }
 
-    func test_aDayBeforeTheFirstTarget_rendersEmptyAndIsNotEditable() {
+    func test_aDayBeforeTheFirstTarget_isJudgedAgainstIt_andEditable() {
         let habit = habit(kind: .quantitative, targets: [HabitTargetRecord(amount: 20, period: .day, effectiveFrom: thursday10)])
-        let model = HabitCardModel(habit: habit, checkIns: checkIns([sep1], amount: 50), today: sunday13)
+        let model = HabitCardModel(habit: habit, checkIns: checkIns([sep1], amount: 10), today: sunday13)
 
-        XCTAssertEqual(model.levels[sep1], .empty)
-        XCTAssertEqual(model.editableFrom, thursday10)
+        XCTAssertEqual(model.levels[sep1], .half)
+        XCTAssertTrue(MonthCalendarView.Model(today: sunday13, levels: model.levels, editableFrom: model.editableFrom).isEditable(sep1))
+    }
+
+    func test_backfilledDaysBeforeCreation_countTowardTheStreak() {
+        let habit = habit(targets: [HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sunday13)])
+        let model = HabitCardModel(habit: habit, checkIns: checkIns([Day(year: 2026, month: 9, day: 11), Day(year: 2026, month: 9, day: 12), sunday13]), today: sunday13)
+        XCTAssertEqual(model.streak, 3)
     }
 
     func test_yesNoCells_stayBinaryOnAWeeklyHabit() {

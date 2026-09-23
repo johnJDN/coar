@@ -7,15 +7,21 @@ import UIKit
 struct HabitForm: View {
 
     struct Draft: Equatable {
+        /// The emoji a Habit gets when the slot is left untouched; the slot shows it.
+        static let defaultEmoji = "🙂"
+
         var emoji = ""
         var name = ""
         var target = HabitTargetDraft()
 
         var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-        /// Saveable: an emoji, a name, and a valid target.
+        /// The emoji to save: the one typed, or the default the slot shows.
+        var resolvedEmoji: String { emoji.isEmpty ? Self.defaultEmoji : emoji }
+
+        /// Saveable: a name and a valid target. The emoji always has a value.
         var isComplete: Bool {
-            !emoji.isEmpty && !trimmedName.isEmpty && target.amount != nil
+            !trimmedName.isEmpty && target.amount != nil
         }
     }
 
@@ -74,7 +80,7 @@ private struct EmojiField: UIViewRepresentable {
         field.font = UIFont.preferredFont(forTextStyle: .title1)
         field.textAlignment = .center
         field.tintColor = .clear
-        field.placeholder = "🙂"
+        field.placeholder = HabitForm.Draft.defaultEmoji
         field.adjustsFontForContentSizeCategory = true
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed), for: .editingChanged)
         field.setContentHuggingPriority(.required, for: .horizontal)

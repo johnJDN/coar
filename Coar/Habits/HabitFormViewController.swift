@@ -49,7 +49,7 @@ final class HabitFormViewController: UIHostingController<HabitForm> {
         guard draft.isComplete, let amount = draft.target.amount else { return }
         do {
             try dependencies.store.createHabit(
-                emoji: draft.emoji, name: draft.trimmedName, kind: draft.target.kind, targetAmount: amount, period: draft.target.period
+                emoji: draft.resolvedEmoji, name: draft.trimmedName, kind: draft.target.kind, targetAmount: amount, period: draft.target.period
             )
             onCreated()
             dismiss(animated: true)

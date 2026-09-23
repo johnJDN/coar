@@ -175,7 +175,7 @@ steps are read from HealthKit and never stored. Every screen follows `DESIGN.md`
 - Habit: emoji, name, kind (yes/no | quantitative), sortOrder, archived flag, and a dated target series of (amount, period ∈ {day, week}).
 - Check-in: habit, Day, amount. At most one per habit per Day; writes replace. Yes/no check-ins have amount 1; toggling off deletes the Check-in.
 - Streak: consecutive Periods ending at the current one that met target; the current Period counts if already met and does not break the streak until it has ended unmet. Computed, never stored.
-- Heatmap cell: yes/no → binary; quantitative → bucket of amount ÷ target-in-force (≤25, ≤50, ≤75, ≥100 %). Weekly habits add one week-met dot per column. Cells before the first target render empty.
+- Heatmap cell: yes/no → binary; quantitative → bucket of amount ÷ target-in-force (≤25, ≤50, ≤75, ≥100 %). Weekly habits add one week-met dot per column. A Habit's first target also covers every Day before it, so past Days can be backfilled (changed 2026-09-22 in testing).
 - Quantitative input: a compact sheet with the current total, number pad, and quick-add chips that edit the single Check-in.
 - Archive rather than delete; an Archived section with restore and delete-permanently (which cascades Check-ins).
 

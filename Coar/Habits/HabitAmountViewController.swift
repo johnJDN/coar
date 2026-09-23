@@ -30,9 +30,23 @@ final class HabitAmountViewController: UIViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    /// The sheet the Habits tab and the detail present.
+    /// The sheet the Habits tab and the detail present. Sized to its content rather than
+    /// `.medium()`: with the keyboard up, a medium sheet is lifted to half the space above
+    /// the keyboard and towers over the card being edited; a content-height sheet sits just
+    /// above the keyboard.
     static func sheet(dependencies: AppDependencies, habitID: HabitRecord.ID, day: Day, onChange: @escaping () -> Void) -> UIViewController {
-        HabitAmountViewController(dependencies: dependencies, habitID: habitID, day: day, onChange: onChange).inSheet(detents: [.medium()])
+        let controller = HabitAmountViewController(dependencies: dependencies, habitID: habitID, day: day, onChange: onChange)
+        let fitted = UISheetPresentationController.Detent.custom(identifier: .init("habitAmount")) { [weak controller] context in
+            controller?.contentHeight ?? context.maximumDetentValue / 2
+        }
+        return controller.inSheet(detents: [fitted])
+    }
+
+    /// The sheet height that fits the navigation bar, the field, and the chips.
+    private var contentHeight: CGFloat? {
+        guard isViewLoaded else { return nil }
+        view.layoutIfNeeded()
+        return chips.frame.maxY + Metrics.spaceCard
     }
 
     override func viewDidLoad() {
@@ -95,7 +109,6 @@ final class HabitAmountViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         field.becomeFirstResponder()
-        field.selectAll(nil)
     }
 
     // MARK: - Reading

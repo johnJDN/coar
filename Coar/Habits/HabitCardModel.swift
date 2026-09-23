@@ -11,9 +11,9 @@ struct HabitCardModel: Hashable, Identifiable {
     let emoji: String
     let name: String
     let kind: HabitKind
-    /// The Period the Habit is counted in today; a day before the first target.
+    /// The Period the Habit is counted in today; a day without any target.
     let period: HabitPeriod
-    /// The target in force today; nil before the first record.
+    /// The target in force today; nil only without any target.
     let target: HabitTargetRecord?
     /// Today's Check-in total; 0 without one.
     let todayAmount: Double
@@ -25,14 +25,14 @@ struct HabitCardModel: Hashable, Identifiable {
     /// Weekly Habits: "2 of 3 this week". Nil for daily ones.
     let weekCaption: String?
     /// The cell level of every Day with a Check-in, up to today. Yes/no Days are binary
-    /// whatever the Period; quantitative Days fall into the four buckets. A Day before the
-    /// first target is empty.
+    /// whatever the Period; quantitative Days fall into the four buckets.
     let levels: [Day: Heatmap.Level]
     let heatmap: [Heatmap.Cell]
     /// Weekly Habits: one dot per heatmap column, filled when that week met its target. Nil
     /// for daily ones, which have no dot row.
     let weekDots: [Bool]?
-    /// The first Day a Check-in can be edited on: nothing before the first target.
+    /// The first Day a Check-in can be edited on: any past Day once the Habit has a target
+    /// (the first target covers the time before it); nil without one.
     let editableFrom: Day?
 
     init(habit: HabitRecord, checkIns: [CheckInRecord], today: Day, columns: Int = Heatmap.columns) {
@@ -84,6 +84,6 @@ struct HabitCardModel: Hashable, Identifiable {
         self.levels = levels
         heatmap = Heatmap.cells(endingOn: today, columns: columns, levels: levels)
         weekDots = period == .week ? Heatmap.weeks(endingOn: today, columns: columns).map(metWeeks.contains) : nil
-        editableFrom = habit.targets.first?.effectiveFrom
+        editableFrom = habit.targets.isEmpty ? nil : .distantPast
     }
 }

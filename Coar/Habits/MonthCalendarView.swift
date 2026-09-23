@@ -176,8 +176,8 @@ final class MonthCalendarView: UIView {
 
 extension MonthCalendarView: UICollectionViewDelegate {
 
-    /// Only Days from the first target up to today respond; the future and the time before
-    /// the Habit are inert (DESIGN.md §1.3). An owner may narrow it further to a set of Days.
+    /// Only Days in the editable range respond (for a Habit, any Day up to today); the
+    /// future is inert (DESIGN.md §1.3). An owner may narrow it further to a set of Days.
     func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
         guard case .day(let day) = dataSource.itemIdentifier(for: indexPath), let model else { return false }
         return model.isTappable(day)

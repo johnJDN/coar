@@ -8,27 +8,32 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 
 ## 04: Habits: yes/no, daily
 
-- [ ] Tap `+` on Habits: the emoji keyboard opens first; typing a second emoji replaces the first; Save stays disabled until emoji and name are filled.
-- [ ] Toggle a habit on: capsule springs to green with bloom, today's heatmap cell lights up, streak updates; toggle off reverses it.
-- [ ] Heatmap: 7 rows, Monday on top, this week is the rightmost column, days after today are blank; check in both light and dark.
-- [ ] Long-press a card and drag to reorder; kill and relaunch the app: the order persists. Dragging below the Archived section snaps back into the active list.
-- [ ] Tap a card: detail shows the streak and this month's calendar; tap a past day to add or remove its check-in; `‹` goes to earlier months, `›` is muted on the current month; future days do nothing.
-- [ ] Detail `…` menu → Archive: pops back, habit appears under Archived; Restore puts it at the end of the active list; Delete permanently asks first and removes it.
-- [ ] Empty state: with no habits at all the tab shows one card with `—` and "Tap + to add your first habit."
-- [ ] Dynamic Type (Settings → Accessibility → Larger Text): cards, calendar numbers and the streak hero all scale; nothing clips.
-- [?] `Habit` has an optional `id: UUID` attribute (additive, CloudKit-safe) as the screen-facing identity.
-- [?] The new-habit sheet accepts a Week period and any whole target amount, but until ticket 05 every habit renders daily (streak in days, binary cells).
-- [?] A streak of 0 shows as a muted "0 days", not `—` (zero is a value, not missing data).
-- [?] Archive does not ask for confirmation (reversible); Delete permanently does.
-- [?] `Store.context` and `Store.save()` are internal so `Store+<Domain>.swift` files can exist; nothing outside `Store+*` uses them, by convention.
-- [?] Reorder is long-press drag, not an Edit mode.
-- [?] The detail title is inline "emoji name" (no large title on a pushed detail).
-- [?] Restore places the habit at the end of the active list rather than its old slot.
-- [?] Heatmap cells before the habit existed render as empty `surfaceSunken`, not blank; "before the first target renders empty" (dated targets) is ticket 05.
+- [!] Tap `+` on Habits: the emoji keyboard opens first; typing a second emoji replaces the first; Save stays disabled until emoji and name are filled.
+- [x] Toggle a habit on: capsule springs to green with bloom, today's heatmap cell lights up, streak updates; toggle off reverses it.
+- [x] Heatmap: 7 rows, Monday on top, this week is the rightmost column, days after today are blank; check in both light and dark.
+- [x] Long-press a card and drag to reorder; kill and relaunch the app: the order persists. Dragging below the Archived section snaps back into the active list.
+- [!] Tap a card: detail shows the streak and this month's calendar; tap a past day to add or remove its check-in; `‹` goes to earlier months, `›` is muted on the current month; future days do nothing.
+- [x] Detail `…` menu → Archive: pops back, habit appears under Archived; Restore puts it at the end of the active list; Delete permanently asks first and removes it.
+- [x] Empty state: with no habits at all the tab shows one card with `—` and "Tap + to add your first habit."
+- [x] Dynamic Type (Settings → Accessibility → Larger Text): cards, calendar numbers and the streak hero all scale; nothing clips.
+- [x] keep: `Habit` has an optional `id: UUID` attribute (additive, CloudKit-safe) as the screen-facing identity.
+- [x] keep: The new-habit sheet accepts a Week period and any whole target amount, but until ticket 05 every habit renders daily (streak in days, binary cells).
+- [x] keep: A streak of 0 shows as a muted "0 days", not `—` (zero is a value, not missing data).
+- [x] keep: Archive does not ask for confirmation (reversible); Delete permanently does.
+- [x] keep: `Store.context` and `Store.save()` are internal so `Store+<Domain>.swift` files can exist; nothing outside `Store+*` uses them, by convention.
+- [x] keep: Reorder is long-press drag, not an Edit mode.
+- [x] keep: The detail title is inline "emoji name" (no large title on a pushed detail).
+- [x] keep: Restore places the habit at the end of the active list rather than its old slot.
+- [x] keep: Heatmap cells before the habit existed render as empty `surfaceSunken`, not blank; "before the first target renders empty" (dated targets) is ticket 05.
+
+**Results (2026-09-22):**
+- **Fail, emoji:** the `🙂` shown in the emoji slot is placeholder text, not a value, so name-only leaves Save disabled while it looks complete. Fixed: the shown emoji is the real default — Save needs only a name; an untouched slot saves as `🙂`.
+- **Fail, calendar backfill:** past days on a new habit's calendar do nothing. Cause: Days before the first target are inert (a 05 call), and a habit created today has its first target from today, so nothing in the past is tappable — the calendar can't do the one thing it exists for. Fixed (John agreed): a Habit's first target also applies to every Day before it, so any past Day is editable and renders against it. Later targets stay dated as before; only macro Targets keep "nil before the first".
+- **New, number fields:** the "Days a week" field (new habit and Change Target) opens with the cursor before the existing `1`, so typing 3 gives 31. Fixed: every numeric field in the app selects its whole contents on focus, so typing replaces and tapping away keeps the value. Applies to all ten number inputs (habits, Food quantity and servings, Body Weight, set rows, Planned Sets, exercise rest, Settings targets), via one shared field.
 
 ## 05: Habits: quantitative, weekly, dated targets
 
-- [ ] New habit → Kind "Amount", Period "Day", amount 20: the card shows a `—` capsule; tap it: the sheet opens with the number pad, "of 20" beside the field, and +1 +5 +10 chips; tapping +10 updates the card behind the sheet at once; Done with a typed 25 saves 25; a typed 0 (or empty) removes the day's check-in.
+- [!] New habit → Kind "Amount", Period "Day", amount 20: the card shows a `—` capsule; tap it: the sheet opens with the number pad, "of 20" beside the field, and +1 +5 +10 chips; tapping +10 updates the card behind the sheet at once; Done with a typed 25 saves 25; a typed 0 (or empty) removes the day's check-in.
 - [ ] Quantitative heatmap and calendar: 5 / 10 / 15 / 20 of 20 show four rising greens, only 20+ blooms; check in light and dark.
 - [ ] New habit → Kind "Yes / no", Period "Week", "Days a week" 3: the card has a dot row above the heatmap (filled only for weeks with 3 check-ins), streak reads "n weeks", caption "2 of 3 this week"; the current week's dot fills as soon as the third check-in lands; a daily habit has no dot row.
 - [ ] Weekly streak: with last week met and this week at 2 of 3 on a Wednesday the streak still counts last week; a week that ended unmet breaks it.
@@ -42,10 +47,14 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The amount capsule turns green when the current period is met, so a met weekly habit with nothing logged today shows a green `—`.
 - [?] `+N` chips write immediately and keep the sheet open; Done writes the typed total; there is no Cancel on the number sheet.
 - [?] Quantitative targets and amounts may be fractional; yes/no weekly targets are whole days, at most 7.
-- [?] Calendar days before the first target are inert, not just empty.
+- [x] reversed: Calendar days before the first target are inert — superseded by the 04 backfill fix: the first target covers every earlier Day.
 - [?] Kind is fixed at creation; Change Target edits amount and period only.
 - [?] The Target card shows "20 a day" / "3 days a week" with a Change button and no "since" date.
 - [?] A daily yes/no habit is met by any check-in even if its stored target amount is 2 (ticket 04's form allowed it); the amount row no longer appears for that combination.
+
+**Results (2026-09-22, partial — rest after rebuild):**
+- **Fixed, capsule width:** the `—` amount capsule stretched across the row after the name. Nothing in the row preferred the name for spare width; the capsule's label now hugs, and the name takes the slack (also fixes Home's habits card rows).
+- **Fixed, sheet height:** with the keyboard up the number sheet rose far too high (a `.medium()` detent is lifted to half the space above the keyboard). It now uses a detent sized to its content, so it sits just above the keyboard.
 
 ## 06: Food: Items, Servings, Entries, timeline
 

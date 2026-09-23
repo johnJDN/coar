@@ -91,14 +91,14 @@ final class HabitTests: XCTestCase {
 
     // MARK: Dated targets (ADR 0003)
 
-    func test_targetInForce_onEachDay_isTheRecordThatAppliedThen_andNilBeforeTheFirst() throws {
+    func test_targetInForce_onEachDay_isTheRecordThatAppliedThen_andTheFirstBeforeIt() throws {
         let store = Store.inMemory()
         let habit = try makeHabit(store)
 
         try store.setHabitTarget(habit.id, amount: 3, period: .week, effectiveFrom: sep13)
 
         let read = try XCTUnwrap(store.habit(habit.id))
-        XCTAssertNil(read.target(inForceOn: sep10))
+        XCTAssertEqual(read.target(inForceOn: sep10), HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
         XCTAssertEqual(read.target(inForceOn: sep11), HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
         XCTAssertEqual(read.target(inForceOn: sep12), HabitTargetRecord(amount: 1, period: .day, effectiveFrom: sep11))
         XCTAssertEqual(read.target(inForceOn: sep13), HabitTargetRecord(amount: 3, period: .week, effectiveFrom: sep13))

@@ -22,6 +22,9 @@ final class AmountControlView: CapsuleControlView {
         label.adjustsFontForContentSizeCategory = true
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
+        // Hug the total so a row gives spare width to the Habit's name, never the capsule.
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         capsule.addSubview(label)
 
         NSLayoutConstraint.activate([

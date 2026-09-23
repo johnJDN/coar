@@ -47,9 +47,11 @@ struct HabitRecord: Hashable, Identifiable {
     let modifiedAt: Date
 
     /// The target in force on a Day: the record with the latest effective-from Day on or
-    /// before it. Nil before the first record: such a Day renders empty, never against 0.
+    /// before it. The first record also covers every Day before it, so a Habit created today
+    /// can be backfilled; later records stay dated, so a change never repaints history.
+    /// Nil only for a Habit with no target at all.
     func target(inForceOn day: Day) -> HabitTargetRecord? {
-        targets.last { $0.effectiveFrom <= day }
+        targets.last { $0.effectiveFrom <= day } ?? targets.first
     }
 }
 
