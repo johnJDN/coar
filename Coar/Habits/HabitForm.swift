@@ -65,7 +65,7 @@ struct HabitForm: View {
         .scrollContentBackground(.hidden)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
-        .onAppear { focus = draft.emoji.isEmpty ? .emoji : .name }
+        .onAppear { focus = .name }
     }
 }
 
