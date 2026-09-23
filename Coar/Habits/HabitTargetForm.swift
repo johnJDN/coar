@@ -45,6 +45,16 @@ struct HabitTargetDraft: Equatable {
         case (.quantitative, .week): return "Enter a total each day. The week counts once its days add up to this amount."
         }
     }
+
+    /// A sample Habit of this kind and Period, shown while choosing them.
+    var example: String {
+        switch (kind, period) {
+        case (.yesNo, .day): return "For example, “Meditate every day”."
+        case (.yesNo, .week): return "For example, “Go to the gym 3 days a week”."
+        case (.quantitative, .day): return "For example, “Read 20 pages a day”."
+        case (.quantitative, .week): return "For example, “Run 15 miles a week”."
+        }
+    }
 }
 
 /// The Target section shared by both sheets (ADR 0001: SwiftUI leaf). The kind selector
@@ -102,7 +112,7 @@ struct HabitTargetSection: View {
         } header: {
             Text("Target")
         } footer: {
-            Text([draft.footer, note].compactMap { $0 }.joined(separator: " "))
+            Text([draft.footer, showsKind ? draft.example : nil, note].compactMap { $0 }.joined(separator: " "))
         }
     }
 }
