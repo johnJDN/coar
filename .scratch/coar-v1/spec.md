@@ -240,3 +240,22 @@ steps are read from HealthKit and never stored. Every screen follows `DESIGN.md`
 - Build the three shared shapes once (dated series, one-per-Day record, Day-keyed date) per `.scratch/data-model/spec.md`, and route every feature through them.
 - `DESIGN.md` is the acceptance checklist for every screen; the vocabulary in `CONTEXT.md` is mandatory in code names, ticket titles, and test names.
 - Suggested slicing for tickets: (1) model + store façade + rule functions with tests, (2) shell + tokens + components, (3) Habits, (4) Food, (5) Train logger + rest timer, (6) Train catalogue + Progression + body screens, (7) Home + HealthKit + Settings.
+
+## Changed during human testing (2026-09-26)
+
+Where these differ from the stories and decisions above, these win. Per-ticket detail is under
+each ticket's Results in `human-testing.md`.
+
+- **Saving** (DESIGN.md §7a): creating something has Save and asks before discarding; editing
+  something that exists saves as it changes (Done in sheets, no Save); pages inside an editor
+  write into it directly.
+- **Order**: Food Items, Meals, Exercises, and Plans list most recently used first (edited or
+  logged/started); archived lists stay by name.
+- **Deleting** (DESIGN.md §7b): every Archived list can delete permanently after a confirmation
+  naming what goes with it. A Food Item leaves the Meals that use it; an Exercise leaves its
+  Plans; a deleted Plan's Workouts keep its name. A finished Workout can be deleted from its page.
+- **Exercise**: one primary Muscle Group plus any secondary ones ("Also works"); Muscle Group
+  gains Other; equipment is a menu (with Other and a typed name) instead of free text.
+- **Habits**: a habit's first Target also covers the days before it, so past days can be edited.
+- **Logger**: an unfinished set's check shows a grey tick, not `—`.
+- **Home**: tapping anywhere on a card (not just its buttons) opens what it leads to.

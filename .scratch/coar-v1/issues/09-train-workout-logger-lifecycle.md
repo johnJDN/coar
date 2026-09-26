@@ -87,3 +87,7 @@
   `massUnitDidChange` observers follow the existing Body Weight pattern; the logger's
   weight/reps parsing mirrors `PlannedSetFields` but writes per field, not per set.
   153 tests pass.
+
+## Changed during human testing (2026-09-26)
+
+Keyboard-inset fix for Add exercise, Delete workout. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

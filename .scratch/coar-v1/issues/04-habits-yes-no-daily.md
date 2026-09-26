@@ -71,3 +71,7 @@
   `(year, month)` tuple inside `MonthCalendarView` (one private user; a `Month` type can come
   when a second screen needs one); `formRow()` shared with Settings (the same row style, one
   definition).
+
+## Changed during human testing (2026-09-26)
+
+Emoji default, calendar backfill for past days, keyboard behaviour. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

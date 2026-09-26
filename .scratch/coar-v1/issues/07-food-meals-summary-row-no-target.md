@@ -86,3 +86,7 @@
   `fetchFoodItem` / `servingObjects` are internal, documented as for the `Store+<Domain>`
   extensions only; the Food tab still skips the whole render when a read throws; the two
   `render()` branches in the sheet share a shape but not a type. 119 tests pass.
+
+## Changed during human testing (2026-09-26)
+
+Targets save on close, MacroStrip totals, broken-meal warning, P/F/C letter colours. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

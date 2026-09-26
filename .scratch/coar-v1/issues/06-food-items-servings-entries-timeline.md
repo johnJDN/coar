@@ -96,3 +96,6 @@
   no image; (18) stored Entry macros are totals for the whole quantity, so ticket 07 sums
   them directly.
 
+## Changed during human testing (2026-09-26)
+
+Recency order, Archived foods page, the saving rule, keyboard Done bar. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

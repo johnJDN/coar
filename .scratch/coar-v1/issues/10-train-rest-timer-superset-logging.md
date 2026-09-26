@@ -76,3 +76,7 @@
   Plan editor's link button (DESIGN §3 lists lavender for AI / coach; the two never share a
   screen); the gap and link cells share the section's height estimate (self-sizing settles
   them on first display). 167 tests pass.
+
+## Changed during human testing (2026-09-26)
+
+The set check shows a grey tick. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

@@ -71,3 +71,6 @@
   `RootTabBarController.select(_:)` and a cast to `FoodViewController` rather than a
   Food-specific method on the root.
 
+## Changed during human testing (2026-09-26)
+
+Macros dot rows no longer overlap their captions. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

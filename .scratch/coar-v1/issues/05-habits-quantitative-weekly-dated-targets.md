@@ -77,3 +77,7 @@
   geometry (6 pt dots, 10 pt row) is drawing, not spacing, so it is not a §4 token;
   `setHabitTarget` reads the target in force through `HabitRecord` so the series logic has
   one home.
+
+## Changed during human testing (2026-09-26)
+
+The first Target now covers earlier days; amount sheet sizing. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

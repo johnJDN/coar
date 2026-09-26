@@ -46,7 +46,8 @@ HealthKit, so the architecture favours the Watch).
 - The card's hero number is the streak, counted in the habit's period ("12 days",
   "4 weeks"); weekly habits caption it with "2 of 3 this week".
 - Tapping a habit opens a detail page with a calendar to retroactively edit check-ins.
-- Habits are archived, not deleted; archived habits keep their history.
+- Habits are archived, not deleted; archived habits keep their history. An archived habit can
+  be deleted permanently from the Archived list, with its check-ins.
 
 ### Food
 
@@ -63,7 +64,8 @@ HealthKit, so the architecture favours the Watch).
   macros (ADR 0003); a meal entry is one row on the timeline and keeps its breakdown.
 - Macro targets are dated; a past day is judged against the target in force then.
 - The "+" sheet has Foods / Meals segments; Search arrives with a food database.
-- Food items and meals are archived, not deleted.
+- Food items and meals are archived, not deleted; their Archived pages can delete one
+  permanently (logged entries keep their numbers).
 
 ### Train
 
@@ -90,7 +92,8 @@ HealthKit, so the architecture favours the Watch).
   raw points and a smoothed trend weight as the hero.
 - **Progress photos**: camera or library, dated, not tied to a weight; grid plus a two-up
   compare captioned with date and nearest body weight.
-- Exercises and plans are archived, not deleted.
+- Exercises and plans are archived, not deleted; the Archived lists can delete one
+  permanently (workouts keep their sets). A finished workout can be deleted from its page.
 
 ### Not tabs
 

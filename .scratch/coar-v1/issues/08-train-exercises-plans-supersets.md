@@ -73,3 +73,7 @@
   root's stack rebuild (see (10)); `SectionHeaderView` is a reusable view so the root's
   stack uses plain labels; `PlanCardControl` and `EmptyStateCell` share a shape but not a
   type. 140 tests pass.
+
+## Changed during human testing (2026-09-26)
+
+The app-wide saving rule, equipment menu and secondary muscles, recency order. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

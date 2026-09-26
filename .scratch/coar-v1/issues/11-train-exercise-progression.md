@@ -75,3 +75,7 @@
   anyway). (13) The shared chrome changes Body Weight's chart too: end date labels pulled
   inward, axes hidden when empty (this is a behaviour change, not a pure refactor; it is on
   the human-testing list). 174 tests pass.
+
+## Changed during human testing (2026-09-26)
+
+Archive from the exercise page returns to the catalogue. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.

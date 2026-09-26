@@ -54,3 +54,7 @@
   rather than sharing a component (two copies, not three, and ticket 14 may reshape it);
   the caption cascade stays in the screens; after a denial the value slot no longer prompts
   (HealthKit shows the sheet once) and the caption points at the Health app instead.
+
+## Changed during human testing (2026-09-26)
+
+Home cards take taps anywhere; empty Sleep/Steps caption names the data source. Details under this ticket's Results in `.scratch/coar-v1/human-testing.md`; where they differ from the text above, they win.
