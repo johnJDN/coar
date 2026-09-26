@@ -34,7 +34,21 @@ final class Store {
         )
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        return Store(container: container)
+        let store = Store(container: container)
+        #if DEBUG
+        // `-InitializeCloudKitSchema` writes every record type and field of the model to the
+        // Development environment, so a schema deploy to Production is complete even for
+        // fields no record has used yet. Run once before each deploy; never in a release.
+        if ProcessInfo.processInfo.arguments.contains("-InitializeCloudKitSchema") {
+            do {
+                try container.initializeCloudKitSchema(options: [])
+                logger.notice("CloudKit schema initialized in Development")
+            } catch {
+                logger.error("Failed to initialize the CloudKit schema: \(error, privacy: .public)")
+            }
+        }
+        #endif
+        return store
     }
 
     /// The same model over a transient in-memory store, with no CloudKit. One per test.
