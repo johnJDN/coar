@@ -2,7 +2,8 @@ import SwiftUI
 
 /// The Settings sheet's content (ADR 0001: SwiftUI leaf, values in, closures out). Exactly
 /// three things: macro Targets, the weight unit, and Apple Health access. No iCloud toggle,
-/// no name field.
+/// no name field. There is no Save button: every edit to the Targets reports the draft, and
+/// the host saves it when the sheet closes, as iOS Settings does.
 struct SettingsForm: View {
 
     struct Model: Equatable {
@@ -14,7 +15,7 @@ struct SettingsForm: View {
     }
 
     let model: Model
-    let onSaveTargets: (Macros) -> Void
+    let onTargetsChanged: (Macros?) -> Void
     let onChangeMassUnit: (MassUnit) -> Void
     let onConnectHealth: () -> Void
 
@@ -23,23 +24,25 @@ struct SettingsForm: View {
 
     init(
         model: Model,
-        onSaveTargets: @escaping (Macros) -> Void,
+        onTargetsChanged: @escaping (Macros?) -> Void,
         onChangeMassUnit: @escaping (MassUnit) -> Void,
         onConnectHealth: @escaping () -> Void
     ) {
         self.model = model
-        self.onSaveTargets = onSaveTargets
+        self.onTargetsChanged = onTargetsChanged
         self.onChangeMassUnit = onChangeMassUnit
         self.onConnectHealth = onConnectHealth
         _fields = State(initialValue: Dictionary(uniqueKeysWithValues: Macro.allCases.map { ($0, model.target?[$0]) }))
     }
 
-    /// The four fields as a Target, or nil while any is empty or negative.
-    private var draft: Macros? {
+    /// The four fields as a Target: an empty field is 0, which the Food tab shows as no
+    /// target for that macro (`—`). Nil while every field is empty or any is negative.
+    static func draft(from fields: [Macro: Double?]) -> Macros? {
+        let values = Macro.allCases.map { fields[$0] ?? nil }
+        guard values.contains(where: { $0 != nil }), !values.contains(where: { ($0 ?? 0) < 0 }) else { return nil }
         var macros = Macros(calories: 0, protein: 0, fat: 0, carbs: 0)
-        for macro in Macro.allCases {
-            guard let value = fields[macro] ?? nil, value >= 0 else { return nil }
-            macros[macro] = value
+        for (macro, value) in zip(Macro.allCases, values) {
+            macros[macro] = value ?? 0
         }
         return macros
     }
@@ -50,15 +53,10 @@ struct SettingsForm: View {
                 ForEach(Macro.allCases, id: \.self) { macro in
                     macroRow(macro)
                 }
-                Button("Save targets") {
-                    if let draft { onSaveTargets(draft) }
-                }
-                .disabled(draft == nil || draft == model.target)
-                .formRow()
             } header: {
                 Text("Targets")
             } footer: {
-                Text("Changes apply from today. Past days keep the targets that applied then.")
+                Text("Saved when you close Settings. Changes apply from today; past days keep the targets that applied then. Leave a macro empty for no target.")
             }
 
             Section("Units") {
@@ -101,6 +99,7 @@ struct SettingsForm: View {
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
+        .onChange(of: fields) { _, fields in onTargetsChanged(Self.draft(from: fields)) }
     }
 
     private var healthStatusText: String {
@@ -139,7 +138,7 @@ struct SettingsForm: View {
             massUnit: .pounds,
             healthStatus: .notRequested
         ),
-        onSaveTargets: { _ in },
+        onTargetsChanged: { _ in },
         onChangeMassUnit: { _ in },
         onConnectHealth: {}
     )

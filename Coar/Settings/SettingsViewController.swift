@@ -4,22 +4,28 @@ import os
 
 /// Settings, presented as a sheet from Home's avatar button. Hosts `SettingsForm` per
 /// ADR 0001: this controller reads and writes through the façade and preferences, and
-/// re-renders the form with fresh values after every action.
+/// re-renders the form with fresh values after every action. Targets as typed are kept
+/// and saved when the sheet closes, however it closes (Done or a swipe down); `onClose`
+/// then lets the presenter refresh.
 final class SettingsViewController: UIHostingController<SettingsForm> {
 
     private static let logger = Logger(category: "Settings")
 
     private let dependencies: AppDependencies
     private var model: SettingsForm.Model
+    private let onClose: () -> Void
+    /// The Targets as typed; nil while nothing valid has been typed.
+    private var pendingTargets: Macros?
 
-    init(dependencies: AppDependencies) {
+    init(dependencies: AppDependencies, onClose: @escaping () -> Void = {}) {
         self.dependencies = dependencies
+        self.onClose = onClose
         self.model = SettingsForm.Model(
             target: Self.targetToday(in: dependencies.store),
             massUnit: dependencies.preferences.massUnit,
             healthStatus: nil
         )
-        super.init(rootView: SettingsForm(model: model, onSaveTargets: { _ in }, onChangeMassUnit: { _ in }, onConnectHealth: {}))
+        super.init(rootView: SettingsForm(model: model, onTargetsChanged: { _ in }, onChangeMassUnit: { _ in }, onConnectHealth: {}))
         title = "Settings"
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
@@ -37,20 +43,35 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
     }
 
     /// The sheet Home presents.
-    static func sheet(dependencies: AppDependencies) -> UIViewController {
-        SettingsViewController(dependencies: dependencies).inSheet(detents: [.large()])
+    static func sheet(dependencies: AppDependencies, onClose: @escaping () -> Void = {}) -> UIViewController {
+        SettingsViewController(dependencies: dependencies, onClose: onClose).inSheet(detents: [.large()])
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard isBeingDismissed || navigationController?.isBeingDismissed == true else { return }
+        view.endEditing(true)
+        saveTargets()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        guard isBeingDismissed || navigationController?.isBeingDismissed == true else { return }
+        onClose()
     }
 
     // MARK: - Actions
 
-    private func saveTargets(_ macros: Macros) {
+    /// Saves the Targets as typed, if they changed. Setting the same Day again replaces
+    /// that Day's Target rather than adding one (ADR 0003).
+    func saveTargets() {
+        guard let pendingTargets, pendingTargets != model.target else { return }
         do {
-            try dependencies.store.setTarget(macros)
+            try dependencies.store.setTarget(pendingTargets)
             model.target = Self.targetToday(in: dependencies.store)
         } catch {
             Self.logger.error("Failed to save Target: \(error, privacy: .public)")
         }
-        render()
     }
 
     private func changeMassUnit(_ unit: MassUnit) {
@@ -78,7 +99,7 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
     private func render() {
         rootView = SettingsForm(
             model: model,
-            onSaveTargets: { [weak self] in self?.saveTargets($0) },
+            onTargetsChanged: { [weak self] in self?.pendingTargets = $0 },
             onChangeMassUnit: { [weak self] in self?.changeMassUnit($0) },
             onConnectHealth: { [weak self] in self?.connectHealth() }
         )

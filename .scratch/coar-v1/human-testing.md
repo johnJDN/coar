@@ -124,6 +124,9 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] "No meals yet" is gone; an empty Meals segment shows only "New meal".
 - [?] `Meal` and `MealComponent` gained an optional `id: UUID` (additive).
 
+**Results (2026-09-26, in progress):**
+- **Fixed, Targets not saving (Settings, ticket 02 regression in practice):** the sheet had a top-right Done that closed without saving, and saving needed a separate "Save targets" button that the keyboard could hide; typed Targets were silently lost. There is no Save button now: Targets save when the sheet closes, however it closes (Done or swipe), including mid-edit. An empty macro is saved as 0 (no target for that macro, shown `—`) once any field has a value. Home reloads when Settings closes, so its macros card shows the new Targets at once. A test types into the real sheet and checks the store.
+
 ## 08: Train: Exercises, Plans, Supersets
 
 - [ ] Train → Exercises chip: the catalogue opens; `+` → type a name, pick a Muscle Group from the menu, add equipment and a rest of 150; Save stays disabled until there is a name (and while rest is 0); the row reads "Chest · Barbell · Rest 150 s"; the chip's subtitle back on the root reads "1 exercise".

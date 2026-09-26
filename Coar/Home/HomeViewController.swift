@@ -198,6 +198,7 @@ final class HomeViewController: ScreenViewController {
     }
 
     private func presentSettings() {
-        present(SettingsViewController.sheet(dependencies: dependencies), animated: true)
+        // A page sheet leaves Home on screen, so Home reloads itself once Settings closes.
+        present(SettingsViewController.sheet(dependencies: dependencies) { [weak self] in self?.load() }, animated: true)
     }
 }
