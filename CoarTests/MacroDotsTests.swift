@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import Coar
 
@@ -49,5 +50,12 @@ final class MacroDotsTests: XCTestCase {
     func test_withNoTarget_thereIsNoMatrix() {
         XCTAssertNil(MacroDots(macro: .protein, consumed: 140, target: nil))
         XCTAssertNil(MacroDots(macro: .protein, consumed: 140, target: 0))
+    }
+
+    func test_dotMatrixHeight_growsWithItsRows() {
+        let accent = Color.accentBlue
+        XCTAssertEqual(DotMatrix.height(of: .init(total: 0, filled: 0, columns: 1, accent: accent)), 0)
+        XCTAssertEqual(DotMatrix.height(of: .init(total: 12, filled: 3, columns: 12, accent: accent)), 9)
+        XCTAssertEqual(DotMatrix.height(of: .init(total: 36, filled: 3, columns: 18, accent: accent)), 25)
     }
 }

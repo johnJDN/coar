@@ -21,7 +21,19 @@ struct DotMatrix: View {
     private static let rowSpacing: CGFloat = 7
 
     private var rows: Int {
+        Self.rowCount(of: model)
+    }
+
+    static func rowCount(of model: Model) -> Int {
         Int((Double(model.total) / Double(max(1, model.columns))).rounded(.up))
+    }
+
+    /// The grid's height, for a UIKit host to pin: a hosted SwiftUI view in a stack view
+    /// is not re-measured when its configuration changes, so a grid that grows a row would
+    /// otherwise draw over the content above it.
+    static func height(of model: Model) -> CGFloat {
+        let rows = rowCount(of: model)
+        return rows == 0 ? 0 : CGFloat(rows) * dotSize + CGFloat(rows - 1) * rowSpacing
     }
 
     var body: some View {

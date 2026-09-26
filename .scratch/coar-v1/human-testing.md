@@ -324,7 +324,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A check-in from Home reloads all of Home (including the two Apple Health reads) rather than only the habits card.
 
 **Found before testing 14 (2026-09-26, simulator):**
-- [!] Macros card: the "of 180 g" / "of 210 g" captions overlap the Protein and Carbs dot rows (Calories and Fat look right). Fix when 14 is tested.
+- [x] Fixed: Macros card: the "of 180 g" / "of 210 g" captions overlapped the Protein and Carbs dot rows. The hosted `DotMatrix` kept its first measured height when it grew to two rows; the card now pins its height from the row count (`DotMatrix.height(of:)`). Checked in the simulator.
 
 ## 15: Sync dedupe pass
 

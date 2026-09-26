@@ -46,6 +46,7 @@ private final class MacroRowView: UIView {
     private let valueLabel = UILabel()
     private let captionLabel = UILabel()
     private let dotsView: UIView & UIContentView
+    private var dotsHeight: NSLayoutConstraint!
 
     init(macro: Macro) {
         self.macro = macro
@@ -92,6 +93,8 @@ private final class MacroRowView: UIView {
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             stack.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+        dotsHeight = dotsView.heightAnchor.constraint(equalToConstant: 0)
+        dotsHeight.isActive = true
         isAccessibilityElement = true
     }
 
@@ -108,7 +111,9 @@ private final class MacroRowView: UIView {
         captionLabel.text = model.targetCaption
         captionLabel.textColor = model.dots == nil ? UIColor.textTertiary : UIColor.textSecondary
         if let dots = model.dots {
-            dotsView.configuration = Self.dotsConfiguration(.init(total: dots.total, filled: dots.filled, columns: dots.columns, accent: macro.accent))
+            let matrix = DotMatrix.Model(total: dots.total, filled: dots.filled, columns: dots.columns, accent: macro.accent)
+            dotsView.configuration = Self.dotsConfiguration(matrix)
+            dotsHeight.constant = DotMatrix.height(of: matrix)
         }
         dotsView.isHidden = model.dots == nil
         accessibilityLabel = model.dots == nil
