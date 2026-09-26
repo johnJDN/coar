@@ -159,7 +159,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | `CheckToggle` | Two-state `— / ✓` capsule. Used for yes/no habit check-ins; there is no recorded "miss", an empty day is the miss. |
 | `AmountControl` | Capsule showing today's total for a quantitative habit: `—` on `fill` when nothing has been entered, the amount on `fill` while short of the target, `accentGreen` with bloom once met. Tapping opens the number sheet (hero field, target beside it, `+N` glass chips). |
 | `PillChip` | Capsule with leading icon tile, title, subtitle, trailing chevron. Glass when floating, `fill` when in-card. |
-| `SetRow` | `[set #] [weight lbs] [reps] [✓]` — four pills in `fill`. Completed: all pills and text flood `accentGreen` at 18% fill / 100% text. |
+| `SetRow` | `[set #] [weight lbs] [reps] [✓]` — four pills in `fill`. The check shows a `textSecondary` ✓ before it is done (never `—`, which reads as an empty field). Completed: all pills and text flood `accentGreen` at 18% fill / 100% text. |
 | `ExerciseCard` | Thumbnail, name, "Equipment • n sets", timer + more buttons; `SetRow` list; footer split actions "Progression | Add Set". Superset link icon between cards. |
 | `ListRow` (sheet) | Thumbnail, title, subtitle "310 kcal • 1 burger", trailing square `+` button. |
 | `IconTile` | Pastel rounded square with white symbol (settings). |

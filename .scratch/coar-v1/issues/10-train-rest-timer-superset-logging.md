@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Completing a `SetRow` starts the timer in the `UITabAccessory` (countdown, dismiss); duration = the Workout row's rest default ?? 120 s
 - [x] Timer survives navigating between tabs and re-docks inline when the tab bar minimises

@@ -217,6 +217,9 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A rest default of 0 counts as none (120 s); the Exercise form rejects 0 anyway.
 - [?] The Superset link is lavender, matching the Plan editor's link button.
 
+**Results (2026-09-26): passed;** judgement calls agreed.
+- **Changed — set check affordance:** the check pill showed `—` before a set was done, the same as an empty weight or reps field, so it didn't read as a button. It now shows a grey ✓ (semibold) that turns green on completion (DESIGN.md `SetRow`).
+
 ## 11: Train: Exercise Progression
 
 - [ ] Train → Exercises → tap an Exercise: the detail page opens titled with its name and "Chest · Dumbbell · Rest 150 s"; with no history the Progression card reads `—`, "No sets logged for this exercise yet", and `No data` with no axes; Recent sets shows `—` and "Sets you log for this exercise land here."

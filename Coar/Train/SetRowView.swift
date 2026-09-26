@@ -1,8 +1,9 @@
 import UIKit
 
-/// `SetRow` (DESIGN.md §7): `[set #] [weight unit] [reps] [✓]`, four pills in `fill`. Once
-/// complete, every pill floods `accentGreen` at 18 % with the text at 100 %, with the §9
-/// spring. Typing reports the raw text through `onChange`; the check reports through
+/// `SetRow` (DESIGN.md §7): `[set #] [weight unit] [reps] [✓]`, four pills in `fill`. The
+/// check shows a grey ✓ before it is tapped, not a dash: `—` is what an empty field reads,
+/// and the check is an action, not a value. Once complete, every pill floods `accentGreen`
+/// at 18 % with the text at 100 %, with the §9 spring. Typing reports the raw text through `onChange`; the check reports through
 /// `onToggleComplete`; the owner writes and re-renders.
 final class SetRowView: UIView {
 
@@ -59,7 +60,9 @@ final class SetRowView: UIView {
         unitLabel.adjustsFontForContentSizeCategory = true
         unitLabel.setContentHuggingPriority(.required, for: .horizontal)
 
+        checkSymbol.image = UIImage(systemName: "checkmark")
         checkSymbol.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .body, scale: .medium)
+            .applying(UIImage.SymbolConfiguration(weight: .semibold))
         checkSymbol.contentMode = .center
         checkSymbol.translatesAutoresizingMaskIntoConstraints = false
         checkButton.addAction(UIAction { [weak self] _ in self?.tappedCheck() }, for: .touchUpInside)
@@ -139,7 +142,6 @@ final class SetRowView: UIView {
         weightField.textColor = text
         repsField.textColor = text
         unitLabel.textColor = secondary
-        checkSymbol.image = UIImage(systemName: isCompleted ? "checkmark" : "minus")
         checkSymbol.tintColor = isCompleted ? UIColor.accentGreen : UIColor.textSecondary
         checkButton.accessibilityValue = isCompleted ? "Completed" : "Not completed"
     }
