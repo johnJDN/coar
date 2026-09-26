@@ -226,7 +226,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [ ] Finish one Workout with a completed set of it: the card shows the Estimated 1RM as the hero (e.g. 92.6 lbs × 8 → 117 lbs), "Estimated 1RM · Sep 16", one bloomed lime point and no line; Recent sets has one card titled by the Day with "Push · 7:28 PM" and the sets as "92.6 lbs × 8".
 - [ ] After three or more Workouts: a 2 pt lime line through one point per Workout, small dots on earlier points, bloom on the last, about four date labels along the bottom (none truncated) and three values on the right, all muted, no gridlines, no legend; latest Workout first in Recent sets.
 - [ ] In the logger, tap the card's name or its "Progression" footer button: the page opens over the logger with today's completed sets already on the chart and in the list; the accessory bar stays hidden; back returns to the logger with the keyboard state as it was.
-- [ ] Edit on the page: the sheet opens filled in; rename and save: the title updates; Archive: the page stays and the catalogue lists it under Archived.
+- [ ] Edit on the page: the sheet opens filled in; rename: the title updates when the sheet closes; Archive: back to the catalogue, which lists it under Archived.
 - [ ] Settings → kg: the hero, axis, and set lines read in kg; back in lbs they agree.
 - [ ] Body Weight screen: the chart's end date labels no longer truncate; with nothing logged the slot shows only `No data` (no 0 / 0.5 / 1.0 axis).
 - [ ] Dynamic Type: the hero, caption, section header, set lines, and the two footer buttons scale without clipping; check light and dark throughout.
