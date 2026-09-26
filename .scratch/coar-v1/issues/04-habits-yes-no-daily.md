@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] New-habit sheet: emoji (system keyboard), name, target amount, period; this ticket only needs target 1 / day but the fields exist
 - [x] Habit card: emoji, name, `CheckToggle` (two states, no recorded miss), streak hero ("12 days"), heatmap in a `UICollectionView`: 7 rows Monday on top, ~26 columns, `surfaceSunken` empty cells, `accentGreen` done cells with bloom

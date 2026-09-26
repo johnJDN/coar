@@ -66,18 +66,18 @@ struct EnergySplitBar: View {
 
 extension FoodText {
 
-    /// "140 kcal · P 12 · F 10 · C 0" with each gram macro, letter and number, in its accent,
-    /// so the three read apart at a glance. The one styled form of a macro line; plain
+    /// "140 kcal · P 12 · F 10 · C 0" with each gram macro's letter in its accent, so the
+    /// three read apart at a glance; the numbers keep the line's colour. The one styled form of a macro line; plain
     /// `macroLine` stays for accessibility labels.
     static func styledMacroLine(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true) -> AttributedString {
         var line = AttributedString([leading, includesCalories ? calories(macros) : nil].compactMap { $0 }.joined(separator: " · "))
         for macro in [Macro.protein, .fat, .carbs] {
             if !line.characters.isEmpty { line += AttributedString(" · ") }
-            var part = AttributedString("\(macro.abbreviation) \(amount(macros[macro]))")
+            var letter = AttributedString(macro.abbreviation)
             // Both scopes: SwiftUI `Text` reads one, UIKit labels the other.
-            part.swiftUI.foregroundColor = macro.accent
-            part.uiKit.foregroundColor = macro.uiAccent
-            line += part
+            letter.swiftUI.foregroundColor = macro.accent
+            letter.uiKit.foregroundColor = macro.uiAccent
+            line += letter + AttributedString(" \(amount(macros[macro]))")
         }
         return line
     }

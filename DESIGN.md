@@ -92,7 +92,8 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 
 Rule: one accent per metric, used consistently everywhere that metric appears
 (chart, dot, label, ring). Never reuse protein-blue for anything but protein. When P, F, C
-appear in a line of text ("P 12 · F 10 · C 0"), each letter and number is in its accent.
+appear in a line of text ("P 12 · F 10 · C 0"), each letter is in its accent; the numbers
+keep the text colour.
 
 A track (gauge, bar) sitting directly on `background` uses `fill`, not `surfaceSunken`:
 sunken is for wells inside a card and all but vanishes against the dark ground.

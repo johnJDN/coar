@@ -4,7 +4,7 @@ import XCTest
 
 final class MacroLineTests: XCTestCase {
 
-    func test_styledMacroLine_readsLikeThePlainLine_withEachGramMacroInItsAccent() {
+    func test_styledMacroLine_readsLikeThePlainLine_withOnlyEachLetterInItsAccent() {
         let macros = Macros(calories: 140, protein: 12, fat: 10, carbs: 0)
         let line = FoodText.styledMacroLineUIKit(macros)
         XCTAssertEqual(line.string, FoodText.macroLine(macros))
@@ -14,6 +14,8 @@ final class MacroLineTests: XCTestCase {
             XCTAssertNotEqual(range.location, NSNotFound)
             let colour = line.attribute(.foregroundColor, at: range.location, effectiveRange: nil) as? UIColor
             XCTAssertEqual(colour, macro.uiAccent, "\(macro)")
+            let number = line.attribute(.foregroundColor, at: range.location + 2, effectiveRange: nil)
+            XCTAssertNil(number, "\(macro)'s number keeps the line's colour")
         }
         XCTAssertNil(line.attribute(.foregroundColor, at: 0, effectiveRange: nil), "kcal keeps the label's colour")
     }

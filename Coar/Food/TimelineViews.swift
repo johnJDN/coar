@@ -207,7 +207,7 @@ final class EntryCell: UICollectionViewCell {
         accessibilityLabel = "\(entry.name), \(FoodText.quantity(entry.quantity, of: entry.servingName)), \(FoodText.calories(entry.macros)), " + grams.joined(separator: ", ")
     }
 
-    /// "2 × 1 egg · P 12 · F 10 · C 0", each gram macro in its accent (`styledMacroLine`).
+    /// "2 × 1 egg · P 12 · F 10 · C 0", each gram macro's letter in its accent.
     private static func detail(for entry: EntryRecord) -> NSAttributedString {
         FoodText.styledMacroLineUIKit(entry.macros, leading: FoodText.quantity(entry.quantity, of: entry.servingName), includesCalories: false)
     }

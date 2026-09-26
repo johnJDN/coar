@@ -99,30 +99,30 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 
 ## 07: Food: Meals, summary row, no-target state
 
-- [ ] Food tab with a Target set (Settings): the summary row sits between the week strip and the timeline with four columns; log an Entry: the numbers update and the bars slide (calories amber, protein blue, fat pink, carbs orange); check light and dark.
-- [ ] Pick a Day before your first Target (or a fresh install): every column reads "1,240 / —" with an empty track; the row does not collapse or move; the timeline is where it always is.
-- [ ] Eat past a target: that bar is full and stays full; nothing turns red.
-- [ ] `+` → Meals → New meal: name it, Add food → pick a food (the filter narrows as you type) → pick a serving, type 2, Save: the line reads "Eggs / 2 × 1 egg · 140 kcal" and the header total updates; add a second food; drag the handle to reorder; swipe a line left to delete; Save is disabled until there is a name and at least one line; Save: the log page for the new meal opens.
-- [ ] Meals segment: each meal's subtitle sums its lines ("340 kcal · P 16 · F 10 · C 44"); the square `+` logs it once at the sheet's time and closes; tap the row: the log page shows Quantity "1 × meal", the time, the four macros, and "Made of" lines; type 0.5: the macros halve and the lines read "1 × 1 egg"; Add lands one Entry on the timeline named after the meal.
-- [ ] Tap the meal Entry on the timeline: the detail has a "Made of" section between the quantity and the macros; change 1 → 2: both the lines and the macros double; overtype a macro: the lines stay; Save; reopen the meal from the sheet: it is unchanged.
-- [ ] Edit a food's serving macros after logging a meal that uses it: the meal's subtitle in the Meals segment changes; the Entry already logged does not.
-- [ ] Long-press a meal row → Edit: rename, change a line's serving and quantity, Save; Long-press → Archive: it leaves the list; type its name in the filter: dimmed "Tap to restore"; Restore brings it back; the log page's `…` menu offers the same Edit / Archive.
-- [ ] Remove, from a food, a serving that a meal uses: in the Meals segment the meal's square `+` is disabled; its log page's Add is disabled and the footer says to edit the meal; the editor shows "Serving removed · tap to pick another" in coral and Save stays disabled until you pick one.
-- [ ] Log an Entry while the Food tab is visible (from the sheet): the summary numbers cross-dissolve and the bars slide rather than jump.
-- [ ] Light mode, log page and Entry detail, "Made of" section: is there a hairline gap between the two rows? (seen in a simulator render; the other sections show none.)
-- [ ] Dynamic Type: the summary row's numbers shrink to fit rather than wrap; the meal editor rows, the picker, the line form and the log page scale without clipping.
-- [?] A Meal Entry's Serving name is "meal" ("0.5 × meal" on the card and detail).
-- [?] The calories bar is `accentAmber`, matching its tile.
-- [?] Over the target the bar is full with no colour change.
-- [?] A macro whose Target is 0 shows `—` and no fill for that bar only.
-- [?] Summary numbers are whole with grouping and no units.
-- [?] The breakdown is stored for one of the meal and scaled on screen by the quantity; overtyping a macro makes the breakdown and totals disagree.
-- [?] A line whose serving was removed stays in the meal with zero macros until repicked, and the meal cannot be logged until then.
-- [?] Meals list by name; lines reorder by drag.
-- [?] The meal editor's food picker has no "New food" action.
-- [?] A new meal goes straight to its log page.
-- [?] "No meals yet" is gone; an empty Meals segment shows only "New meal".
-- [?] `Meal` and `MealComponent` gained an optional `id: UUID` (additive).
+- [x] Food tab with a Target set (Settings): the summary row sits between the week strip and the timeline with four columns; log an Entry: the numbers update and the bars slide (calories amber, protein blue, fat pink, carbs orange); check light and dark.
+- [x] Pick a Day before your first Target (or a fresh install): every column reads "1,240 / —" with an empty track; the row does not collapse or move; the timeline is where it always is.
+- [x] Eat past a target: that bar is full and stays full; nothing turns red.
+- [x] `+` → Meals → New meal: name it, Add food → pick a food (the filter narrows as you type) → pick a serving, type 2, Save: the line reads "Eggs / 2 × 1 egg · 140 kcal" and the header total updates; add a second food; drag the handle to reorder; swipe a line left to delete; Save is disabled until there is a name and at least one line; Save: the log page for the new meal opens.
+- [x] Meals segment: each meal's subtitle sums its lines ("340 kcal · P 16 · F 10 · C 44"); the square `+` logs it once at the sheet's time and closes; tap the row: the log page shows Quantity "1 × meal", the time, the four macros, and "Made of" lines; type 0.5: the macros halve and the lines read "1 × 1 egg"; Add lands one Entry on the timeline named after the meal.
+- [x] Tap the meal Entry on the timeline: the detail has a "Made of" section between the quantity and the macros; change 1 → 2: both the lines and the macros double; overtype a macro: the lines stay; Save; reopen the meal from the sheet: it is unchanged.
+- [x] Edit a food's serving macros after logging a meal that uses it: the meal's subtitle in the Meals segment changes; the Entry already logged does not.
+- [x] Long-press a meal row → Edit: rename, change a line's serving and quantity, Save; Long-press → Archive: it leaves the list; type its name in the filter: dimmed "Tap to restore"; Restore brings it back; the log page's `…` menu offers the same Edit / Archive.
+- [x] Remove, from a food, a serving that a meal uses: in the Meals segment the meal's square `+` is disabled; its log page's Add is disabled and the footer says to edit the meal; the editor shows "Serving removed · tap to pick another" in coral and Save stays disabled until you pick one.
+- [x] Log an Entry while the Food tab is visible (from the sheet): the summary numbers cross-dissolve and the bars slide rather than jump.
+- [x] Light mode, log page and Entry detail, "Made of" section: is there a hairline gap between the two rows? (seen in a simulator render; the other sections show none.)
+- [x] Dynamic Type: the summary row's numbers shrink to fit rather than wrap; the meal editor rows, the picker, the line form and the log page scale without clipping.
+- [x] keep: A Meal Entry's Serving name is "meal" ("0.5 × meal" on the card and detail).
+- [x] keep: The calories bar is `accentAmber`, matching its tile.
+- [x] keep: Over the target the bar is full with no colour change.
+- [x] keep: A macro whose Target is 0 shows `—` and no fill for that bar only.
+- [x] keep: Summary numbers are whole with grouping and no units.
+- [x] keep: The breakdown is stored for one of the meal and scaled on screen by the quantity; overtyping a macro makes the breakdown and totals disagree.
+- [x] keep: A line whose serving was removed stays in the meal with zero macros until repicked, and the meal cannot be logged until then.
+- [x] keep: Meals list by name; lines reorder by drag.
+- [x] keep: The meal editor's food picker has no "New food" action.
+- [x] keep: A new meal goes straight to its log page.
+- [x] keep: "No meals yet" is gone; an empty Meals segment shows only "New meal".
+- [x] keep: `Meal` and `MealComponent` gained an optional `id: UUID` (additive).
 
 **Results (2026-09-26, in progress):**
 - **Fixed, Targets not saving (Settings, ticket 02 regression in practice):** the sheet had a top-right Done that closed without saving, and saving needed a separate "Save targets" button that the keyboard could hide; typed Targets were silently lost. There is no Save button now: Targets save when the sheet closes, however it closes (Done or swipe), including mid-edit. An empty macro is saved as 0 (no target for that macro, shown `—`) once any field has a value. Home reloads when Settings closes, so its macros card shows the new Targets at once. A test types into the real sheet and checks the store.
@@ -130,8 +130,10 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - **Changed, 4 — meal totals:** the meal editor has a **Total** row at the top: a `MacroStrip` (four coloured numbers and a bar split by where the calories come from). The line page shows the same strip under "In the meal" instead of the text line.
 - **Changed, 9 — broken meal:** the meal's row in the Meals list gets a coral warning symbol and "Needs fixing · a serving was removed"; its log page opens with a `WarningCard` ("This meal can't be logged", with **Edit meal**); the editor's broken line gets the warning symbol too.
 - **Pass, 11:** no hairline in "Made of".
-- **Changed, app-wide — P/F/C colours:** every text line with P, F, C now colours each letter and number in its accent (meal subtitles, serving rows, the archived pages, timeline cards).
+- **Changed, app-wide — P/F/C colours:** every text line with P, F, C now colours each letter (not the number) in its accent (meal subtitles, serving rows, the archived pages, timeline cards).
 - **Fixed, Done bar on SwiftUI forms:** the keyboard Done bar from 06 never showed on SwiftUI forms (SwiftUI ignores a UIKit accessory); every SwiftUI form now declares its own. Verified in the simulator on Settings.
+- **Changed, edit from the list:** long-press → Edit, then Save, now closes the sheet (back to the Food tab) instead of landing on the Add Entry list; editing is the whole errand there. Editing from a log page's `…` menu (or the warning card's Edit meal) still returns to that page; a new food or meal still returns to the list, on top.
+- **Done (2026-09-26):** all tests pass; all judgement calls kept.
 
 ## 08: Train: Exercises, Plans, Supersets
 

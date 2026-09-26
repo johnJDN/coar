@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Week strip (day number over weekday, today marked) scrolls through history; selecting a day loads its timeline
 - [x] Hourly timeline as a compositional `UICollectionView`; "+" per hour slot pre-fills that hour's time on the new Entry

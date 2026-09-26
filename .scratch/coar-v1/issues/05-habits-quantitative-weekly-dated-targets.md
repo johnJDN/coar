@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Kind selector (yes/no | quantitative) and period selector (day | week) on the new-habit sheet
 - [x] Quantitative card control shows today's total; tapping opens a compact sheet with the total, a number pad, and `+N` chips; every path sets the one Check-in's amount (replace semantics)

@@ -4,7 +4,7 @@
 
 **Blocked by:** 06, 02
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Meal editor: name; components as Food Item + Serving + quantity; reorder; archive
 - [x] Meals segment lists active Meals with summed macros as subtitle; logging creates one Entry with the Meal's name, summed macros × multiplier, and a component snapshot

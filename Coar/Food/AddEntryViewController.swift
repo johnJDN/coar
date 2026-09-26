@@ -265,13 +265,20 @@ final class AddEntryViewController: UIViewController {
 
     private func pushEditor(_ foodItem: FoodItemRecord?) {
         let mode: FoodItemEditorViewController.Mode = foodItem.map { .edit($0) } ?? .create(name: filterText)
-        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in
-            // Creating a food is not logging it: both a new one and an edit return to the
-            // list, where a new one sits at the top (most recently used).
-            guard let self else { return }
-            navigationController?.popToViewController(self, animated: true)
-        }
+        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in self?.editorSaved(isNew: foodItem == nil) }
         navigationController?.pushViewController(editor, animated: true)
+    }
+
+    /// Where a Save in the food or meal editor lands when it was opened from this list.
+    /// Creating is not logging, so a new one returns here, at the top of the list, ready to
+    /// log. Editing from the list is the whole errand, so the sheet closes, back to the Food
+    /// tab. (Editing from a log page's menu returns to that page; that page handles it.)
+    private func editorSaved(isNew: Bool) {
+        if isNew {
+            navigationController?.popToViewController(self, animated: true)
+        } else {
+            dismiss(animated: true)
+        }
     }
 
     private func archive(_ id: FoodItemRecord.ID) {
@@ -305,11 +312,7 @@ final class AddEntryViewController: UIViewController {
 
     private func pushMealEditor(_ meal: MealRecord?) {
         let mode: MealEditorViewController.Mode = meal.map { .edit($0) } ?? .create(name: filterText)
-        let editor = MealEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in
-            // Creating a meal is not logging it: both return to the list (see Food Items).
-            guard let self else { return }
-            navigationController?.popToViewController(self, animated: true)
-        }
+        let editor = MealEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in self?.editorSaved(isNew: meal == nil) }
         navigationController?.pushViewController(editor, animated: true)
     }
 
