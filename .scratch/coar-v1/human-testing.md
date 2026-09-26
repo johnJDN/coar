@@ -155,11 +155,11 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] A Plan needs a name and one Exercise; a row may have zero sets ("No sets").
 - [?] An empty weight stores 0 kg and reads `—`; a max below the min disables Save rather than swapping.
 - [?] Archive (Plan editor `…`, Exercise sheet) does not confirm and discards unsaved editor changes.
-- [x] changed: Plans and Exercises list by name; no manual order.
+- [x] changed: Plans and Exercises list most recently used first (was: by name); no manual order.
 - [?] `Exercise`, `Plan`, `PlanExercise`, `PlannedSet` gained an optional `id: UUID` (additive).
 - [?] New plan is a full-width glass capsule under the Plans cards, not a `+` in the navigation bar.
 
-**Results (2026-09-26, in progress):**
+**Results (2026-09-26): passed after fixes (re-checked on device).**
 - **Changed, saving (app-wide, DESIGN.md §7a):** the plan editor lost a set change when back was tapped after the sets page's Save. Now: creating keeps Save (and asks before discarding); editing saves as it changes with no Save button (Done where it's a sheet); pages inside an editor write into it directly. Applies to Plans + Planned Sets, Food Items + Servings, Meals + lines, Exercises, and the Entry detail. Leaving something that can't be saved (a plan with no name, a set with max below min) asks first.
 - **Changed, 1 — exercises:** equipment is a menu (Barbell, Dumbbell, Cable, Machine, Smith machine, EZ bar, Kettlebell, Band, Bodyweight, Other with a typed name; anything typed before shows under Other). Muscle group gains Other. An exercise has one primary group and any secondary ones ("Also works": dips are Chest + Triceps, Shoulders); the catalogue row shows both.
 - **Fixed, 2 — "picker":** the archive footer now says "Archived exercises can't be added to plans."

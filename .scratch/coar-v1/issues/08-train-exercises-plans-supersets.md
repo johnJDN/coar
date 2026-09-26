@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Exercises chip opens the catalogue; editor with name, Muscle Group picker (fixed enum), equipment text, rest default seconds; archive
 - [x] Train root shows a Plans section (cards with name and "n exercises") and the chips row
