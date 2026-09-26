@@ -4,7 +4,7 @@
 
 **Blocked by:** 08
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Start button on Train root: choose a Plan or "Empty workout"; the Workout is saved immediately with its own exercise rows (name snapshot, Exercise reference, supersetGroup, rest default) and Planned Set targets copied in
 - [x] Logger screen: one `ExerciseCard` per row with `SetRow`s (set #, weight, reps, ✓) pre-filled from targets; completing a set floods the row `accentGreen` with the §9 spring; add set; add Exercise from picker; remove either
