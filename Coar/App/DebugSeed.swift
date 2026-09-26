@@ -3,7 +3,7 @@ import Foundation
 
 /// Sample records for looking at screens in the simulator. Launch a debug build with
 /// `-SeedSampleData` and the process runs on an in-memory store (no CloudKit, nothing kept)
-/// holding two Habits with today's Check-ins, a Target, a morning and a lunch of Entries,
+/// holding two Habits with today's Check-ins, a Target, a morning and a lunch of Entries, a Meal,
 /// three Body Weights, and a finished Workout from a Plan yesterday. Never used by tests.
 enum DebugSeed {
 
@@ -32,6 +32,10 @@ enum DebugSeed {
             let rice = try store.createFoodItem(name: "Rice", servings: [ServingDraft(name: "1 cup", macros: Macros(calories: 200, protein: 4, fat: 0, carbs: 44), isDefault: true)])
             try store.logEntry(foodItem: eggs.id, serving: eggs.servings[0].id, quantity: 4, at: at(today, 8, 0))
             try store.logEntry(foodItem: rice.id, serving: rice.servings[0].id, quantity: 2, at: at(today, 12, 30))
+            try store.createMeal(name: "Eggs & rice", components: [
+                MealComponentDraft(foodItemID: eggs.id, servingID: eggs.servings[0].id, quantity: 2),
+                MealComponentDraft(foodItemID: rice.id, servingID: rice.servings[0].id, quantity: 1),
+            ])
 
             for (offset, kilograms) in [(-5, 84.6), (-3, 84.2), (-1, 84.0)] {
                 try store.logBodyWeight(kilograms: kilograms, on: today.advanced(by: offset))

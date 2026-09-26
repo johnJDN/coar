@@ -19,11 +19,14 @@ struct LogMealForm: View {
 
     let meal: MealRecord
     let onChange: (Draft) -> Void
+    /// The warning card's "Edit meal", for a Meal that cannot be logged.
+    var onEditMeal: () -> Void = {}
 
     @State private var draft: Draft
 
-    init(meal: MealRecord, draft: Draft, onChange: @escaping (Draft) -> Void) {
+    init(meal: MealRecord, draft: Draft, onEditMeal: @escaping () -> Void = {}, onChange: @escaping (Draft) -> Void) {
         self.meal = meal
+        self.onEditMeal = onEditMeal
         self.onChange = onChange
         _draft = State(initialValue: draft)
     }
@@ -35,6 +38,19 @@ struct LogMealForm: View {
 
     var body: some View {
         Form {
+            if !meal.isLoggable {
+                Section {
+                    WarningCard(
+                        title: "This meal can't be logged",
+                        message: "A serving one of its foods used was removed, so its macros would be wrong. Pick another serving for that line.",
+                        actionTitle: "Edit meal",
+                        action: onEditMeal
+                    )
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                }
+            }
+
             Section {
                 QuantityRow(quantity: $draft.typedQuantity, unitName: EntryRecord.mealServingName)
                     .formRow()
@@ -62,14 +78,13 @@ struct LogMealForm: View {
             } header: {
                 Text("Made of")
             } footer: {
-                Text(meal.isLoggable
-                     ? "Kept with the entry as logged. Editing the meal or its foods later never changes it."
-                     : "A line's serving was removed from its food. Edit the meal to pick another before logging it.")
+                Text("Kept with the entry as logged. Editing the meal or its foods later never changes it.")
             }
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
     }

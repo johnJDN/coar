@@ -120,7 +120,7 @@ final class FoodItemEditorViewController: UIViewController {
             guard let serving = self?.draft.servings.first(where: { $0.id == id }) else { return }
             var content = UIListContentConfiguration.listRow()
             content.text = Self.title(for: serving)
-            content.secondaryText = FoodText.macroLine(serving.macros)
+            content.secondaryAttributedText = FoodText.styledMacroLineUIKit(serving.macros)
             cell.contentConfiguration = content
             var accessories: [UICellAccessory] = [.reorder(displayed: .always, options: .init(showsVerticalSeparator: false))]
             if serving.isDefault {

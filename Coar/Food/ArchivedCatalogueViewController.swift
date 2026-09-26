@@ -13,7 +13,7 @@ final class ArchivedCatalogueViewController: UIViewController {
     private struct Row: Hashable {
         let id: UUID
         let name: String
-        let detail: String?
+        let detail: NSAttributedString?
     }
 
     private static let logger = Logger(category: "Food")
@@ -51,7 +51,7 @@ final class ArchivedCatalogueViewController: UIViewController {
         let cell = UICollectionView.CellRegistration<UICollectionViewListCell, Row> { cell, _, row in
             var content = UIListContentConfiguration.listRow()
             content.text = row.name
-            content.secondaryText = row.detail
+            content.secondaryAttributedText = row.detail
             cell.contentConfiguration = content
             cell.accessories = [.label(text: "Restore", options: .init(tintColor: UIColor.accentGreen))]
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
@@ -87,9 +87,9 @@ final class ArchivedCatalogueViewController: UIViewController {
         do {
             switch kind {
             case .foods:
-                rows = try dependencies.store.archivedFoodItems().map { Row(id: $0.id, name: $0.name, detail: $0.defaultServing.map(FoodText.summary(of:))) }
+                rows = try dependencies.store.archivedFoodItems().map { Row(id: $0.id, name: $0.name, detail: $0.defaultServing.map { NSAttributedString(string: FoodText.summary(of: $0)) }) }
             case .meals:
-                rows = try dependencies.store.archivedMeals().map { Row(id: $0.id, name: $0.name, detail: FoodText.macroLine($0.macros)) }
+                rows = try dependencies.store.archivedMeals().map { Row(id: $0.id, name: $0.name, detail: FoodText.styledMacroLineUIKit($0.macros)) }
             }
         } catch {
             Self.logger.error("Failed to read archived \(self.kind == .foods ? "Food Items" : "Meals", privacy: .public): \(error, privacy: .public)")

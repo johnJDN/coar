@@ -98,6 +98,7 @@ struct SettingsForm: View {
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: fields) { _, fields in onTargetsChanged(Self.draft(from: fields)) }
     }

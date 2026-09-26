@@ -1,3 +1,4 @@
+import SwiftUI
 import UIKit
 import os
 
@@ -15,11 +16,13 @@ final class MealEditorViewController: UIViewController {
     private static let logger = Logger(category: "Food")
 
     private enum Section: Hashable {
-        case name, components
+        case name, total, components
     }
 
     private enum Item: Hashable {
         case name
+        /// The Meal's macros so far as a `MacroStrip`, updated as lines change.
+        case total
         case component(MealComponentDraft.ID)
         case addFood
     }
@@ -82,7 +85,7 @@ final class MealEditorViewController: UIViewController {
             var configuration = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
             configuration.showsSeparators = false
             configuration.backgroundColor = .clear
-            configuration.headerMode = self?.dataSource.sectionIdentifier(for: sectionIndex) == .components ? .supplementary : .none
+            configuration.headerMode = self?.dataSource.sectionIdentifier(for: sectionIndex) == .name ? .none : .supplementary
             configuration.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
                 guard case .component(let id) = self?.dataSource.itemIdentifier(for: indexPath) else { return nil }
                 return UISwipeActionsConfiguration(actions: [
@@ -129,11 +132,20 @@ final class MealEditorViewController: UIViewController {
             } else {
                 content.secondaryText = "Serving removed · tap to pick another"
                 content.secondaryTextProperties.color = UIColor.accentCoral
+                content.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                content.imageProperties.tintColor = UIColor.accentCoral
             }
             cell.contentConfiguration = content
             cell.accessories = [.reorder(displayed: .always, options: .init(showsVerticalSeparator: false))]
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
             cell.accessibilityLabel = [content.text, content.secondaryText].compactMap { $0 }.joined(separator: ", ")
+        }
+        let totalCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { [weak self] cell, _, _ in
+            guard let self else { return }
+            let macros = draft.components.isEmpty ? nil : draft.macros(in: foodItems)
+            cell.contentConfiguration = UIHostingConfiguration { MacroStrip(macros: macros) }
+                .margins(.all, Metrics.spaceInner)
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
             let content = UIListContentConfiguration.addRow("Add food")
@@ -141,9 +153,9 @@ final class MealEditorViewController: UIViewController {
             cell.accessories = []
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
-        let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, _ in
+        let header = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, indexPath in
             var content = UIListContentConfiguration.groupedHeader()
-            content.text = self.map { "Foods · \(FoodText.calories($0.draft.macros(in: $0.foodItems)))" } ?? "Foods"
+            content.text = self?.dataSource.sectionIdentifier(for: indexPath.section) == .total ? "Total" : "Foods"
             view.contentConfiguration = content
         }
 
@@ -151,6 +163,8 @@ final class MealEditorViewController: UIViewController {
             switch item {
             case .name:
                 return collectionView.dequeueConfiguredReusableCell(using: nameCell, for: indexPath, item: item)
+            case .total:
+                return collectionView.dequeueConfiguredReusableCell(using: totalCell, for: indexPath, item: item)
             case .component(let id):
                 return collectionView.dequeueConfiguredReusableCell(using: componentCell, for: indexPath, item: id)
             case .addFood:
@@ -182,10 +196,11 @@ final class MealEditorViewController: UIViewController {
     private func render() {
         loadFoodItems()
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        snapshot.appendSections([.name, .components])
+        snapshot.appendSections([.name, .total, .components])
         snapshot.appendItems([.name], toSection: .name)
+        snapshot.appendItems([.total], toSection: .total)
         snapshot.appendItems(draft.components.map { .component($0.id) } + [.addFood], toSection: .components)
-        snapshot.reloadSections([.components])
+        snapshot.reloadSections([.total, .components])
         dataSource.apply(snapshot, animatingDifferences: viewIfLoaded?.window != nil)
         updateSaveState()
     }
@@ -252,7 +267,7 @@ extension MealEditorViewController: UICollectionViewDelegate {
             pushComponentForm(foodItem: foodItem, component: component)
         case .addFood:
             pushPicker()
-        case .name, nil:
+        case .name, .total, nil:
             break
         }
     }

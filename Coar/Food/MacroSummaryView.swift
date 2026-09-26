@@ -1,8 +1,8 @@
 import UIKit
 
 /// The Food tab's summary row (DESIGN.md §8): four columns, one per macro, each a small
-/// title, "consumed / target", and a thin bar in the macro's accent over a `surfaceSunken`
-/// track. Without a Target the slot reads `—` and the track stays empty (§1.5); the row
+/// title, "consumed / target", and a thin bar in the macro's accent over a `fill` track
+/// (the row sits on `background`, where a `surfaceSunken` track all but vanishes in dark). Without a Target the slot reads `—` and the track stays empty (§1.5); the row
 /// never collapses.
 final class MacroSummaryView: UIView {
 
@@ -93,7 +93,7 @@ final class MacroSummaryView: UIView {
     }
 }
 
-/// A 4pt bar: `surfaceSunken` track, accent fill from the leading edge by a fraction of the
+/// A 4pt bar: `fill` track, accent fill from the leading edge by a fraction of the
 /// width, moved with the §9 layout spring.
 final class ThinBarView: UIView {
 
@@ -104,7 +104,7 @@ final class ThinBarView: UIView {
 
     init(accent: UIColor) {
         super.init(frame: .zero)
-        backgroundColor = UIColor.surfaceSunken
+        backgroundColor = UIColor.fill
         layer.cornerRadius = Self.height / 2
         clipsToBounds = true
         fill.backgroundColor = accent

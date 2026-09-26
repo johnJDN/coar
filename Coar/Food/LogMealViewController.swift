@@ -56,7 +56,7 @@ final class LogMealViewController: UIHostingController<LogMealForm> {
             }
             title = meal.name
             isLoggable = meal.isLoggable
-            rootView = LogMealForm(meal: meal, draft: draft) { [weak self] in self?.draftChanged($0) }
+            rootView = LogMealForm(meal: meal, draft: draft, onEditMeal: { [weak self] in self?.pushEditor() }) { [weak self] in self?.draftChanged($0) }
             draftChanged(draft)
         } catch {
             Self.logger.error("Failed to read Meal: \(error, privacy: .public)")

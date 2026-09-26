@@ -78,6 +78,7 @@ struct LogFoodItemForm: View {
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onChange(of: servings) { _, servings in

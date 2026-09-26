@@ -123,9 +123,17 @@ final class AddEntryViewController: UIViewController {
             guard let self, let meal = meals[id] else { return }
             var content = UIListContentConfiguration.listRow()
             content.text = meal.name
-            content.secondaryText = FoodText.macroLine(meal.macros)
+            if meal.isLoggable {
+                content.secondaryAttributedText = FoodText.styledMacroLineUIKit(meal.macros)
+            } else {
+                // A line's Serving is gone, so the Meal would undercount: flagged here, and
+                // its log page says what to do.
+                content.image = UIImage(systemName: "exclamationmark.triangle.fill")
+                content.imageProperties.tintColor = UIColor.accentCoral
+                content.secondaryText = "Needs fixing · a serving was removed"
+                content.secondaryTextProperties.color = UIColor.accentCoral
+            }
             cell.contentConfiguration = content
-            // A Meal with a line whose Serving is gone would undercount: the log page says why.
             cell.configureQuickAdd(name: meal.name, isEnabled: meal.isLoggable) { [weak self] in self?.quickAddMeal(id) }
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }

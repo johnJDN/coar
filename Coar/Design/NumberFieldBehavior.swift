@@ -7,9 +7,11 @@ import UIKit
 ///
 /// - Its whole contents are selected, so typing replaces the value ("3" over a "1" is 3,
 ///   never 31) and tapping away keeps it.
-/// - It gets a keyboard bar with Done, because number pads have no return key and the
-///   keyboard could otherwise only be dismissed by scrolling. A field that already has its
-///   own accessory view keeps it.
+/// - A UIKit field gets a keyboard bar with Done, because number pads have no return key
+///   and the keyboard could otherwise only be dismissed by scrolling. A field that already
+///   has its own accessory view keeps it. SwiftUI's fields ignore an accessory attached this
+///   way (seen in the simulator, though the property reads back set), so SwiftUI forms add
+///   `keyboardDoneBar()` themselves.
 enum NumberFieldBehavior {
 
     private static var observer: NSObjectProtocol?
@@ -61,5 +63,25 @@ extension UICollectionView {
     func dismissesKeyboardOnDrag() {
         keyboardDismissMode = .interactive
         alwaysBounceVertical = true
+    }
+}
+
+import SwiftUI
+
+extension View {
+    /// A keyboard bar with Done for a SwiftUI form. SwiftUI drives the keyboard of its own
+    /// text fields and ignores an accessory view attached from UIKit, so its forms declare
+    /// the bar here instead; `NumberFieldBehavior` then finds the field's accessory taken
+    /// and leaves it. Done ends editing whichever field has focus.
+    func keyboardDoneBar() -> some View {
+        toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+                .fontWeight(.semibold)
+            }
+        }
     }
 }

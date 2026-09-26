@@ -103,6 +103,7 @@ struct ServingForm: View {
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
+        .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onAppear { nameFocused = draft.name.isEmpty }

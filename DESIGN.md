@@ -91,7 +91,11 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |
 
 Rule: one accent per metric, used consistently everywhere that metric appears
-(chart, dot, label, ring). Never reuse protein-blue for anything but protein.
+(chart, dot, label, ring). Never reuse protein-blue for anything but protein. When P, F, C
+appear in a line of text ("P 12 · F 10 · C 0"), each letter and number is in its accent.
+
+A track (gauge, bar) sitting directly on `background` uses `fill`, not `surfaceSunken`:
+sunken is for wells inside a card and all but vanishes against the dark ground.
 
 ### Settings icon tiles
 
@@ -160,6 +164,8 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | `IconTile` | Pastel rounded square with white symbol (settings). |
 | `EmptyValue` | `—` / `-%` / `No data` in `textTertiary`, same size as the value it stands in for. |
 | `SegmentedTabs` | Text tabs with an underline indicator (e.g. Foods / Meals) at the top of sheets. |
+| `MacroStrip` | The four macros of one thing as a visual, not a text line: four columns (number in its accent over a small grey label: kcal / Protein / Fat / Carbs) and a thin bar under them split by P / F / C share of calories. Used for a meal's total and a meal line. |
+| `WarningCard` | Something blocks what the screen is for: a coral-tinted card with a warning symbol, title, what to do, and the fixing action as a coral glass button. Never a footer sentence. Lists flag the same item with a coral warning symbol and caption. |
 | `ActionGrid` | 3×3 grid of circular `fill` buttons with labels, in a sheet, opened by the "+" button. |
 
 ## 8. Data-viz vocabulary

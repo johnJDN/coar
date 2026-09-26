@@ -42,3 +42,4 @@ final class NumberFieldBehaviorTests: XCTestCase {
         XCTAssertTrue(field.inputAccessoryView === own)
     }
 }
+

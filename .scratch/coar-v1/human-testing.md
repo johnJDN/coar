@@ -126,6 +126,12 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 
 **Results (2026-09-26, in progress):**
 - **Fixed, Targets not saving (Settings, ticket 02 regression in practice):** the sheet had a top-right Done that closed without saving, and saving needed a separate "Save targets" button that the keyboard could hide; typed Targets were silently lost. There is no Save button now: Targets save when the sheet closes, however it closes (Done or swipe), including mid-edit. An empty macro is saved as 0 (no target for that macro, shown `—`) once any field has a value. Home reloads when Settings closes, so its macros card shows the new Targets at once. A test types into the real sheet and checks the store.
+- **Fixed, 1 — bar track:** the summary bars' track was `surfaceSunken`, near-invisible on the dark ground; now `fill` (DESIGN.md §3 rule added).
+- **Changed, 4 — meal totals:** the meal editor has a **Total** row at the top: a `MacroStrip` (four coloured numbers and a bar split by where the calories come from). The line page shows the same strip under "In the meal" instead of the text line.
+- **Changed, 9 — broken meal:** the meal's row in the Meals list gets a coral warning symbol and "Needs fixing · a serving was removed"; its log page opens with a `WarningCard` ("This meal can't be logged", with **Edit meal**); the editor's broken line gets the warning symbol too.
+- **Pass, 11:** no hairline in "Made of".
+- **Changed, app-wide — P/F/C colours:** every text line with P, F, C now colours each letter and number in its accent (meal subtitles, serving rows, the archived pages, timeline cards).
+- **Fixed, Done bar on SwiftUI forms:** the keyboard Done bar from 06 never showed on SwiftUI forms (SwiftUI ignores a UIKit accessory); every SwiftUI form now declares its own. Verified in the simulator on Settings.
 
 ## 08: Train: Exercises, Plans, Supersets
 
