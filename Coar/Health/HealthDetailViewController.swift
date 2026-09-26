@@ -117,7 +117,7 @@ final class HealthDetailViewController: ScreenViewController {
             return "Apple Health is not available on this device"
         }
         guard !values.isEmpty else {
-            return status == nil ? "Reading Apple Health…" : "Nothing in Apple Health for the last \(Self.dayCount) days. Check Coar's access in the Health app."
+            return status == nil ? "Reading Apple Health…" : "Nothing in Apple Health for the last \(Self.dayCount) days. \(metric.sourceHint)"
         }
         let average = values.values.reduce(0, +) / Double(values.count)
         return "\(Self.dayCount)-day average \(metric.text(average))"

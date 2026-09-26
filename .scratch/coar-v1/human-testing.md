@@ -278,7 +278,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [ ] Nap after lunch: Sleep on Home grows by the nap once Health has it; a doze after 6 PM does not change today's number (it belongs to tomorrow's night).
 - [ ] Steps square matches the Health app's step total for today and updates on returning to Home after a walk.
 - [ ] Tap the Sleep square (anywhere but the value): the detail pushes within Home; title "Sleep", subtitle "Last 30 days"; hero is last night, caption "30-day average …"; 30 bars in teal, the latest bar brighter with a glow, Days with nothing are gaps; x labels about weekly; y axis in hours. Same for Steps in amber with 0 / 5K / 10K.
-- [ ] Deny sleep in the prompt but allow steps: Sleep says `No data`, Steps has a value; the Sleep detail caption reads "Nothing in Apple Health for the last 30 days. Check Coar's access in the Health app."
+- [ ] Deny sleep in the prompt but allow steps: Sleep says `No data`, Steps has a value; the Sleep detail caption reads "Nothing in Apple Health for the last 30 days. Sleep comes from an Apple Watch or a sleep app; if you use one, check Coar's access in the Health app."
 - [ ] iPad (no HealthKit): both squares `No data`, tapping the value does nothing, detail caption "Apple Health is not available on this device".
 - [ ] Settings sheet's Apple Health row reads "Connected" after prompting from Home.
 - [ ] Dynamic Type: the square heroes shrink to fit rather than clip; the detail hero, captions, and axis labels scale; check light and dark throughout.
@@ -293,6 +293,10 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The empty detail shows `No data` twice: the hero slot and the chart slot (each is a value slot per DESIGN §1.5).
 - [?] CONTEXT.md now defines Night, Time Asleep, and Steps; ADR 0006 records the 6 PM boundary.
 - [?] Story 80's tap-through is only offered while the prompt has never been shown; after a denial the detail caption says to check the Health app (an `x-apple-health://` link was not added).
+
+**Results (2026-09-26): passed after a fix;** judgement calls agreed. No sleep source on John's phone, so sleep reads `No data` throughout.
+- **Fixed — Home cards ignored taps:** tapping a Sleep square with `No data` did nothing. Every Home card with buttons inside (Habits, Macros, the four squares) let those buttons take their taps, but UIKit then never fired the card's own tap for a touch on a label or padding. `CardControl` now hands such touches to the card (tests in `CardControlTests`). That made whole cards controls, which a plain scroll view won't scroll from, so `ScreenViewController`'s scroll view now scrolls from them too. Verified in the simulator: `No data` and the title open Sleep, Body Weight opens, a habit check still toggles in place, and Home scrolls from a card.
+- **Changed — empty Sleep/Steps caption:** HealthKit can't say whether a read was refused, so the empty detail now says where the data comes from before suggesting to check access ("Sleep comes from an Apple Watch or a sleep app; …").
 
 ## 14: Home
 

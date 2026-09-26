@@ -5,7 +5,7 @@ import UIKit
 /// until they grow their own collection views.
 class ScreenViewController: UIViewController {
 
-    let scrollView = UIScrollView()
+    let scrollView: UIScrollView = CardScrollView()
     let contentStack = UIStackView()
 
     init(title: String) {
@@ -44,5 +44,14 @@ class ScreenViewController: UIViewController {
             contentStack.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -Metrics.spaceCard),
             contentStack.widthAnchor.constraint(equalTo: frame.widthAnchor, constant: -2 * Metrics.spaceEdge),
         ])
+    }
+}
+
+/// A screen of tappable cards scrolls from anywhere: a drag that starts on a card (a
+/// `UIControl`) still scrolls, where a plain scroll view leaves controls their touches. Text
+/// fields keep theirs.
+private final class CardScrollView: UIScrollView {
+    override func touchesShouldCancel(in view: UIView) -> Bool {
+        view is UITextInput ? super.touchesShouldCancel(in: view) : true
     }
 }

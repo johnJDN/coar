@@ -40,6 +40,15 @@ enum HealthMetric: CaseIterable {
         }
     }
 
+    /// Where the data comes from, for a detail with nothing to show. HealthKit never says
+    /// whether a read was refused, so nothing may mean no source as much as no access.
+    var sourceHint: String {
+        switch self {
+        case .sleep: return "Sleep comes from an Apple Watch or a sleep app; if you use one, check Coar's access in the Health app."
+        case .steps: return "If your iPhone or Apple Watch counts steps, check Coar's access in the Health app."
+        }
+    }
+
     /// The value as the hero shows it.
     func text(_ value: Double) -> String {
         switch self {

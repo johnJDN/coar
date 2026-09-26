@@ -30,4 +30,19 @@ class CardControl: UIControl {
     override var isHighlighted: Bool {
         didSet { card.alpha = isHighlighted ? 0.85 : 1 }
     }
+
+    /// A touch belongs to a control or tap target inside the card; any other touch is the
+    /// card's. UIKit only tracks a control's own touches, so without this a tap on a label,
+    /// icon, or padding inside an interactive card reached neither and did nothing.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let hit = super.hitTest(point, with: event) else { return nil }
+        var view: UIView? = hit
+        while let candidate = view, candidate !== self {
+            if candidate is UIControl || candidate.gestureRecognizers?.contains(where: \.isEnabled) == true {
+                return hit
+            }
+            view = candidate.superview
+        }
+        return self
+    }
 }
