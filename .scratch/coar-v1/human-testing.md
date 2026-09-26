@@ -92,7 +92,9 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - **Fixed, keyboard dismissal (app-wide):** every number pad gets a keyboard bar with Done (number pads have no return key); every form and editable list dismisses the keyboard on a downward drag, and short lists now bounce so there is always something to drag. Text fields keep Return = done.
 - **Changed, E — Archived foods page:** an "Archived foods" row (with count) at the bottom of the Foods list opens a page listing them by name; tap to restore. Same for Meals. Archived items no longer appear under the filter.
 - **Changed, H — order:** Foods and Meals list most recently used first: the later of their latest Entry and their last edit (logging also stamps it), so new, edited, or just-logged ones rise to the top. Archived pages stay by name.
-- **Open, G:** saving a new food "took me back to the servings / Edit Food page" — asked John which save.
+- **Changed, G:** creating a food is not logging it. Saving a new food (or meal) now returns to the list, with the new one on top; tapping it logs. (The first Save on the serving page returning to New Food is unchanged.)
+- **Fixed, order:** Chicken breast stuck on top because recency used the Entry's eaten-at time: an 11:50 PM Entry (test 10) outranked everything logged earlier in the day. Recency now uses when the Entry was written.
+- **Fixed, tab bar:** it minimised on every tab but Food. The timeline was registered as the content scroll view for the top edge only, so for the bottom edge UIKit tracked the week strip, which only scrolls sideways.
 
 ## 07: Food: Meals, summary row, no-target state
 

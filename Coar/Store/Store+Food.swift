@@ -177,7 +177,7 @@ extension Store {
                 value: item,
                 name: item.name ?? "",
                 modifiedAt: item.modifiedAt,
-                lastLoggedAt: (item.entries as? Set<Entry>)?.compactMap(\.loggedAt).max()
+                lastLoggedAt: (item.entries as? Set<Entry>)?.compactMap(\.modifiedAt).max()
             )
         }).compactMap(FoodItemRecord.init)
     }

@@ -72,7 +72,10 @@ final class FoodViewController: UIViewController {
             timeline.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             timeline.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
-        setContentScrollView(timeline, for: .top)
+        // Both edges: the large title collapses and the tab bar minimises (DESIGN.md §2) as
+        // the timeline scrolls. Left to itself UIKit tracks the week strip for the bottom
+        // edge, which only scrolls sideways, so the tab bar never minimised here.
+        setContentScrollView(timeline, for: [.top, .bottom])
         updateSubtitle()
     }
 

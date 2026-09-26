@@ -1,9 +1,11 @@
 import Foundation
 
 /// The "+" sheet's order for Food Items and Meals: most recently used first. A thing's last
-/// use is the later of its latest Entry's time and its own `modifiedAt`, which a save also
-/// stamps when an Entry is logged from it (the relationship changes). So logging, even
-/// onto a past Day, creating, or editing moves it to the top. Ties fall back to name.
+/// use is the later of its own last edit and the moment an Entry from it was last written
+/// (the Entry's `modifiedAt`, not `loggedAt`: the time of day eaten says nothing about when
+/// it was used, and a 11:50 PM Entry logged this morning would otherwise pin a food to the
+/// top all day). Creating, editing, or logging it (onto any Day) moves it to the top. Ties
+/// fall back to name.
 enum RecentUse {
 
     struct Candidate<Value> {

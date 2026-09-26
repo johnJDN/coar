@@ -51,3 +51,23 @@ final class RecentUseTests: XCTestCase {
         XCTAssertEqual(try store.archivedFoodItems().map(\.name), ["Apple", "Rice"])
     }
 }
+
+@MainActor
+final class RecentUseLoggedAtTests: XCTestCase {
+
+    /// An Entry for late tonight, logged this morning, must not pin its food to the top once
+    /// another food is logged afterwards.
+    func test_orderFollowsWhenLogged_notTheTimeOfDayEaten() throws {
+        let store = Store.inMemory()
+        let serving = ServingDraft(name: "1", macros: Macros(calories: 100, protein: 0, fat: 0, carbs: 0))
+        let chicken = try store.createFoodItem(name: "Chicken breast", servings: [serving])
+        let rice = try store.createFoodItem(name: "Rice", servings: [serving])
+        let lateTonight = Date().addingTimeInterval(12 * 3600)
+        let earlier = Date().addingTimeInterval(-6 * 3600)
+
+        try store.logEntry(foodItem: chicken.id, serving: try XCTUnwrap(chicken.defaultServing).id, quantity: 1, at: lateTonight)
+        try store.logEntry(foodItem: rice.id, serving: try XCTUnwrap(rice.defaultServing).id, quantity: 1, at: earlier)
+
+        XCTAssertEqual(try store.foodItems().map(\.name), ["Rice", "Chicken breast"])
+    }
+}

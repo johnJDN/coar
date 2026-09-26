@@ -257,14 +257,11 @@ final class AddEntryViewController: UIViewController {
 
     private func pushEditor(_ foodItem: FoodItemRecord?) {
         let mode: FoodItemEditorViewController.Mode = foodItem.map { .edit($0) } ?? .create(name: filterText)
-        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: mode) { [weak self] saved in
-            guard let self, let navigation = navigationController else { return }
-            // A new Food Item goes straight on to being logged; an edit returns to the list.
-            if foodItem == nil {
-                navigation.setViewControllers([self, makeLog(saved.id)], animated: true)
-            } else {
-                navigation.popViewController(animated: true)
-            }
+        let editor = FoodItemEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in
+            // Creating a food is not logging it: both a new one and an edit return to the
+            // list, where a new one sits at the top (most recently used).
+            guard let self else { return }
+            navigationController?.popToViewController(self, animated: true)
         }
         navigationController?.pushViewController(editor, animated: true)
     }
@@ -300,14 +297,10 @@ final class AddEntryViewController: UIViewController {
 
     private func pushMealEditor(_ meal: MealRecord?) {
         let mode: MealEditorViewController.Mode = meal.map { .edit($0) } ?? .create(name: filterText)
-        let editor = MealEditorViewController(dependencies: dependencies, mode: mode) { [weak self] saved in
-            guard let self, let navigation = navigationController else { return }
-            // A new Meal goes straight on to being logged; an edit returns to the list.
-            if meal == nil {
-                navigation.setViewControllers([self, makeLogMeal(saved.id)], animated: true)
-            } else {
-                navigation.popViewController(animated: true)
-            }
+        let editor = MealEditorViewController(dependencies: dependencies, mode: mode) { [weak self] _ in
+            // Creating a meal is not logging it: both return to the list (see Food Items).
+            guard let self else { return }
+            navigationController?.popToViewController(self, animated: true)
         }
         navigationController?.pushViewController(editor, animated: true)
     }
