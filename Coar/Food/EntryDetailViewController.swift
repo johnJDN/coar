@@ -2,8 +2,9 @@ import SwiftUI
 import UIKit
 import os
 
-/// The Entry detail sheet, presented from the timeline. Hosts `EntryForm`; Save corrects the
-/// Entry through the façade (its Day never changes, ADR 0005); Delete removes only the Entry.
+/// The Entry detail sheet, presented from the timeline. Hosts `EntryForm`. Corrections save
+/// as they are made (`EditorSaving`; its Day never changes, ADR 0005) and Done closes; an
+/// incomplete quantity is left as it was saved. Delete removes only the Entry.
 final class EntryDetailViewController: UIHostingController<EntryForm> {
 
     private static let logger = Logger(category: "Food")
@@ -13,7 +14,8 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
     private let onChange: () -> Void
     private let original: EntryDraft
     private var draft: EntryDraft
-    private let saveItem = UIBarButtonItem(systemItem: .save)
+    private var saved: EntryDraft
+    private lazy var autosaver = Autosaver { [weak self] in self?.autosave() }
 
     /// Reads the Entry up front so the form is built once, with the real record (a hosted
     /// view keeps its state across `rootView` swaps). Nil when the Entry is gone.
@@ -31,6 +33,7 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         }
         original = EntryDraft(entry)
         draft = original
+        saved = original
         super.init(rootView: EntryForm(draft: original, servingName: entry.servingName, components: entry.components, onChange: { _ in }, onDelete: {}))
         rootView = EntryForm(
             draft: original,
@@ -41,12 +44,9 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         )
         title = entry.name
         navigationItem.subtitle = FoodText.when(entry.loggedAt)
-        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+        navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
         })
-        saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
-        saveItem.isEnabled = false
-        navigationItem.rightBarButtonItem = saveItem
     }
 
     @available(*, unavailable)
@@ -62,19 +62,25 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         view.backgroundColor = UIColor.background
     }
 
+    /// Done or a swipe down: whatever was typed is saved first.
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        autosaver.flush()
+    }
+
     private func draftChanged(_ draft: EntryDraft) {
         self.draft = draft
-        saveItem.isEnabled = draft.isSaveable && draft != original
+        if draft.isSaveable, draft != saved { autosaver.schedule() }
     }
 
     // MARK: - Writing
 
-    private func save() {
-        guard let quantity = draft.quantity, let macros = draft.macros else { return }
+    private func autosave() {
+        guard draft != saved, let quantity = draft.quantity, let macros = draft.macros else { return }
         do {
             try dependencies.store.updateEntry(entryID, loggedAt: draft.loggedAt, quantity: quantity, macros: macros)
+            saved = draft
             onChange()
-            dismiss(animated: true)
         } catch {
             Self.logger.error("Failed to update Entry: \(error, privacy: .public)")
         }
@@ -85,6 +91,7 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         alert.addAction(UIAlertAction(title: "Delete entry", style: .destructive) { [weak self] _ in
             guard let self else { return }
             do {
+                autosaver.cancelPending()
                 try dependencies.store.deleteEntry(entryID)
                 onChange()
                 dismiss(animated: true)

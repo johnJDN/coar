@@ -2,8 +2,8 @@ import UIKit
 
 /// A Plan row's Planned Sets, pushed from the Plan editor: one `SetRow`-style line per set
 /// (set number, weight in the display unit, rep range), swipe to delete, an Add set row that
-/// repeats the last set. Save hands the row back to the editor's draft (nothing is written
-/// until the Plan is saved). A rep range typed as one number is min = max (CONTEXT.md
+/// repeats the last set. No Save: every change that leaves all sets valid goes straight to
+/// the editor's draft (`EditorSaving`); leaving with an incomplete set asks first. A rep range typed as one number is min = max (CONTEXT.md
 /// "Planned Set"); the weight is stored in kilograms (ADR 0004).
 final class PlannedSetsViewController: UIViewController {
 
@@ -14,16 +14,16 @@ final class PlannedSetsViewController: UIViewController {
 
     private let unit: MassUnit
     private var row: PlanExerciseDraft
-    private let onSave: (PlanExerciseDraft) -> Void
+    private let onChange: (PlanExerciseDraft) -> Void
+    private var backGuard: BackGuard?
     private var fields: [PlannedSetFields]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Int, Item>!
-    private let saveItem = UIBarButtonItem(systemItem: .save)
 
-    init(exerciseName: String, row: PlanExerciseDraft, unit: MassUnit, onSave: @escaping (PlanExerciseDraft) -> Void) {
+    init(exerciseName: String, row: PlanExerciseDraft, unit: MassUnit, onChange: @escaping (PlanExerciseDraft) -> Void) {
         self.unit = unit
         self.row = row
-        self.onSave = onSave
+        self.onChange = onChange
         fields = row.sets.map { PlannedSetFields($0, in: unit) }
         super.init(nibName: nil, bundle: nil)
         title = exerciseName
@@ -36,10 +36,23 @@ final class PlannedSetsViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .never
-        saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
-        navigationItem.rightBarButtonItem = saveItem
+        backGuard = BackGuard(controller: self) { [weak self] in
+            self?.sets == nil
+                ? .ask(title: "Some sets aren't complete", message: "Each set needs reps, and a top of the range no lower than the bottom. Go back without these changes?", discard: "Discard Changes")
+                : .leave
+        }
         configureCollectionView()
         render()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        backGuard?.refresh()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        backGuard?.release()
     }
 
     // MARK: - Collection view
@@ -79,7 +92,7 @@ final class PlannedSetsViewController: UIViewController {
             cell.onChange = { [weak self] changed in
                 guard let self, let index = fields.firstIndex(where: { $0.id == changed.id }) else { return }
                 fields[index] = changed
-                updateSaveState()
+                setsChanged()
             }
         }
         let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, Item> { cell, _, _ in
@@ -121,7 +134,7 @@ final class PlannedSetsViewController: UIViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(fields.map { .set($0.id) } + [.add], toSection: 0)
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
-        updateSaveState()
+        setsChanged()
     }
 
     private var sets: [PlannedSetDraft]? {
@@ -129,8 +142,13 @@ final class PlannedSetsViewController: UIViewController {
         return sets.count == fields.count ? sets : nil
     }
 
-    private func updateSaveState() {
-        saveItem.isEnabled = sets != nil
+    /// Hands valid sets to the editor at once; an incomplete set waits (and leaving asks).
+    private func setsChanged() {
+        if let sets, sets != row.sets {
+            row.sets = sets
+            onChange(row)
+        }
+        backGuard?.refresh()
     }
 
     // MARK: - Actions
@@ -142,12 +160,6 @@ final class PlannedSetsViewController: UIViewController {
         render()
     }
 
-    private func save() {
-        guard let sets else { return }
-        row.sets = sets
-        onSave(row)
-        navigationController?.popViewController(animated: true)
-    }
 }
 
 extension PlannedSetsViewController: UICollectionViewDelegate {
@@ -239,6 +251,11 @@ final class PlannedSetCell: UICollectionViewListCell {
         minField.accessibilityLabel = "Reps from"
         maxField.keyboardType = .numberPad
         maxField.accessibilityLabel = "Reps to"
+        // "8–12" reads as one range: each number hugs the dash rather than centring in half
+        // the pill. An empty top of the range says what it is for.
+        minField.textAlignment = .right
+        maxField.textAlignment = .left
+        maxField.placeholder = "max"
 
         unitLabel.font = UIFont.label
         unitLabel.textColor = UIColor.textSecondary

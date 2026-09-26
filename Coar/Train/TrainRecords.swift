@@ -14,6 +14,8 @@ enum MuscleGroup: Int16, CaseIterable {
     case hamstrings = 8
     case glutes = 9
     case calves = 10
+    /// Anything the list does not name (neck, adductors, …).
+    case other = 11
 
     var title: String {
         switch self {
@@ -28,7 +30,38 @@ enum MuscleGroup: Int16, CaseIterable {
         case .hamstrings: return "Hamstrings"
         case .glutes: return "Glutes"
         case .calves: return "Calves"
+        case .other: return "Other"
         }
+    }
+
+    /// Secondary groups as stored: raw values joined by commas ("4,2"); unknown values drop.
+    static func decode(_ stored: String?) -> [MuscleGroup] {
+        (stored ?? "").split(separator: ",").compactMap { Int16($0).flatMap(MuscleGroup.init(rawValue:)) }
+    }
+
+    static func encode(_ groups: [MuscleGroup]) -> String? {
+        groups.isEmpty ? nil : groups.map { String($0.rawValue) }.joined(separator: ",")
+    }
+}
+
+/// The equipment an Exercise's menu offers (CONTEXT.md "Exercise"). Stored as its title, so
+/// equipment typed before the menu existed, or under Other, reads back unchanged.
+enum Equipment: String, CaseIterable {
+    case barbell = "Barbell"
+    case dumbbell = "Dumbbell"
+    case cable = "Cable"
+    case machine = "Machine"
+    case smithMachine = "Smith machine"
+    case ezBar = "EZ bar"
+    case kettlebell = "Kettlebell"
+    case band = "Band"
+    case bodyweight = "Bodyweight"
+
+    /// The menu entry for stored text: nil for none, `.some(nil)` for Other (anything the
+    /// list does not name, matched without regard to case).
+    static func choice(for stored: String?) -> Equipment?? {
+        guard let stored, !stored.isEmpty else { return nil }
+        return .some(allCases.first { $0.rawValue.caseInsensitiveCompare(stored) == .orderedSame })
     }
 }
 
@@ -77,6 +110,8 @@ struct ExerciseRecord: Hashable, Identifiable {
     let id: UUID
     let name: String
     let muscleGroup: MuscleGroup
+    /// Other groups it works, in the order chosen; never includes `muscleGroup`.
+    var secondaryMuscleGroups: [MuscleGroup] = []
     /// Nil when none was given.
     let equipment: String?
     /// Nil when the Exercise has no default of its own.

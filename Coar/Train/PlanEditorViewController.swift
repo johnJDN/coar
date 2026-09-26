@@ -4,8 +4,9 @@ import os
 /// The Plan editor, pushed from the Train root: the name, then the rows as reorderable
 /// lines (drag the handle; swipe to delete; tap for the Planned Sets; the link button joins
 /// a row with the one below into a Superset) and an Add exercise row over the catalogue
-/// picker. Save creates or updates the Plan through the façade; Workouts started before keep
-/// their own copy of everything (ADR 0003). An existing Plan archives from the `…` menu.
+/// list. A new Plan has Save; an existing one saves as it changes (`EditorSaving`), so back
+/// is done. Workouts started before keep their own copy of everything (ADR 0003). An
+/// existing Plan archives from the `…` menu.
 final class PlanEditorViewController: UIViewController {
 
     enum Mode {
@@ -35,6 +36,10 @@ final class PlanEditorViewController: UIViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
     private var hasAppeared = false
+    /// What the store holds, for an existing Plan: autosave writes only when the draft moves.
+    private var saved: PlanDraft
+    private lazy var autosaver = Autosaver { [weak self] in self?.autosave() }
+    private var backGuard: BackGuard?
 
     init(dependencies: AppDependencies, mode: Mode) {
         self.dependencies = dependencies
@@ -45,6 +50,7 @@ final class PlanEditorViewController: UIViewController {
         case .edit(let plan):
             draft = PlanDraft(name: plan.name, exercises: plan.exercises.map(PlanExerciseDraft.init))
         }
+        saved = draft
         super.init(nibName: nil, bundle: nil)
         switch mode {
         case .create: title = "New Plan"
@@ -59,23 +65,32 @@ final class PlanEditorViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .never
-        saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
-        var items = [saveItem]
-        if case .edit = mode {
+        switch mode {
+        case .create:
+            saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
+            navigationItem.rightBarButtonItems = [saveItem]
+        case .edit:
             let archive = UIAction(title: "Archive", image: UIImage(systemName: "archivebox")) { [weak self] _ in self?.archive() }
             let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [archive]))
             more.accessibilityLabel = "More"
-            items.append(more)
+            navigationItem.rightBarButtonItems = [more]
         }
-        navigationItem.rightBarButtonItems = items
+        backGuard = BackGuard(controller: self) { [weak self] in self?.backVerdict() ?? .leave }
         configureCollectionView()
         render()
     }
 
     /// A new Plan starts in the name field, once; popping back from a child leaves the
     /// keyboard down.
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        autosaver.flush()
+        backGuard?.release()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        backGuard?.refresh()
         defer { hasAppeared = true }
         if !hasAppeared, case .create = mode, let cell = nameCell() {
             cell.field.becomeFirstResponder()
@@ -122,7 +137,7 @@ final class PlanEditorViewController: UIViewController {
             cell.field.accessibilityLabel = "Name"
             cell.onChange = { [weak self] text in
                 self?.draft.name = text
-                self?.updateSaveState()
+                self?.draftChanged()
             }
         }
         let exerciseCell = UICollectionView.CellRegistration<PlanExerciseCell, PlanExerciseDraft.ID> { [weak self] cell, _, id in
@@ -193,7 +208,7 @@ final class PlanEditorViewController: UIViewController {
         snapshot.appendItems([.name], toSection: .name)
         snapshot.appendItems(draft.exercises.map { .exercise($0.id) } + [.addExercise], toSection: .exercises)
         dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
-        updateSaveState()
+        draftChanged()
     }
 
     private func loadExercises() {
@@ -206,8 +221,38 @@ final class PlanEditorViewController: UIViewController {
         }
     }
 
-    private func updateSaveState() {
-        saveItem.isEnabled = draft.isComplete
+    /// After every change: a new Plan's Save follows completeness; an existing one saves.
+    private func draftChanged() {
+        switch mode {
+        case .create: saveItem.isEnabled = draft.isComplete
+        case .edit: if draft.isComplete, draft != saved { autosaver.schedule() }
+        }
+        backGuard?.refresh()
+    }
+
+    private func autosave() {
+        guard case .edit(let plan) = mode, draft.isComplete, draft != saved else { return }
+        do {
+            try dependencies.store.updatePlan(plan.id, name: draft.trimmedName, exercises: draft.exercises)
+            saved = draft
+        } catch {
+            Self.logger.error("Failed to save Plan: \(error, privacy: .public)")
+        }
+    }
+
+    /// A new Plan with anything typed asks before it is discarded; an existing one that
+    /// cannot be saved (no name, no exercise) asks before going back to what was saved.
+    private func backVerdict() -> BackGuard.Verdict {
+        switch mode {
+        case .create:
+            return draft == PlanDraft() ? .leave : .ask(title: "Discard this plan?", message: nil, discard: "Discard")
+        case .edit:
+            return draft.isComplete ? .leave : .ask(
+                title: "A plan needs a name and an exercise",
+                message: "Go back without these changes? The plan stays as it was last saved.",
+                discard: "Discard Changes"
+            )
+        }
     }
 
     // MARK: - Actions
@@ -217,8 +262,8 @@ final class PlanEditorViewController: UIViewController {
             exerciseName: exercises[row.exerciseID]?.name ?? "Sets",
             row: row,
             unit: dependencies.preferences.massUnit
-        ) { [weak self] saved in
-            self?.draft.upsert(saved)
+        ) { [weak self] changed in
+            self?.draft.upsert(changed)
             self?.render()
         }
         navigationController?.pushViewController(sets, animated: true)
@@ -235,15 +280,12 @@ final class PlanEditorViewController: UIViewController {
         navigationController?.pushViewController(picker, animated: true)
     }
 
+    /// A new Plan's Save.
     private func save() {
-        guard draft.isComplete else { return }
+        guard case .create = mode, draft.isComplete else { return }
         do {
-            switch mode {
-            case .create:
-                try dependencies.store.createPlan(name: draft.trimmedName, exercises: draft.exercises)
-            case .edit(let plan):
-                try dependencies.store.updatePlan(plan.id, name: draft.trimmedName, exercises: draft.exercises)
-            }
+            try dependencies.store.createPlan(name: draft.trimmedName, exercises: draft.exercises)
+            draft = PlanDraft()
             navigationController?.popViewController(animated: true)
         } catch {
             Self.logger.error("Failed to save Plan: \(error, privacy: .public)")

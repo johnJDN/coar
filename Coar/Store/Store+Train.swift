@@ -7,22 +7,23 @@ extension Store {
 
     /// Creates an Exercise. Blank equipment is stored as none.
     @discardableResult
-    func createExercise(name: String, muscleGroup: MuscleGroup, equipment: String? = nil, restSeconds: Int? = nil) throws -> ExerciseRecord {
+    func createExercise(name: String, muscleGroup: MuscleGroup, secondaryMuscleGroups: [MuscleGroup] = [], equipment: String? = nil, restSeconds: Int? = nil) throws -> ExerciseRecord {
         let exercise = Exercise(context: context)
         exercise.id = UUID()
         exercise.isArchived = false
-        try write(name: name, muscleGroup: muscleGroup, equipment: equipment, restSeconds: restSeconds, to: exercise)
+        try write(name: name, muscleGroup: muscleGroup, secondaryMuscleGroups: secondaryMuscleGroups, equipment: equipment, restSeconds: restSeconds, to: exercise)
         return ExerciseRecord(exercise)!
     }
 
     /// Replaces the Exercise's details. Plans read the catalogue live, so they show the
     /// change at once; Workouts keep their own copy (ADR 0003).
-    func updateExercise(_ id: ExerciseRecord.ID, name: String, muscleGroup: MuscleGroup, equipment: String?, restSeconds: Int?) throws {
+    func updateExercise(_ id: ExerciseRecord.ID, name: String, muscleGroup: MuscleGroup, secondaryMuscleGroups: [MuscleGroup] = [], equipment: String?, restSeconds: Int?) throws {
         guard let exercise = try fetchExercise(id) else { return }
-        try write(name: name, muscleGroup: muscleGroup, equipment: equipment, restSeconds: restSeconds, to: exercise)
+        try write(name: name, muscleGroup: muscleGroup, secondaryMuscleGroups: secondaryMuscleGroups, equipment: equipment, restSeconds: restSeconds, to: exercise)
     }
 
-    /// Active Exercises by name: what the catalogue and the Plan editor's picker list.
+    /// Active Exercises, most recently used first (`RecentUse`: created, edited, added to a
+    /// Plan, or logged): what the catalogue and the Plan editor's list offer.
     func exercises() throws -> [ExerciseRecord] {
         try fetchExercises(archived: false)
     }
@@ -68,7 +69,8 @@ extension Store {
         try write(name: name, exercises: exercises, to: plan)
     }
 
-    /// Active Plans by name: the Train root's Plans section.
+    /// Active Plans, most recently used first (`RecentUse`: created, edited, or started, since
+    /// starting a Workout stamps its Plan): the Train root's Plans section.
     func plans() throws -> [PlanRecord] {
         try fetchPlans(archived: false)
     }
@@ -95,9 +97,11 @@ extension Store {
 
     // MARK: - Writes
 
-    private func write(name: String, muscleGroup: MuscleGroup, equipment: String?, restSeconds: Int?, to exercise: Exercise) throws {
+    private func write(name: String, muscleGroup: MuscleGroup, secondaryMuscleGroups: [MuscleGroup], equipment: String?, restSeconds: Int?, to exercise: Exercise) throws {
         exercise.name = name
         exercise.muscleGroup = muscleGroup.rawValue
+        var seen: Set<MuscleGroup> = [muscleGroup]
+        exercise.secondaryMuscleGroups = MuscleGroup.encode(secondaryMuscleGroups.filter { seen.insert($0).inserted })
         let trimmedEquipment = equipment?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         exercise.equipment = trimmedEquipment.isEmpty ? nil : trimmedEquipment
         exercise.restSeconds = restSeconds.map { NSNumber(value: $0) }
@@ -133,8 +137,9 @@ extension Store {
     private func fetchExercises(archived: Bool) throws -> [ExerciseRecord] {
         let request = Exercise.fetchRequest()
         request.predicate = NSPredicate(format: "isArchived == %@", NSNumber(value: archived))
-        return try context.fetch(request).compactMap(ExerciseRecord.init)
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        let records = try context.fetch(request).compactMap(ExerciseRecord.init)
+        guard !archived else { return records.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending } }
+        return RecentUse.ordered(records.map { .init(value: $0, name: $0.name, modifiedAt: $0.modifiedAt, lastLoggedAt: nil) })
     }
 
     func fetchExercise(_ id: ExerciseRecord.ID) throws -> Exercise? {
@@ -148,8 +153,9 @@ extension Store {
     private func fetchPlans(archived: Bool) throws -> [PlanRecord] {
         let request = Plan.fetchRequest()
         request.predicate = NSPredicate(format: "isArchived == %@", NSNumber(value: archived))
-        return try context.fetch(request).compactMap(PlanRecord.init)
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        let records = try context.fetch(request).compactMap(PlanRecord.init)
+        guard !archived else { return records.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending } }
+        return RecentUse.ordered(records.map { .init(value: $0, name: $0.name, modifiedAt: $0.modifiedAt, lastLoggedAt: nil) })
     }
 
     func fetchPlan(_ id: PlanRecord.ID) throws -> Plan? {
@@ -170,6 +176,7 @@ extension ExerciseRecord {
             id: id,
             name: object.name ?? "",
             muscleGroup: muscleGroup,
+            secondaryMuscleGroups: MuscleGroup.decode(object.secondaryMuscleGroups),
             equipment: object.equipment,
             restSeconds: object.restSeconds?.intValue,
             isArchived: object.isArchived,

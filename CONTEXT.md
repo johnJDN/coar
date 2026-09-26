@@ -76,12 +76,12 @@ _Avoid_: Strength, gym, fitness, workouts (as a section name)
 
 **Exercise**:
 A named movement in the user's catalogue, such as incline dumbbell press, with a primary
-Muscle Group and optionally the equipment it uses.
+Muscle Group, any secondary ones it also works, and optionally the equipment it uses.
 _Avoid_: Lift, movement
 
 **Muscle Group**:
-One of a fixed list of body regions an Exercise primarily trains, used to aggregate
-volume. Never free text.
+One of a fixed list of body regions (including Other) an Exercise trains: one primary,
+any number secondary. Used to aggregate volume. Never free text.
 _Avoid_: Body part, muscle, target area
 
 **Plan**:

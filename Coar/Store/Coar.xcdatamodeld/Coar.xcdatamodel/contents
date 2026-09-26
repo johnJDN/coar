@@ -119,6 +119,7 @@
         <attribute name="muscleGroup" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="restSeconds" optional="YES" attributeType="Integer 32" usesScalarValueType="NO"/>
+        <attribute name="secondaryMuscleGroups" optional="YES" attributeType="String"/>
         <relationship name="planExercises" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="PlanExercise" inverseName="exercise" inverseEntity="PlanExercise"/>
         <relationship name="workoutExercises" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="WorkoutExercise" inverseName="exercise" inverseEntity="WorkoutExercise"/>
     </entity>

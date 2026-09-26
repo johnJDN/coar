@@ -29,9 +29,13 @@ enum TrainText {
         return first.targetKilograms > 0 ? "\(scheme) · \(weight(first.targetKilograms, in: unit))" : scheme
     }
 
-    /// "Chest · Barbell · Rest 150 s": what the catalogue says under an Exercise's name.
+    /// "Chest + Triceps, Shoulders · Barbell · Rest 150 s": what the catalogue says under an
+    /// Exercise's name.
     static func details(of exercise: ExerciseRecord) -> String {
-        [exercise.muscleGroup.title, exercise.equipment, exercise.restSeconds.map(rest)].compactMap { $0 }.joined(separator: " · ")
+        let muscles = exercise.secondaryMuscleGroups.isEmpty
+            ? exercise.muscleGroup.title
+            : "\(exercise.muscleGroup.title) + \(exercise.secondaryMuscleGroups.map(\.title).joined(separator: ", "))"
+        return [muscles, exercise.equipment, exercise.restSeconds.map(rest)].compactMap { $0 }.joined(separator: " · ")
     }
 
     /// "Rest 150 s".

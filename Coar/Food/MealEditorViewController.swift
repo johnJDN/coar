@@ -4,8 +4,9 @@ import os
 
 /// The Meal editor, pushed inside the "+" sheet: the name, then the lines as reorderable
 /// rows (drag the handle; swipe to delete; tap to change the Serving or quantity) and an
-/// Add food row that picks a Food Item from the catalogue. Save creates or updates the Meal
-/// through the façade; Entries logged before keep their own copy of everything (ADR 0003).
+/// Add food row that picks a Food Item from the catalogue. A new Meal has Save; an existing
+/// one saves as it changes (`EditorSaving`) and has Done, which hands it to `onSaved` so the
+/// caller decides where to land. Entries logged before keep their own copy (ADR 0003).
 final class MealEditorViewController: UIViewController {
 
     enum Mode {
@@ -38,6 +39,10 @@ final class MealEditorViewController: UIViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     private let saveItem = UIBarButtonItem(systemItem: .save)
     private var hasAppeared = false
+    /// What the store holds, for an existing Meal.
+    private var saved: MealDraft
+    private lazy var autosaver = Autosaver { [weak self] in self?.autosave() }
+    private var backGuard: BackGuard?
 
     init(dependencies: AppDependencies, mode: Mode, onSaved: @escaping (MealRecord) -> Void) {
         self.dependencies = dependencies
@@ -49,6 +54,7 @@ final class MealEditorViewController: UIViewController {
         case .edit(let meal):
             draft = MealDraft(name: meal.name, components: meal.components.map(MealComponentDraft.init))
         }
+        saved = draft
         super.init(nibName: nil, bundle: nil)
         switch mode {
         case .create: title = "New Meal"
@@ -62,16 +68,29 @@ final class MealEditorViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.background
-        saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
-        navigationItem.rightBarButtonItem = saveItem
+        switch mode {
+        case .create:
+            saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
+            navigationItem.rightBarButtonItem = saveItem
+        case .edit:
+            navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in self?.done() })
+        }
+        backGuard = BackGuard(controller: self) { [weak self] in self?.backVerdict() ?? .leave }
         configureCollectionView()
         render()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        autosaver.flush()
+        backGuard?.release()
     }
 
     /// A new Meal starts in the name field, once; popping back from the picker leaves the
     /// keyboard down.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        backGuard?.refresh()
         defer { hasAppeared = true }
         if !hasAppeared, case .create = mode, let cell = nameCell() {
             cell.field.becomeFirstResponder()
@@ -118,7 +137,7 @@ final class MealEditorViewController: UIViewController {
             cell.field.accessibilityLabel = "Name"
             cell.onChange = { [weak self] text in
                 self?.draft.name = text
-                self?.updateSaveState()
+                self?.draftChanged()
             }
         }
         let componentCell = UICollectionView.CellRegistration<UICollectionViewListCell, MealComponentDraft.ID> { [weak self] cell, _, id in
@@ -202,7 +221,7 @@ final class MealEditorViewController: UIViewController {
         snapshot.appendItems(draft.components.map { .component($0.id) } + [.addFood], toSection: .components)
         snapshot.reloadSections([.total, .components])
         dataSource.apply(snapshot, animatingDifferences: viewIfLoaded?.window != nil)
-        updateSaveState()
+        draftChanged()
     }
 
     private func loadFoodItems() {
@@ -215,42 +234,91 @@ final class MealEditorViewController: UIViewController {
         }
     }
 
-    private func updateSaveState() {
-        saveItem.isEnabled = draft.isComplete && draft.components.allSatisfy { foodItems[$0.foodItemID] != nil }
+    /// Saveable: a name, a line, and every line's Food Item still there.
+    private var canSave: Bool {
+        draft.isComplete && draft.components.allSatisfy { foodItems[$0.foodItemID] != nil }
+    }
+
+    /// After every change: a new Meal's Save follows `canSave`; an existing one saves.
+    private func draftChanged() {
+        switch mode {
+        case .create: saveItem.isEnabled = canSave
+        case .edit: if canSave, draft != saved { autosaver.schedule() }
+        }
+        backGuard?.refresh()
+    }
+
+    private func autosave() {
+        guard case .edit(let meal) = mode, canSave, draft != saved else { return }
+        do {
+            try dependencies.store.updateMeal(meal.id, name: draft.trimmedName, components: draft.components)
+            saved = draft
+        } catch {
+            Self.logger.error("Failed to save Meal: \(error, privacy: .public)")
+        }
+    }
+
+    /// An existing Meal's Done: saved already, so it hands over the stored one.
+    private func done() {
+        guard case .edit(let meal) = mode else { return }
+        guard canSave else {
+            if case .ask(let title, let message, _) = backVerdict() {
+                let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+                present(alert, animated: true)
+            }
+            return
+        }
+        autosaver.flush()
+        if let stored = try? dependencies.store.meal(meal.id) { onSaved(stored) }
+    }
+
+    private func backVerdict() -> BackGuard.Verdict {
+        switch mode {
+        case .create(let name):
+            return draft == MealDraft(name: name) ? .leave : .ask(title: "Discard this meal?", message: nil, discard: "Discard")
+        case .edit:
+            return canSave ? .leave : .ask(
+                title: "A meal needs a name and a food with a serving",
+                message: "Go back without these changes? The meal stays as it was last saved.",
+                discard: "Discard Changes"
+            )
+        }
     }
 
     // MARK: - Actions
 
     private func pushComponentForm(foodItem: FoodItemRecord, component: MealComponentDraft?) {
-        let form = MealComponentFormViewController(foodItem: foodItem, component: component) { [weak self] saved in
-            guard let self else { return }
-            draft.upsert(saved)
-            render()
-            navigationController?.popToViewController(self, animated: true)
-        }
-        navigationController?.pushViewController(form, animated: true)
+        navigationController?.pushViewController(makeComponentForm(foodItem: foodItem, component: component), animated: true)
     }
 
+    private func makeComponentForm(foodItem: FoodItemRecord, component: MealComponentDraft?) -> UIViewController {
+        MealComponentFormViewController(foodItem: foodItem, component: component) { [weak self] changed in
+            guard let self else { return }
+            foodItems[foodItem.id] = foodItem
+            draft.upsert(changed)
+            render()
+        }
+    }
+
+    /// Picking a Food Item opens its new line in the picker's place, so back from the line
+    /// returns here with it added.
     private func pushPicker() {
         let picker = FoodItemPickerViewController(dependencies: dependencies) { [weak self] foodItem in
-            self?.pushComponentForm(foodItem: foodItem, component: nil)
+            guard let self, let navigation = navigationController else { return }
+            let form = makeComponentForm(foodItem: foodItem, component: nil)
+            navigation.setViewControllers(Array(navigation.viewControllers.dropLast()) + [form], animated: true)
         }
         navigationController?.pushViewController(picker, animated: true)
     }
 
+    /// A new Meal's Save.
     private func save() {
-        guard draft.isComplete else { return }
+        guard case .create(let name) = mode, canSave else { return }
         do {
-            let saved: MealRecord
-            switch mode {
-            case .create:
-                saved = try dependencies.store.createMeal(name: draft.trimmedName, components: draft.components)
-            case .edit(let meal):
-                try dependencies.store.updateMeal(meal.id, name: draft.trimmedName, components: draft.components)
-                guard let read = try dependencies.store.meal(meal.id) else { return }
-                saved = read
-            }
-            onSaved(saved)
+            let created = try dependencies.store.createMeal(name: draft.trimmedName, components: draft.components)
+            draft = MealDraft(name: name)
+            onSaved(created)
         } catch {
             Self.logger.error("Failed to save Meal: \(error, privacy: .public)")
         }

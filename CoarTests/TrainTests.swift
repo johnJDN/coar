@@ -1,7 +1,8 @@
 import XCTest
 @testable import Coar
 
-/// Seam 1: the store façade. An Exercise is a catalogue entry with a fixed Muscle Group; a
+/// Seam 1: the store façade. An Exercise is a catalogue entry with a primary Muscle Group and
+/// any secondary ones; a
 /// Plan is an ordered list of Exercises, each with ordered Planned Sets, adjacent rows
 /// groupable as a Superset (CONTEXT.md "Exercise", "Plan", "Planned Set", "Superset").
 /// Weights are stored in kilograms whatever unit they were typed in (ADR 0004); archiving
@@ -43,7 +44,7 @@ final class TrainTests: XCTestCase {
 
     // MARK: Exercises
 
-    func test_newExercise_readsBack_andTheCatalogueListsByName() throws {
+    func test_newExercise_readsBack_andTheCatalogueListsMostRecentlyUsedFirst() throws {
         let store = Store.inMemory()
 
         let catalogue = try stock(store)
@@ -55,7 +56,24 @@ final class TrainTests: XCTestCase {
         XCTAssertEqual(read.restSeconds, 150)
         XCTAssertFalse(read.isArchived)
         XCTAssertNil(try store.exercise(catalogue.row.id)?.restSeconds)
-        XCTAssertEqual(try store.exercises().map(\.name), ["Back squat", "Bench press", "Cable row"])
+        XCTAssertEqual(try store.exercises().map(\.name), ["Back squat", "Cable row", "Bench press"])
+    }
+
+    func test_secondaryMuscleGroups_readBackInOrder_withoutThePrimary() throws {
+        let store = Store.inMemory()
+        let dips = try store.createExercise(name: "Dips", muscleGroup: .chest, secondaryMuscleGroups: [.triceps, .chest, .shoulders, .triceps])
+
+        XCTAssertEqual(try store.exercise(dips.id)?.secondaryMuscleGroups, [.triceps, .shoulders])
+
+        try store.updateExercise(dips.id, name: "Dips", muscleGroup: .triceps, secondaryMuscleGroups: [.triceps, .other], equipment: nil, restSeconds: nil)
+        XCTAssertEqual(try store.exercise(dips.id)?.secondaryMuscleGroups, [.other])
+    }
+
+    func test_equipmentChoice_readsKnownTitles_andAnythingElseAsOther() {
+        XCTAssertNil(Equipment.choice(for: nil) as Equipment??)
+        XCTAssertNil(Equipment.choice(for: "") as Equipment??)
+        XCTAssertEqual(Equipment.choice(for: "barbell"), .some(.barbell))
+        XCTAssertEqual(Equipment.choice(for: "Landmine"), .some(nil))
     }
 
     func test_blankEquipment_readsBackAsNone() throws {

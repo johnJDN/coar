@@ -169,6 +169,17 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | `WarningCard` | Something blocks what the screen is for: a coral-tinted card with a warning symbol, title, what to do, and the fixing action as a coral glass button. Never a footer sentence. Lists flag the same item with a coral warning symbol and caption. |
 | `ActionGrid` | 3×3 grid of circular `fill` buttons with labels, in a sheet, opened by the "+" button. |
 
+## 7a. Saving
+
+- **Creating** something (a plan, food, meal, exercise, habit) has an explicit Save, in a
+  sheet with Cancel or a pushed page with back. Leaving with changes asks "Discard?".
+- **Editing** something that exists saves as it changes. No Save button; back (or Done in a
+  sheet) means finished. A state that can't be saved (a plan with no name) is never
+  written, and leaving it asks whether to keep editing.
+- **A page inside an editor** (planned sets, a serving, a meal line) writes into the page
+  above as it changes and has no Save of its own.
+- A dated change (a habit's target from today) is creating a record, so it keeps Save.
+
 ## 8. Data-viz vocabulary
 
 | Need | Use |
