@@ -89,6 +89,14 @@ final class RootTabBarController: UITabBarController {
         super.viewDidAppear(animated)
         guard !hasCheckedStaleWorkout else { return }
         hasCheckedStaleWorkout = true
+        #if DEBUG
+        // `-StartTab food` opens a debug build on that tab, for simulator screenshots. On
+        // first appearance: earlier, the tab bar's initial selection wins.
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "-StartTab"), arguments.indices.contains(index + 1), let tab = Tab(rawValue: arguments[index + 1]) {
+            select(tab)
+        }
+        #endif
         checkStaleWorkout()
     }
 

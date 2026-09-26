@@ -54,20 +54,15 @@ final class FoodViewController: UIViewController {
         navigationItem.rightBarButtonItem = add
 
         strip.onSelect = { [weak self] day in self?.select(day) }
-        strip.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(strip)
-        summary.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(summary)
 
+        // The strip and summary are the timeline's pinned header, not views above it: the
+        // timeline runs under the navigation bar as UIKit expects of the scroll view a large
+        // title tracks, so the title collapses, and stretches on a pull, with everything
+        // below it moving together. As separate views pinned to the safe area they stayed
+        // put while a pulled title slid over them.
         configureTimeline()
         NSLayoutConstraint.activate([
-            strip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            strip.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            strip.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            summary.topAnchor.constraint(equalTo: strip.bottomAnchor),
-            summary.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            summary.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            timeline.topAnchor.constraint(equalTo: summary.bottomAnchor),
+            timeline.topAnchor.constraint(equalTo: view.topAnchor),
             timeline.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             timeline.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             timeline.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -125,8 +120,14 @@ final class FoodViewController: UIViewController {
         dataSource = UICollectionViewDiffableDataSource(collectionView: timeline) { collectionView, indexPath, id in
             collectionView.dequeueConfiguredReusableCell(using: entryCell, for: indexPath, item: id)
         }
-        dataSource.supplementaryViewProvider = { collectionView, _, indexPath in
-            collectionView.dequeueConfiguredReusableSupplementary(using: hourHeader, for: indexPath)
+        let dayHeader = UICollectionView.SupplementaryRegistration<FoodDayHeaderView>(elementKind: FoodDayHeaderView.elementKind) { [weak self] view, _, _ in
+            guard let self else { return }
+            view.hold(strip: strip, summary: summary)
+        }
+        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+            kind == FoodDayHeaderView.elementKind
+                ? collectionView.dequeueConfiguredReusableSupplementary(using: dayHeader, for: indexPath)
+                : collectionView.dequeueConfiguredReusableSupplementary(using: hourHeader, for: indexPath)
         }
     }
 
@@ -146,6 +147,14 @@ final class FoodViewController: UIViewController {
         }
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
         configuration.contentInsetsReference = .none
+        let dayHeader = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(160)),
+            elementKind: FoodDayHeaderView.elementKind,
+            alignment: .top
+        )
+        dayHeader.pinToVisibleBounds = true
+        dayHeader.zIndex = 2
+        configuration.boundarySupplementaryItems = [dayHeader]
         layout.configuration = configuration
         return layout
     }

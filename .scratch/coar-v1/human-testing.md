@@ -95,6 +95,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - **Changed, G:** creating a food is not logging it. Saving a new food (or meal) now returns to the list, with the new one on top; tapping it logs. (The first Save on the serving page returning to New Food is unchanged.)
 - **Fixed, order:** Chicken breast stuck on top because recency used the Entry's eaten-at time: an 11:50 PM Entry (test 10) outranked everything logged earlier in the day. Recency now uses when the Entry was written.
 - **Fixed, tab bar:** it minimised on every tab but Food. The timeline was registered as the content scroll view for the top edge only, so for the bottom edge UIKit tracked the week strip, which only scrolls sideways.
+- **Fixed, title overlap:** pulling the Food timeline down stretched the large title over the week strip and summary, which were separate views pinned to the safe area. They are now the timeline's pinned header, so the title and everything below it move together; scrolled, the title collapses inline and the header pins beneath it.
 
 ## 07: Food: Meals, summary row, no-target state
 
@@ -288,6 +289,8 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Tapping a day on the Food week strip no longer scrolls the strip; only Home's macros card scrolls it to today.
 - [?] A check-in from Home reloads all of Home (including the two Apple Health reads) rather than only the habits card.
 
+**Found before testing 14 (2026-09-26, simulator):**
+- [!] Macros card: the "of 180 g" / "of 210 g" captions overlap the Protein and Carbs dot rows (Calories and Fat look right). Fix when 14 is tested.
 
 ## 15: Sync dedupe pass
 
