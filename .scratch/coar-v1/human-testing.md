@@ -326,6 +326,8 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 **Found before testing 14 (2026-09-26, simulator):**
 - [x] Fixed: Macros card: the "of 180 g" / "of 210 g" captions overlapped the Protein and Carbs dot rows. The hosted `DotMatrix` kept its first measured height when it grew to two rows; the card now pins its height from the row count (`DotMatrix.height(of:)`). Checked in the simulator.
 
+**Results (2026-09-26): passed;** judgement calls agreed.
+
 ## 15: Sync dedupe pass
 
 - [ ] Two devices, both signed into the same iCloud, both in Airplane Mode: check the same Habit in on both; on the second device set a quantitative Habit's amount to 3, then on the first set it to 1 later. Turn networking back on: within a few seconds both devices show one Check-in with 1 (the later edit, not the larger), the heatmap has no doubled day, and the streak counts the day once.
