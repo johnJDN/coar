@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Grid `UICollectionView` of thumbnails with `radiusInner`, newest first, Day caption
 - [x] Add: camera capture or library pick; stored as an external-binary attribute with the local Day

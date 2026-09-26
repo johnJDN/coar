@@ -269,6 +269,8 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] The pick ring is a 3 pt lavender border rather than a bloom.
 - [?] Settings → kg while on Compare: captions update in place without reloading the images.
 
+**Results (2026-09-26): passed;** judgement calls agreed.
+
 ## 13: Sleep and Steps from HealthKit
 
 - [ ] Fresh install (or Settings → Health → Apps → Coar → Delete data and reset): Home shows Sleep | Steps squares with `No data` and "Tap to connect Apple Health"; tapping `No data` shows the system Health prompt; Turn On All: the squares fill with last night's time asleep ("7h 32m") and today's steps ("8,432") without leaving Home.
