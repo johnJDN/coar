@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] Tapping an Exercise (catalogue, or an `ExerciseCard` header) pushes the detail page
 - [x] Swift Charts line hosted per ADR 0001: one point per Workout containing the Exercise, 2 pt accent stroke, bloom on last point, axis labels `textTertiary`, no gridlines, no legend

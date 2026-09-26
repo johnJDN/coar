@@ -243,6 +243,8 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] DESIGN §3 now lists Progression on lime's row and drops blue's "progression dot" note.
 - [?] Recent sets lists completed sets only, so the Active Workout's unticked sets appear once ticked.
 
+**Results (2026-09-26): passed;** judgement calls agreed.
+
 ## 12: Progress Photos
 
 - [ ] Train root: the Progress Photos chip is live (lavender camera tile), subtitle `—` with none, then "1 photo" / "3 photos"; tapping opens the grid; with none the grid shows the `—` card "Tap + to take a progress photo or pick one from your library."
