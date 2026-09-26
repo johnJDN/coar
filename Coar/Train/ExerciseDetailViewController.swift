@@ -125,8 +125,17 @@ final class ExerciseDetailViewController: ScreenViewController {
 
     // MARK: - Edit
 
+    /// Archiving from the sheet leaves this page too, back to the catalogue where the
+    /// Exercise now sits under Archived, as the Plan editor's Archive does.
     private func presentEdit() {
         guard let exercise else { return }
-        present(ExerciseFormViewController.sheet(dependencies: dependencies, mode: .edit(exercise)) { [weak self] _ in self?.render() }, animated: true)
+        present(ExerciseFormViewController.sheet(dependencies: dependencies, mode: .edit(exercise)) { [weak self] stored in
+            guard let self else { return }
+            if stored.isArchived {
+                navigationController?.popViewController(animated: true)
+            } else {
+                render()
+            }
+        }, animated: true)
     }
 }

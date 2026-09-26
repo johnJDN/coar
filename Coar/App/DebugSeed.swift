@@ -41,7 +41,10 @@ enum DebugSeed {
                 try store.logBodyWeight(kilograms: kilograms, on: today.advanced(by: offset))
             }
 
-            let push = try store.createPlan(name: "Push", exercises: [])
+            let bench = try store.createExercise(name: "Bench press", muscleGroup: .chest, secondaryMuscleGroups: [.triceps, .shoulders], equipment: "Barbell", restSeconds: 150)
+            let push = try store.createPlan(name: "Push", exercises: [
+                PlanExerciseDraft(exerciseID: bench.id, supersetGroup: nil, sets: PlanDraft.defaultSets.map { PlannedSetDraft(targetKilograms: 60, reps: $0) }),
+            ])
             let started = at(today.advanced(by: -1), 18, 0)
             let workout = try store.startWorkout(from: push.id, at: started)
             try store.finishWorkout(workout.id, at: started.addingTimeInterval(50 * 60))
