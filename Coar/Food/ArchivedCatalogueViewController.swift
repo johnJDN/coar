@@ -2,8 +2,9 @@ import UIKit
 import os
 
 /// The archived Food Items or Meals (CONTEXT.md "Archived"), pushed from the "+" sheet's
-/// "Archived foods" / "Archived meals" row. By name; tapping one offers Restore, which
-/// returns it to the sheet's list. Entries logged from them never changed (ADR 0003).
+/// "Archived foods" / "Archived meals" row. By name; tapping one restores it to the sheet's
+/// list (so does its Restore capsule), and its trash button deletes it permanently after a
+/// confirmation. Entries logged from them never change (ADR 0003).
 final class ArchivedCatalogueViewController: UIViewController {
 
     enum Kind {
@@ -48,12 +49,18 @@ final class ArchivedCatalogueViewController: UIViewController {
         collectionView.delegate = self
         view.addSubview(collectionView)
 
-        let cell = UICollectionView.CellRegistration<UICollectionViewListCell, Row> { cell, _, row in
+        let cell = UICollectionView.CellRegistration<UICollectionViewListCell, Row> { [weak self] cell, _, row in
             var content = UIListContentConfiguration.listRow()
             content.text = row.name
             content.secondaryAttributedText = row.detail
             cell.contentConfiguration = content
-            cell.accessories = [.label(text: "Restore", options: .init(tintColor: UIColor.accentGreen))]
+            // Restore and the trash as one view, the order the Habits and Plans rows use.
+            let buttons = UIStackView(arrangedSubviews: [
+                DeletePermanently.restoreButton(for: row.name) { [weak self] in self?.restore(row) },
+                DeletePermanently.button(for: row.name) { [weak self] in self?.confirmDelete(row) },
+            ])
+            buttons.spacing = Metrics.spaceTight
+            cell.accessories = [.customView(configuration: .init(customView: buttons, placement: .trailing(), reservedLayoutWidth: .actual))]
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
         }
         let footer = UICollectionView.SupplementaryRegistration<UICollectionViewListCell>(elementKind: UICollectionView.elementKindSectionFooter) { [kind] view, _, _ in
@@ -102,6 +109,34 @@ final class ArchivedCatalogueViewController: UIViewController {
         }
         emptyLabel.isHidden = !rows.isEmpty
         dataSource.apply(snapshot, animatingDifferences: view.window != nil)
+    }
+
+    /// A Food Item takes its lines out of the Meals that use it; the sheet names them.
+    private func confirmDelete(_ row: Row) {
+        var consequences = ["Entries you logged from it keep their numbers."]
+        if kind == .foods {
+            do {
+                let meals = try dependencies.store.mealNames(using: row.id)
+                if !meals.isEmpty {
+                    consequences.append("It's also removed from \(DeletePermanently.list(meals)).")
+                }
+            } catch {
+                Self.logger.error("Failed to read Meals using a Food Item: \(error, privacy: .public)")
+            }
+        }
+        let alert = DeletePermanently.confirmation(name: row.name, consequences: consequences) { [weak self] in
+            guard let self else { return }
+            do {
+                switch kind {
+                case .foods: try dependencies.store.deleteFoodItemPermanently(row.id)
+                case .meals: try dependencies.store.deleteMealPermanently(row.id)
+                }
+            } catch {
+                Self.logger.error("Failed to delete: \(error, privacy: .public)")
+            }
+            render()
+        }
+        present(alert, animated: true)
     }
 
     private func restore(_ row: Row) {

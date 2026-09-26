@@ -205,12 +205,7 @@ final class HabitsViewController: UIViewController {
     }
 
     private func confirmDelete(_ habit: HabitRecord) {
-        let alert = UIAlertController(
-            title: "Delete \(habit.name)?",
-            message: "Every check-in for this habit is deleted too. This cannot be undone.",
-            preferredStyle: .actionSheet
-        )
-        alert.addAction(UIAlertAction(title: "Delete permanently", style: .destructive) { [weak self] _ in
+        let alert = DeletePermanently.confirmation(name: habit.name, consequences: ["Every check-in for this habit is deleted too."]) { [weak self] in
             guard let self else { return }
             do {
                 try dependencies.store.deleteHabitPermanently(habit.id)
@@ -218,8 +213,7 @@ final class HabitsViewController: UIViewController {
                 Self.logger.error("Failed to delete Habit: \(error, privacy: .public)")
             }
             render()
-        })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
         present(alert, animated: true)
     }
 

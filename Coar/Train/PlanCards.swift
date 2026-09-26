@@ -28,11 +28,11 @@ final class PlanCardControl: CardControl {
     }
 }
 
-/// A row in the Train root's Archived section: the Plan's name and Restore. Muted, because
-/// an archived Plan is out of the way by design.
+/// A row in the Train root's Archived section: the Plan's name, Restore, and Delete
+/// permanently. Muted, because an archived Plan is out of the way by design.
 final class ArchivedPlanView: UIView {
 
-    init(plan: PlanRecord, onRestore: @escaping () -> Void) {
+    init(plan: PlanRecord, onRestore: @escaping () -> Void, onDelete: @escaping () -> Void) {
         super.init(frame: .zero)
 
         let name = UILabel()
@@ -42,17 +42,11 @@ final class ArchivedPlanView: UIView {
         name.adjustsFontForContentSizeCategory = true
         name.numberOfLines = 2
 
-        var configuration = UIButton.Configuration.filled()
-        configuration.title = "Restore"
-        configuration.cornerStyle = .capsule
-        configuration.baseBackgroundColor = UIColor.fill
-        configuration.baseForegroundColor = UIColor.textPrimary
-        configuration.buttonSize = .small
-        let restore = UIButton(configuration: configuration, primaryAction: UIAction { _ in onRestore() })
-        restore.accessibilityLabel = "Restore \(plan.name)"
-        restore.setContentHuggingPriority(.required, for: .horizontal)
-
-        let row = UIStackView(arrangedSubviews: [name, restore])
+        let row = UIStackView(arrangedSubviews: [
+            name,
+            DeletePermanently.restoreButton(for: plan.name, action: onRestore),
+            DeletePermanently.button(for: plan.name, action: onDelete),
+        ])
         row.axis = .horizontal
         row.alignment = .center
         row.spacing = Metrics.spaceTight

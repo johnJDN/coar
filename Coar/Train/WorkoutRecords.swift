@@ -11,7 +11,8 @@ struct WorkoutRecord: Hashable, Identifiable {
     /// The Plan it was started from, for grouping; nil for an empty Workout or once the
     /// Plan is gone.
     let planID: PlanRecord.ID?
-    /// The Plan's name as it stands now; nil when there is no Plan.
+    /// The Plan's name as it stands now, or its last name once the Plan is deleted; nil
+    /// for an Empty workout.
     let planName: String?
     let exercises: [WorkoutExerciseRecord]
     let modifiedAt: Date

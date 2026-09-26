@@ -4,7 +4,8 @@ import os
 /// The Train root (DESIGN.md §11): the month grid of Workout Days (tap one to open its
 /// Workout, or the list when there were several), the row of three `PillChip`s, Start (a
 /// Plan or an empty Workout; Resume while one is active), the Plans section (tap a card to
-/// edit, New plan to add), Recent workouts, and an Archived section with Restore.
+/// edit, New plan to add), Recent workouts, and an Archived section with Restore and Delete
+/// permanently.
 final class TrainViewController: ScreenViewController {
 
     private static let logger = Logger(category: "Train")
@@ -288,7 +289,11 @@ final class TrainViewController: ScreenViewController {
         archivedHeader.isHidden = archived.isEmpty
         archivedStack.isHidden = archived.isEmpty
         for plan in archived {
-            archivedStack.addArrangedSubview(ArchivedPlanView(plan: plan) { [weak self] in self?.restore(plan) })
+            archivedStack.addArrangedSubview(ArchivedPlanView(
+                plan: plan,
+                onRestore: { [weak self] in self?.restore(plan) },
+                onDelete: { [weak self] in self?.confirmDelete(plan) }
+            ))
         }
     }
 
@@ -324,6 +329,20 @@ final class TrainViewController: ScreenViewController {
         }
         renderPlans()
         renderStart()
+    }
+
+    /// Its Workouts stay, still under its name; its Exercises stay in the catalogue.
+    private func confirmDelete(_ plan: PlanRecord) {
+        let alert = DeletePermanently.confirmation(name: plan.name, consequences: ["Past workouts from it stay, under its name."]) { [weak self] in
+            guard let self else { return }
+            do {
+                try dependencies.store.deletePlanPermanently(plan.id)
+            } catch {
+                Self.logger.error("Failed to delete Plan: \(error, privacy: .public)")
+            }
+            render()
+        }
+        present(alert, animated: true)
     }
 
     // MARK: - Navigation

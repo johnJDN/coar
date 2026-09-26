@@ -57,6 +57,23 @@ extension Store {
         try save()
     }
 
+    /// The Meals (archived ones included) with a line of this Food Item, by name: what
+    /// deleting it would change.
+    func mealNames(using id: FoodItemRecord.ID) throws -> [String] {
+        guard let item = try fetchFoodItem(id) else { return [] }
+        return Set(item.mealComponentObjects.compactMap { $0.meal?.name }).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    /// Deletes a Food Item for good, with its Servings. Its lines leave every Meal that used
+    /// it, which would otherwise drop them silently and read lighter than it is. Entries
+    /// logged from it keep their own copy (ADR 0003).
+    func deleteFoodItemPermanently(_ id: FoodItemRecord.ID) throws {
+        guard let item = try fetchFoodItem(id) else { return }
+        item.mealComponentObjects.forEach(context.delete)
+        context.delete(item)
+        try save()
+    }
+
     // MARK: - Entries
 
     /// Logs that `quantity` of one Serving of a Food Item was eaten at `instant`. The Entry
@@ -264,5 +281,11 @@ extension EntryRecord {
             components: object.componentRecords,
             modifiedAt: modifiedAt
         )
+    }
+}
+
+private extension FoodItem {
+    var mealComponentObjects: [MealComponent] {
+        Array(mealComponents as? Set<MealComponent> ?? [])
     }
 }

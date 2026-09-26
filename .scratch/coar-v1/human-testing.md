@@ -165,7 +165,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - **Fixed, 2 — "picker":** the archive footer now says "Archived exercises can't be added to plans."
 - **Fixed, 5 — rep range:** min and max hug the dash ("8 – 12") instead of centring in half the pill each; an empty max reads "max".
 - **Changed, G:** Plans and Exercises list most recently used first; archived lists stay by name.
-- **Answered, 8 — deleting archived items (no change):** recommended Delete permanently, with a confirmation, on every Archived page; safe for foods, meals and plans (history keeps its own copy); deleting an exercise loses its progression chart.
+- **Added after 09, 8 — Delete permanently on archived items:** every Archived list (habits, foods, meals, exercises, plans) shows a grey Restore capsule and a coral trash button; the trash confirms with an action sheet naming what goes with it, ending "This cannot be undone." A food leaves the meals that use it and an exercise leaves the plans that use it (named in the sheet; supersets stay well formed); a deleted plan's workouts keep its name; entries and workouts never change. Archived exercise rows now restore on tap (no sheet), like archived foods. Checked in the simulator for plans, foods and exercises.
 
 ## 09: Train: Workout logger and lifecycle
 

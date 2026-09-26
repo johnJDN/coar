@@ -50,6 +50,14 @@ extension Store {
         try save()
     }
 
+    /// Deletes a Meal for good, with its lines. Entries logged from it keep their own copy
+    /// (ADR 0003).
+    func deleteMealPermanently(_ id: MealRecord.ID) throws {
+        guard let meal = try fetchMeal(id) else { return }
+        context.delete(meal)
+        try save()
+    }
+
     // MARK: - Entries
 
     /// Logs that `quantity` of a Meal was eaten at `instant`: one Entry carrying the Meal's

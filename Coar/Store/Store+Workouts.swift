@@ -261,7 +261,7 @@ private extension WorkoutRecord {
             day: day,
             finishedAt: object.finishedAt,
             planID: object.plan?.id,
-            planName: object.plan?.name,
+            planName: object.plan?.name ?? object.planName,
             exercises: object.exerciseRecords,
             modifiedAt: modifiedAt
         )

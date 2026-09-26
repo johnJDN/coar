@@ -180,6 +180,19 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
   above as it changes and has no Save of its own.
 - A dated change (a habit's target from today) is creating a record, so it keeps Save.
 
+## 7b. Deleting
+
+- Things in a catalogue (habits, foods, meals, exercises, plans) are **archived**, not
+  deleted, from their editor. Archiving never confirms: Restore undoes it.
+- **Delete permanently** lives only on an archived row: a coral trash capsule after Restore
+  (`DeletePermanently.button`). It always confirms with an action sheet that says what goes
+  with it ("Every check-in…", "It's also removed from Push and Pull.", "…progression chart
+  is deleted.") and ends "This cannot be undone." (`DeletePermanently.confirmation`).
+- Deleting never changes the past: Entries and Workouts keep their own copy. Anything that
+  would otherwise quietly read wrong is fixed in the same step: a food leaves its meals, an
+  exercise leaves its plans, a plan's workouts keep its name.
+- A finished Workout is history, not catalogue: its `…` has Delete workout (alert confirm).
+
 ## 8. Data-viz vocabulary
 
 | Need | Use |

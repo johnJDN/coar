@@ -3,7 +3,7 @@ import os
 
 /// The Exercise catalogue, pushed from the Train root's Exercises chip: active Exercises by
 /// name (tap to open the Exercise's detail page, where Edit lives), then an Archived section
-/// (tap to restore). `+` opens the Exercise sheet. Reads through the façade on every
+/// (Restore, or the trash button to delete permanently). `+` opens the Exercise sheet. Reads through the façade on every
 /// appearance and after every write.
 final class ExercisesViewController: UIViewController {
 
@@ -79,10 +79,19 @@ final class ExercisesViewController: UIViewController {
             content.secondaryText = TrainText.details(of: exercise)
             if exercise.isArchived {
                 content.textProperties.color = UIColor.textSecondary
-                content.secondaryText = "Archived · tap to restore"
+                content.secondaryText = TrainText.details(of: exercise)
             }
             cell.contentConfiguration = content
-            cell.accessories = exercise.isArchived ? [] : [.disclosureIndicator()]
+            if exercise.isArchived {
+                let buttons = UIStackView(arrangedSubviews: [
+                    DeletePermanently.restoreButton(for: exercise.name) { [weak self] in self?.restore(exercise) },
+                    DeletePermanently.button(for: exercise.name) { [weak self] in self?.confirmDelete(exercise) },
+                ])
+                buttons.spacing = Metrics.spaceTight
+                cell.accessories = [.customView(configuration: .init(customView: buttons, placement: .trailing(), reservedLayoutWidth: .actual))]
+            } else {
+                cell.accessories = [.disclosureIndicator()]
+            }
             cell.backgroundConfiguration = UIBackgroundConfiguration.listRow()
             cell.accessibilityLabel = [content.text, content.secondaryText].compactMap { $0 }.joined(separator: ", ")
         }
@@ -150,19 +159,37 @@ final class ExercisesViewController: UIViewController {
         present(ExerciseFormViewController.sheet(dependencies: dependencies, mode: mode) { [weak self] _ in self?.render() }, animated: true)
     }
 
-    private func confirmRestore(_ exercise: ExerciseRecord) {
-        let alert = UIAlertController(title: exercise.name, message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Restore", style: .default) { [weak self] _ in
+    /// The Plans that lose a row are named; Workouts keep their sets, the chart does not.
+    private func confirmDelete(_ exercise: ExerciseRecord) {
+        var consequences = ["Past workouts keep its sets, but its progression chart is deleted."]
+        do {
+            let plans = try dependencies.store.planNames(using: exercise.id)
+            if !plans.isEmpty {
+                consequences.append("It's also removed from \(DeletePermanently.list(plans)).")
+            }
+        } catch {
+            Self.logger.error("Failed to read Plans using an Exercise: \(error, privacy: .public)")
+        }
+        let alert = DeletePermanently.confirmation(name: exercise.name, consequences: consequences) { [weak self] in
             guard let self else { return }
             do {
-                try dependencies.store.restoreExercise(exercise.id)
+                try dependencies.store.deleteExercisePermanently(exercise.id)
             } catch {
-                Self.logger.error("Failed to restore Exercise: \(error, privacy: .public)")
+                Self.logger.error("Failed to delete Exercise: \(error, privacy: .public)")
             }
             render()
-        })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        }
         present(alert, animated: true)
+    }
+
+    /// Restore is reversible (archive it again), so it does not confirm, like Habits.
+    private func restore(_ exercise: ExerciseRecord) {
+        do {
+            try dependencies.store.restoreExercise(exercise.id)
+        } catch {
+            Self.logger.error("Failed to restore Exercise: \(error, privacy: .public)")
+        }
+        render()
     }
 }
 
@@ -175,7 +202,7 @@ extension ExercisesViewController: UICollectionViewDelegate {
             navigationController?.pushViewController(ExerciseDetailViewController(dependencies: dependencies, exerciseID: id), animated: true)
         case .archived(let id):
             guard let exercise = exercises[id] else { return }
-            confirmRestore(exercise)
+            restore(exercise)
         case .empty, nil:
             break
         }

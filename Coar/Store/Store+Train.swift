@@ -49,6 +49,32 @@ extension Store {
         try save()
     }
 
+    /// The Plans (archived ones included) with a row for this Exercise, by name: what
+    /// deleting it would change.
+    func planNames(using id: ExerciseRecord.ID) throws -> [String] {
+        guard let exercise = try fetchExercise(id) else { return [] }
+        return Set(exercise.planExerciseObjects.compactMap { $0.plan?.name }).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
+    /// Deletes an Exercise for good. Its rows leave every Plan that used it, through
+    /// `PlanDraft` so a Superset it was in stays well formed (a Plan would otherwise drop the
+    /// row silently). Workouts keep their copy of its name and sets (ADR 0003), but its
+    /// Progression, which follows the Exercise across Workouts, is gone.
+    func deleteExercisePermanently(_ id: ExerciseRecord.ID) throws {
+        guard let exercise = try fetchExercise(id) else { return }
+        let plans = Set(exercise.planExerciseObjects.compactMap(\.plan))
+        for plan in plans {
+            var draft = PlanDraft(name: plan.name ?? "", exercises: plan.exerciseRecords.map(PlanExerciseDraft.init))
+            for row in draft.exercises where row.exerciseID == id {
+                draft.remove(row.id)
+            }
+            try write(name: draft.name, exercises: draft.exercises, to: plan)
+        }
+        exercise.planExerciseObjects.forEach(context.delete)
+        context.delete(exercise)
+        try save()
+    }
+
     // MARK: - Plans
 
     /// Creates a Plan with its rows and their Planned Sets in the given order.
@@ -92,6 +118,17 @@ extension Store {
 
     func restorePlan(_ id: PlanRecord.ID) throws {
         try fetchPlan(id)?.isArchived = false
+        try save()
+    }
+
+    /// Deletes a Plan for good, with its rows and Planned Sets. Its Workouts stay, keeping
+    /// the Plan's last name as their title (they read it live while the Plan exists).
+    func deletePlanPermanently(_ id: PlanRecord.ID) throws {
+        guard let plan = try fetchPlan(id) else { return }
+        for workout in plan.workoutObjects {
+            workout.planName = plan.name
+        }
+        context.delete(plan)
         try save()
     }
 
@@ -203,6 +240,10 @@ extension Plan {
         Array(exercises as? Set<PlanExercise> ?? [])
     }
 
+    var workoutObjects: [Workout] {
+        Array(workouts as? Set<Workout> ?? [])
+    }
+
     /// The rows in the user's order. A row whose Exercise is gone is dropped.
     var exerciseRecords: [PlanExerciseRecord] {
         exerciseObjects
@@ -232,5 +273,11 @@ extension PlanExercise {
                 guard let id = set.id else { return nil }
                 return PlannedSetRecord(id: id, targetKilograms: set.targetKilograms, reps: RepRange(min: Int(set.repMin), max: Int(set.repMax)))
             }
+    }
+}
+
+private extension Exercise {
+    var planExerciseObjects: [PlanExercise] {
+        Array(planExercises as? Set<PlanExercise> ?? [])
     }
 }

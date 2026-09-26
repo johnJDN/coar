@@ -64,8 +64,11 @@ _Avoid_: Goal, budget, allowance
 
 **Archived**:
 The state of a Habit, Food Item, Meal, Exercise, or Plan the user has retired: hidden
-from pickers and lists, but kept because history refers to it. Restorable.
-_Avoid_: Deleted, hidden, inactive, disabled
+from pickers and lists, but kept because history refers to it. Restorable, or deleted
+permanently from its Archived list (never straight from the active list). History keeps its
+own copy, so deleting changes no past day; a Habit takes its Check-ins with it, and an
+Exercise its Progression.
+_Avoid_: Deleted (for archiving), hidden, inactive, disabled
 
 ### Training
 
