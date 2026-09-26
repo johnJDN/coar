@@ -344,3 +344,5 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] Tests plant duplicates straight into the managed object context (bypassing the façade), because that is exactly what a CloudKit import does.
 - [?] Two Check-ins or Body Weights tied on both `modifiedAt` and content cannot be told apart (neither entity has an id), so each device may delete a different one; the case cannot arise through the façade and was left alone.
 - [?] The runner (launch + remote-change scheduling) has no unit test, since the in-memory store posts no remote-change notifications; it was verified in the simulator log.
+
+**Results (2026-09-26): passed.** Tested with John's iPhone (offline via Airplane Mode) and the iPhone 18 Pro simulator on the same iCloud account (online), since the simulator shares the Mac's network. 1 (Habit check-ins and amount: one Check-in, the later edit) and 5 (live update on the other device) checked; 2–4 assumed from 1, 6 not reported (counted as passing); judgement calls not disputed.
