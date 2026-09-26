@@ -193,7 +193,7 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 - [?] `Workout`, `WorkoutExercise`, `LoggedSet` gained an optional `id: UUID` (additive).
 
 **Results (2026-09-26, in progress):** everything passed except one glitch; judgement calls agreed.
-- **Fix to re-check, 3 — Add exercise glitch:** for about half a second after adding an exercise mid-workout, the logger drew something wrong below the last card. Likely cause: the new card was added with an animation while the logger slid back in, so it was drawn at its estimated height first. The logger now updates without animation when it reappears. Not yet reproduced in the simulator (the new card landed off-screen there), so re-check on the phone.
+- **Fixed, 3 — Add exercise glitch:** for about half a second after adding an exercise, everything below the top of the (closing) keyboard was blank. The logger's list was pinned to the keyboard, so it shrank with the exercise list's keyboard while sliding back. Lists now stay full height and inset their content above the keyboard instead (`insetsContentAboveKeyboard`); the Planned Sets page had the same pinning and got the same fix. Reproduced and verified in the simulator via the Xcode MCP.
 - **Added — Delete workout:** a finished workout's `…` menu has Delete workout, with a confirmation; its sets leave history and Progression. Workouts aren't archived: archiving hides catalogue items from pickers, and a workout is history.
 
 ## 10: Train: rest timer and Superset logging

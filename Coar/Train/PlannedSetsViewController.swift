@@ -83,8 +83,9 @@ final class PlannedSetsViewController: UIViewController {
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        collectionView.insetsContentAboveKeyboard(in: view)
 
         let setCell = UICollectionView.CellRegistration<PlannedSetCell, PlannedSetFields.ID> { [weak self] cell, indexPath, id in
             guard let self, let set = fields.first(where: { $0.id == id }) else { return }

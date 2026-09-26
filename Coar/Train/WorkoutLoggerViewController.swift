@@ -66,10 +66,7 @@ final class WorkoutLoggerViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = true
-        // Changes made while the logger was covered (an Exercise added from the picker)
-        // land before the pop slides it back in; animating them mid-transition drew the
-        // new card at its estimated height over the one above for a moment.
-        render(animated: false)
+        render()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -104,8 +101,9 @@ final class WorkoutLoggerViewController: UIViewController {
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        collectionView.insetsContentAboveKeyboard(in: view)
 
         let exerciseCell = UICollectionView.CellRegistration<ExerciseCardCell, WorkoutExerciseRecord.ID> { [weak self] cell, _, id in
             guard let self, let workout, let row = workout.exercises.first(where: { $0.id == id }) else { return }
@@ -142,7 +140,7 @@ final class WorkoutLoggerViewController: UIViewController {
 
     // MARK: - Rendering
 
-    private func render(animated: Bool = true) {
+    private func render() {
         guard reload() else { return }
         guard let workout else { return }
         title = workout.title
@@ -150,7 +148,7 @@ final class WorkoutLoggerViewController: UIViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
         snapshot.appendItems(Self.items(for: workout.exercises), toSection: 0)
-        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: animated && viewIfLoaded?.window != nil)
+        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
     }
 
     /// One card per row, a gap after each, the gap a Superset link when the row below
