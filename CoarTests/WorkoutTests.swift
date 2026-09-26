@@ -245,6 +245,22 @@ final class WorkoutTests: XCTestCase {
         XCTAssertEqual(try store.plan(push.id)?.exercises.count, 3)
     }
 
+    func test_deletingAFinishedWorkout_removesItFromHistory_andLeavesThePlan() throws {
+        let store = Store.inMemory()
+        let catalogue = try stock(store)
+        let push = try makePush(store, catalogue)
+        let workout = try store.startWorkout(from: push.id, at: noon)
+        try store.updateLoggedSet(workout.exercises[0].sets[0].id, kilograms: 100, reps: 5, isCompleted: true)
+        try store.finishWorkout(workout.id, at: noon.addingTimeInterval(3_600))
+
+        try store.discardWorkout(workout.id)
+
+        XCTAssertNil(try store.workout(workout.id))
+        XCTAssertEqual(try store.recentWorkouts(limit: 5), [])
+        XCTAssertEqual(try store.workoutDays(from: Day(noon).advanced(by: -30), to: Day(noon)), [])
+        XCTAssertEqual(try store.plan(push.id)?.exercises.count, 3)
+    }
+
     // MARK: History
 
     func test_twoFinishedWorkoutsOnOneDay_bothCount_andTheDayIsMarkedOnce() throws {

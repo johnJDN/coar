@@ -66,7 +66,10 @@ final class WorkoutLoggerViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = true
-        render()
+        // Changes made while the logger was covered (an Exercise added from the picker)
+        // land before the pop slides it back in; animating them mid-transition drew the
+        // new card at its estimated height over the one above for a moment.
+        render(animated: false)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -139,7 +142,7 @@ final class WorkoutLoggerViewController: UIViewController {
 
     // MARK: - Rendering
 
-    private func render() {
+    private func render(animated: Bool = true) {
         guard reload() else { return }
         guard let workout else { return }
         title = workout.title
@@ -147,7 +150,7 @@ final class WorkoutLoggerViewController: UIViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
         snapshot.appendItems(Self.items(for: workout.exercises), toSection: 0)
-        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: viewIfLoaded?.window != nil)
+        dataSource.apply(reconfiguringExisting: snapshot, animatingDifferences: animated && viewIfLoaded?.window != nil)
     }
 
     /// One card per row, a gap after each, the gap a Superset link when the row below
