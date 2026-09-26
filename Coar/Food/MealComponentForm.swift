@@ -63,7 +63,7 @@ struct MealComponentForm: View {
             }
 
             Section {
-                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name, autofocus: true)
+                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name)
                     .formRow()
             } footer: {
                 Text(preview.map { "In the meal: \(FoodText.macroLine($0))" } ?? "Pick a serving and a quantity.")
@@ -71,6 +71,7 @@ struct MealComponentForm: View {
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
     }

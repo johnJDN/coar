@@ -62,7 +62,7 @@ final class PlannedSetsViewController: UIViewController {
         }
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout.list(using: configuration))
         collectionView.backgroundColor = .clear
-        collectionView.keyboardDismissMode = .interactive
+        collectionView.dismissesKeyboardOnDrag()
         collectionView.delegate = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)

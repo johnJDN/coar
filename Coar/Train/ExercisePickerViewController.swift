@@ -48,7 +48,7 @@ final class ExercisePickerViewController: UIViewController {
         configuration.backgroundColor = .clear
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout.list(using: configuration))
         collectionView.backgroundColor = .clear
-        collectionView.keyboardDismissMode = .onDrag
+        collectionView.dismissesKeyboardOnDrag()
         collectionView.delegate = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)

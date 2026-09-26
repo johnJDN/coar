@@ -34,57 +34,65 @@ Each entry: `[ ]` to test, `[?]` a judgement call to confirm (say "keep" or what
 ## 05: Habits: quantitative, weekly, dated targets
 
 - [!] New habit → Kind "Amount", Period "Day", amount 20: the card shows a `—` capsule; tap it: the sheet opens with the number pad, "of 20" beside the field, and +1 +5 +10 chips; tapping +10 updates the card behind the sheet at once; Done with a typed 25 saves 25; a typed 0 (or empty) removes the day's check-in.
-- [ ] Quantitative heatmap and calendar: 5 / 10 / 15 / 20 of 20 show four rising greens, only 20+ blooms; check in light and dark.
-- [ ] New habit → Kind "Yes / no", Period "Week", "Days a week" 3: the card has a dot row above the heatmap (filled only for weeks with 3 check-ins), streak reads "n weeks", caption "2 of 3 this week"; the current week's dot fills as soon as the third check-in lands; a daily habit has no dot row.
-- [ ] Weekly streak: with last week met and this week at 2 of 3 on a Wednesday the streak still counts last week; a week that ended unmet breaks it.
-- [ ] Detail → Target card → Change: switch a daily quantitative habit to Week or raise its amount; Save is disabled until something changes; after saving, earlier days keep their old colours and the streak unit follows the new period.
-- [ ] Detail calendar on a quantitative habit: tapping a past day opens the number sheet for that day (subtitle shows the date); days before the habit's first target and future days do nothing.
-- [ ] New-habit form: "Days a week" rejects 8; the amount row disappears for a daily yes/no habit; Save stays disabled until emoji, name and a valid target are set.
-- [ ] Dynamic Type: the amount capsule, the week caption, the Target card row, the number sheet and chips all scale without clipping.
-- [?] The third intensity bucket runs from just over 50 % to just under 100 %: only reaching the target draws the full accent with bloom, so a 90 % day never reads as met.
-- [?] A week is judged against the target in force on its Sunday: raising a weekly target mid-week applies to the current week and never to finished ones.
-- [?] Quantitative weekly cells bucket each day against the weekly target (so one 5 km day of a 20 km week is a quarter); the dot row says whether the week was met.
-- [?] The amount capsule turns green when the current period is met, so a met weekly habit with nothing logged today shows a green `—`.
-- [?] `+N` chips write immediately and keep the sheet open; Done writes the typed total; there is no Cancel on the number sheet.
-- [?] Quantitative targets and amounts may be fractional; yes/no weekly targets are whole days, at most 7.
+- [x] Quantitative heatmap and calendar: 5 / 10 / 15 / 20 of 20 show four rising greens, only 20+ blooms; check in light and dark.
+- [x] New habit → Kind "Yes / no", Period "Week", "Days a week" 3: the card has a dot row above the heatmap (filled only for weeks with 3 check-ins), streak reads "n weeks", caption "2 of 3 this week"; the current week's dot fills as soon as the third check-in lands; a daily habit has no dot row.
+- [x] Weekly streak: with last week met and this week at 2 of 3 on a Wednesday the streak still counts last week; a week that ended unmet breaks it.
+- [x] Detail → Target card → Change: switch a daily quantitative habit to Week or raise its amount; Save is disabled until something changes; after saving, earlier days keep their old colours and the streak unit follows the new period.
+- [x] Detail calendar on a quantitative habit: tapping a past day opens the number sheet for that day (subtitle shows the date); days before the habit's first target and future days do nothing.
+- [x] New-habit form: "Days a week" rejects 8; the amount row disappears for a daily yes/no habit; Save stays disabled until emoji, name and a valid target are set.
+- [x] Dynamic Type: the amount capsule, the week caption, the Target card row, the number sheet and chips all scale without clipping.
+- [x] keep: The third intensity bucket runs from just over 50 % to just under 100 %: only reaching the target draws the full accent with bloom, so a 90 % day never reads as met.
+- [x] keep: A week is judged against the target in force on its Sunday: raising a weekly target mid-week applies to the current week and never to finished ones.
+- [x] keep: Quantitative weekly cells bucket each day against the weekly target (so one 5 km day of a 20 km week is a quarter); the dot row says whether the week was met.
+- [x] keep: The amount capsule turns green when the current period is met, so a met weekly habit with nothing logged today shows a green `—`.
+- [x] keep: `+N` chips write immediately and keep the sheet open; Done writes the typed total; there is no Cancel on the number sheet.
+- [x] keep: Quantitative targets and amounts may be fractional; yes/no weekly targets are whole days, at most 7.
 - [x] reversed: Calendar days before the first target are inert — superseded by the 04 backfill fix: the first target covers every earlier Day.
-- [?] Kind is fixed at creation; Change Target edits amount and period only.
-- [?] The Target card shows "20 a day" / "3 days a week" with a Change button and no "since" date.
-- [?] A daily yes/no habit is met by any check-in even if its stored target amount is 2 (ticket 04's form allowed it); the amount row no longer appears for that combination.
+- [x] keep: Kind is fixed at creation; Change Target edits amount and period only.
+- [x] keep: The Target card shows "20 a day" / "3 days a week" with a Change button and no "since" date.
+- [x] keep: A daily yes/no habit is met by any check-in even if its stored target amount is 2 (ticket 04's form allowed it); the amount row no longer appears for that combination.
 
-**Results (2026-09-22, partial — rest after rebuild):**
+**Results (2026-09-22):** all pass after the fixes below; all judgement calls kept.
+- **Clarified, target change:** a change applies from today; earlier Days keep their colours. A change made on the Day its target started replaces that record, and since the first target also covers earlier Days (04 backfill fix), changing a habit's target on the day it was created recolours its backfilled Days. Treated as correcting a mistake; to see history keep its colours, change the target on a later day.
 - **Fixed, capsule width:** the `—` amount capsule stretched across the row after the name. Nothing in the row preferred the name for spare width; the capsule's label now hugs, and the name takes the slack (also fixes Home's habits card rows).
 - **Fixed, sheet height:** with the keyboard up the number sheet rose far too high (a `.medium()` detent is lifted to half the space above the keyboard). It now uses a detent sized to its content, so it sits just above the keyboard.
 
 ## 06: Food: Items, Servings, Entries, timeline
 
-- [ ] Food tab: large title "Food" with "Today" under it; the week strip shows this Monday–Sunday week with today's number green and a dot; swipe right pages back a week at a time; tap a past day: the well moves, the subtitle shows the date, the timeline reloads; future days in this week are muted and do nothing.
-- [ ] Tap `+` on the 7 AM row: the sheet's subtitle reads "Today at 7:00 AM"; the toolbar `+` reads the current time instead. Tap "New food", type a name, Add serving, fill it in, Save, Save: the log page for the new food opens; Add: the Entry lands on the 7 AM row, the hour's dot turns green, the card shows "1 × <serving>", the macro letters in blue / pink / orange, and the kcal on the right.
-- [ ] Sheet row `+` (the square one): logs the default serving once at the sheet's time and closes the sheet at once.
-- [ ] Log page: pick the other serving (checkmark moves, the preview macros change), type 1.5, change the time; Add is disabled while the quantity is empty or 0.
-- [ ] Filter field: typing narrows the list as you type; "New food “chicken”" pre-fills the name.
-- [ ] Long-press a food row → Edit: rename it, add a serving, drag the handle to reorder, swipe a serving left to delete, toggle Default on a serving (the checkmark moves), Save; a food with no servings cannot be saved. Reopen: the order and default stick.
-- [ ] Long-press a food row → Archive: it leaves the list; its Entries on the timeline are unchanged; type its name in the filter: it appears dimmed with "Tap to restore"; tap → Restore brings it back.
-- [ ] Edit a food's serving macros (e.g. egg 70 → 78 kcal): Entries already logged keep 70; new ones get 78.
-- [ ] Tap an Entry: the detail opens with quantity, time, and the four macros; change 3 → 4: calories and grams scale; overtype a macro; Save is disabled until something changes; Save updates the card; Delete entry asks first and removes only that Entry.
-- [ ] Log at 11:50 PM: the Entry sits on the 11 PM row of today and does not appear on tomorrow.
-- [ ] Dynamic Type: the strip, hour rows, Entry cards, list rows and all three forms scale without clipping; check light and dark throughout, and that the tab bar minimises when the timeline scrolls.
-- [?] The timeline starts at 12 AM with all 24 hours and no auto-scroll; say if it should open at 6 AM or the current hour.
-- [?] The log page previews macros but does not edit them; corrections happen on the Entry detail.
-- [?] Stored Entry macros are totals for the whole quantity; changing the quantity on the detail scales them.
-- [?] The detail edits the time of day only; the Day never moves.
-- [?] Archived foods surface only under a matching filter (dimmed, tap to restore); no Archived section.
-- [?] Archive does not confirm; Delete entry does.
-- [?] Saving a new food goes straight to its log page rather than back to the list.
-- [?] Foods list alphabetically; no manual reorder.
-- [?] A serving's empty macro field means 0; grams optional; the first serving is the default until another is toggled.
-- [?] The strip's "today" is fixed when the tab is created (relaunch after midnight).
-- [?] `FoodItem`, `Serving`, `Entry` each gained an optional `id: UUID` (additive).
-- [?] The rail (a `fill` bar with hour dots) is a timeline axis, not a divider.
-- [?] The sheet is titled "Add Entry" with a "Filter" field.
-- [?] The Entry row is a `surface` row with the inner radius and card shadow, not a full `Card` (no dark top highlight); rows have no thumbnail.
-- [ ] Leave the app open across midnight (or change the clock): the strip's green mark and the selection move to the new day and the toolbar `+` logs onto it.
+- [x] Food tab: large title "Food" with "Today" under it; the week strip shows this Monday–Sunday week with today's number green and a dot; swipe right pages back a week at a time; tap a past day: the well moves, the subtitle shows the date, the timeline reloads; future days in this week are muted and do nothing.
+- [!] Tap `+` on the 7 AM row: the sheet's subtitle reads "Today at 7:00 AM"; the toolbar `+` reads the current time instead. Tap "New food", type a name, Add serving, fill it in, Save, Save: the log page for the new food opens; Add: the Entry lands on the 7 AM row, the hour's dot turns green, the card shows "1 × <serving>", the macro letters in blue / pink / orange, and the kcal on the right.
+- [x] Sheet row `+` (the square one): logs the default serving once at the sheet's time and closes the sheet at once.
+- [!] Log page: pick the other serving (checkmark moves, the preview macros change), type 1.5, change the time; Add is disabled while the quantity is empty or 0.
+- [x] Filter field: typing narrows the list as you type; "New food “chicken”" pre-fills the name.
+- [!] Long-press a food row → Edit: rename it, add a serving, drag the handle to reorder, swipe a serving left to delete, toggle Default on a serving (the checkmark moves), Save; a food with no servings cannot be saved. Reopen: the order and default stick.
+- [x] Long-press a food row → Archive: it leaves the list; its Entries on the timeline are unchanged; type its name in the filter: it appears dimmed with "Tap to restore"; tap → Restore brings it back.
+- [x] Edit a food's serving macros (e.g. egg 70 → 78 kcal): Entries already logged keep 70; new ones get 78.
+- [x] Tap an Entry: the detail opens with quantity, time, and the four macros; change 3 → 4: calories and grams scale; overtype a macro; Save is disabled until something changes; Save updates the card; Delete entry asks first and removes only that Entry.
+- [x] Log at 11:50 PM: the Entry sits on the 11 PM row of today and does not appear on tomorrow.
+- [x] Dynamic Type: the strip, hour rows, Entry cards, list rows and all three forms scale without clipping; check light and dark throughout, and that the tab bar minimises when the timeline scrolls.
+- [x] keep: The timeline starts at 12 AM with all 24 hours and no auto-scroll; say if it should open at 6 AM or the current hour.
+- [x] keep: The log page previews macros but does not edit them; corrections happen on the Entry detail.
+- [x] keep: Stored Entry macros are totals for the whole quantity; changing the quantity on the detail scales them.
+- [x] keep: The detail edits the time of day only; the Day never moves.
+- [x] changed: Archived foods surface only under a matching filter (dimmed, tap to restore); no Archived section.
+- [x] keep: Archive does not confirm; Delete entry does.
+- [x] (see G below): Saving a new food goes straight to its log page rather than back to the list.
+- [x] changed: Foods list alphabetically; no manual reorder.
+- [x] keep: A serving's empty macro field means 0; grams optional; the first serving is the default until another is toggled.
+- [x] keep: The strip's "today" is fixed when the tab is created (relaunch after midnight).
+- [x] keep: `FoodItem`, `Serving`, `Entry` each gained an optional `id: UUID` (additive).
+- [x] keep: The rail (a `fill` bar with hour dots) is a timeline axis, not a divider.
+- [x] keep: The sheet is titled "Add Entry" with a "Filter" field.
+- [x] keep: The Entry row is a `surface` row with the inner radius and card shadow, not a full `Card` (no dark top highlight); rows have no thumbnail.
+- [x] Leave the app open across midnight (or change the clock): the strip's green mark and the selection move to the new day and the toolbar `+` logs onto it.
 
+**Results (2026-09-26):** all tests pass after the fixes below; calls kept except where noted.
+- **Fixed, "+" button sliding:** each filter keystroke reconfigured every row, and each reconfigure built a new "+" accessory, which animates in from the trailing edge. Rows now own one "+" for life (`QuickAddListCell`), and a keystroke only adds and removes rows.
+- **Fixed, log page keyboard:** the log pages (food, meal, and a meal's component line) no longer open the keyboard; it opens when Quantity is tapped.
+- **Fixed, keyboard dismissal (app-wide):** every number pad gets a keyboard bar with Done (number pads have no return key); every form and editable list dismisses the keyboard on a downward drag, and short lists now bounce so there is always something to drag. Text fields keep Return = done.
+- **Changed, E — Archived foods page:** an "Archived foods" row (with count) at the bottom of the Foods list opens a page listing them by name; tap to restore. Same for Meals. Archived items no longer appear under the filter.
+- **Changed, H — order:** Foods and Meals list most recently used first: the later of their latest Entry and their last edit (logging also stamps it), so new, edited, or just-logged ones rise to the top. Archived pages stay by name.
+- **Open, G:** saving a new food "took me back to the servings / Edit Food page" — asked John which save.
 
 ## 07: Food: Meals, summary row, no-target state
 

@@ -47,7 +47,7 @@ final class SetRowView: UIView {
             field.textAlignment = .center
             field.placeholder = "—"
             field.adjustsFontForContentSizeCategory = true
-            field.inputAccessoryView = Self.doneBar(for: field)
+            field.inputAccessoryView = NumberFieldBehavior.doneBar(for: field)
             field.addAction(UIAction { [weak self] _ in self?.changed() }, for: .editingChanged)
         }
         weightField.keyboardType = .decimalPad
@@ -155,13 +155,4 @@ final class SetRowView: UIView {
     }
 
     /// The number pads have no return key; a Done bar closes them.
-    private static func doneBar(for field: UITextField) -> UIView {
-        let bar = UIToolbar()
-        bar.items = [
-            UIBarButtonItem(systemItem: .flexibleSpace),
-            UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak field] _ in field?.resignFirstResponder() }),
-        ]
-        bar.sizeToFit()
-        return bar
-    }
 }

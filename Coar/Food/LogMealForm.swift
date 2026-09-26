@@ -36,7 +36,7 @@ struct LogMealForm: View {
     var body: some View {
         Form {
             Section {
-                QuantityRow(quantity: $draft.typedQuantity, unitName: EntryRecord.mealServingName, autofocus: true)
+                QuantityRow(quantity: $draft.typedQuantity, unitName: EntryRecord.mealServingName)
                     .formRow()
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)
@@ -69,6 +69,7 @@ struct LogMealForm: View {
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
     }

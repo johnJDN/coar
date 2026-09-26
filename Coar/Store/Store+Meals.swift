@@ -24,7 +24,8 @@ extension Store {
         try write(name: name, components: components, to: meal)
     }
 
-    /// Active Meals by name: what the "+" sheet's Meals segment lists.
+    /// Active Meals, most recently used first (as Food Items): what the "+" sheet's Meals
+    /// segment lists.
     func meals() throws -> [MealRecord] {
         try fetchMeals(archived: false)
     }
@@ -97,11 +98,22 @@ extension Store {
 
     // MARK: - Fetches
 
+    /// Active Meals most recently used first (as Food Items); archived ones by name.
     private func fetchMeals(archived: Bool) throws -> [MealRecord] {
         let request = Meal.fetchRequest()
         request.predicate = NSPredicate(format: "isArchived == %@", NSNumber(value: archived))
-        return try context.fetch(request).compactMap(MealRecord.init)
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        let meals = try context.fetch(request)
+        guard !archived else {
+            return meals.compactMap(MealRecord.init).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        }
+        return RecentUse.ordered(meals.map { meal in
+            RecentUse.Candidate(
+                value: meal,
+                name: meal.name ?? "",
+                modifiedAt: meal.modifiedAt,
+                lastLoggedAt: (meal.entries as? Set<Entry>)?.compactMap(\.loggedAt).max()
+            )
+        }).compactMap(MealRecord.init)
     }
 
     private func fetchMeal(_ id: MealRecord.ID) throws -> Meal? {

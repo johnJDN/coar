@@ -65,13 +65,22 @@ final class FoodTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(store.foodItem(rice.id)).defaultServing?.name, "1 cup")
     }
 
-    func test_foodItems_listByNameRegardlessOfCase() throws {
+    func test_archivedFoodItems_listByNameRegardlessOfCase() throws {
+        let store = Store.inMemory()
+        for name in ["rice", "Chicken breast", "Eggs"] {
+            try store.archiveFoodItem(try store.createFoodItem(name: name, servings: [oneEgg]).id)
+        }
+
+        XCTAssertEqual(try store.archivedFoodItems().map(\.name), ["Chicken breast", "Eggs", "rice"])
+    }
+
+    func test_foodItems_listMostRecentlyUsedFirst() throws {
         let store = Store.inMemory()
         try store.createFoodItem(name: "rice", servings: [oneEgg])
         try store.createFoodItem(name: "Chicken breast", servings: [oneEgg])
         try store.createFoodItem(name: "Eggs", servings: [oneEgg])
 
-        XCTAssertEqual(try store.foodItems().map(\.name), ["Chicken breast", "Eggs", "rice"])
+        XCTAssertEqual(try store.foodItems().map(\.name), ["Eggs", "Chicken breast", "rice"])
     }
 
     // MARK: Entries snapshot their source (ADR 0003)

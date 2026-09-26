@@ -93,7 +93,7 @@ final class WorkoutLoggerViewController: UIViewController {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout(section: section))
         collectionView.backgroundColor = .clear
         collectionView.alwaysBounceVertical = true
-        collectionView.keyboardDismissMode = .interactive
+        collectionView.dismissesKeyboardOnDrag()
         collectionView.delegate = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)

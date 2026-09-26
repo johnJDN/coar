@@ -3,16 +3,16 @@ import XCTest
 @testable import Coar
 
 @MainActor
-final class NumberFieldSelectionTests: XCTestCase {
+final class NumberFieldBehaviorTests: XCTestCase {
 
     func test_numberAndDecimalPads_areNumberFields_textFieldsAreNot() {
         let field = UITextField()
         field.keyboardType = .numberPad
-        XCTAssertTrue(NumberFieldSelection.isNumberField(field))
+        XCTAssertTrue(NumberFieldBehavior.isNumberField(field))
         field.keyboardType = .decimalPad
-        XCTAssertTrue(NumberFieldSelection.isNumberField(field))
+        XCTAssertTrue(NumberFieldBehavior.isNumberField(field))
         field.keyboardType = .default
-        XCTAssertFalse(NumberFieldSelection.isNumberField(field))
+        XCTAssertFalse(NumberFieldBehavior.isNumberField(field))
     }
 
     func test_beginningToEdit_selectsTheWholeValue() {
@@ -22,7 +22,7 @@ final class NumberFieldSelectionTests: XCTestCase {
         field.text = "1"
         window.addSubview(field)
         window.makeKeyAndVisible()
-        NumberFieldSelection.install()
+        NumberFieldBehavior.install()
 
         field.becomeFirstResponder()
         let selected = expectation(description: "selected")
@@ -31,5 +31,14 @@ final class NumberFieldSelectionTests: XCTestCase {
 
         let range = try? XCTUnwrap(field.selectedTextRange)
         XCTAssertEqual(range.map { field.text(in: $0) }, "1")
+        XCTAssertNotNil(field.inputAccessoryView, "a number pad gets a Done bar")
+    }
+
+    func test_aFieldWithItsOwnAccessory_keepsIt() {
+        let field = UITextField()
+        let own = UIView()
+        field.inputAccessoryView = own
+        NumberFieldBehavior.attachDoneBar(to: field)
+        XCTAssertTrue(field.inputAccessoryView === own)
     }
 }

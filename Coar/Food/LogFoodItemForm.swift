@@ -57,7 +57,7 @@ struct LogFoodItemForm: View {
             }
 
             Section {
-                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name, autofocus: true)
+                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name)
                     .formRow()
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)
@@ -77,6 +77,7 @@ struct LogFoodItemForm: View {
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onChange(of: servings) { _, servings in

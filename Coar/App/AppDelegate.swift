@@ -37,7 +37,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        NumberFieldSelection.install()
+        NumberFieldBehavior.install()
         if !Self.isTestHost {
             let runner = SyncDedupeRunner(store: dependencies.store)
             runner.start()

@@ -183,7 +183,7 @@ steps are read from HealthKit and never stored. Every screen follows `DESIGN.md`
 
 - Food Item: name, archived flag, one or more Servings (name, four macros, optional grams, isDefault, sortOrder). Meal: name, archived flag, components (Food Item + Serving + quantity, sortOrder).
 - Entry: instant, Day, name, Serving name, quantity, four macros, optional Food Item / Meal reference, optional component snapshot.
-- The "+" sheet: `SegmentedTabs` Foods / Meals, type-to-filter over the user's catalogue, "New food" action. No Search segment.
+- The "+" sheet: `SegmentedTabs` Foods / Meals, most recently used first, type-to-filter over the user's catalogue, "New food" action, an "Archived foods" / "Archived meals" page to restore from. No Search segment. (Order and archived page changed 2026-09-26 in testing.)
 - Summary row uses thin bars; Home uses `DotMatrix`. Same accents (blue protein, orange carbs, pink fat).
 
 ### Training

@@ -99,6 +99,7 @@ struct SettingsForm: View {
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
     }
 

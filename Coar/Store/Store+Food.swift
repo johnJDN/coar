@@ -30,7 +30,9 @@ extension Store {
         try write(name: name, servings: servings, to: item)
     }
 
-    /// Active Food Items by name: what the "+" sheet's Foods segment lists.
+    /// Active Food Items, most recently used first: what the "+" sheet's Foods segment
+    /// lists. Used means its latest Entry's time, or its own last edit when that is later,
+    /// so a new or just-edited Food Item starts at the top.
     func foodItems() throws -> [FoodItemRecord] {
         try fetchFoodItems(archived: false)
     }
@@ -166,8 +168,18 @@ extension Store {
     private func fetchFoodItems(archived: Bool) throws -> [FoodItemRecord] {
         let request = FoodItem.fetchRequest()
         request.predicate = NSPredicate(format: "isArchived == %@", NSNumber(value: archived))
-        return try context.fetch(request).compactMap(FoodItemRecord.init)
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        let items = try context.fetch(request)
+        guard !archived else {
+            return items.compactMap(FoodItemRecord.init).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        }
+        return RecentUse.ordered(items.map { item in
+            RecentUse.Candidate(
+                value: item,
+                name: item.name ?? "",
+                modifiedAt: item.modifiedAt,
+                lastLoggedAt: (item.entries as? Set<Entry>)?.compactMap(\.loggedAt).max()
+            )
+        }).compactMap(FoodItemRecord.init)
     }
 
     /// For the `Store+<Domain>` extensions only.

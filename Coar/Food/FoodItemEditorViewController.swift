@@ -94,7 +94,7 @@ final class FoodItemEditorViewController: UIViewController {
         }
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
-        collectionView.keyboardDismissMode = .onDrag
+        collectionView.dismissesKeyboardOnDrag()
         collectionView.delegate = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)

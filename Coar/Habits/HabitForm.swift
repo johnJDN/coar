@@ -63,6 +63,7 @@ struct HabitForm: View {
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onAppear { focus = .name }
