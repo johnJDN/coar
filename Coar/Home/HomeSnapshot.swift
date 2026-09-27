@@ -93,7 +93,9 @@ struct HomeSnapshot: Equatable {
     @MainActor
     private static func habits(from store: Store, health: HealthReader, today: Day) async throws -> Habits {
         var rows: [HabitCardModel] = []
-        for habit in try store.habits() {
+        let habits = try store.habits()
+        // The Habits tab's order: checked in by hand first, then tracked.
+        for habit in habits.filter({ $0.tracking == nil }) + habits.filter({ $0.tracking != nil }) {
             let values = if let tracking = habit.tracking {
                 await TrackedValues.load(tracking, store: store, health: health, today: today)
             } else {

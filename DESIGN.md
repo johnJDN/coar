@@ -239,7 +239,9 @@ Charts never show a legend when color already maps to a label on screen.
 - **Habits** — one card per habit: emoji, name, `CheckToggle` or amount, streak as the
   hero number, 7-row heatmap (Monday on top; yes/no cells binary, quantitative cells by
   intensity; weekly habits get a week-met dot per column). Detail page has a calendar
-  for retroactive edits. Archived habits in a section at the bottom.
+  for retroactive edits. Habits checked in by hand come first; tracked habits follow under a
+  "Tracked" header (both sections get headers only when both exist; Home keeps the same
+  order). Archived habits in a section at the bottom.
 - **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Foods /
   Meals segments (Search is added only when a food database exists).
 - **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans

@@ -1,8 +1,9 @@
 import UIKit
 import os
 
-/// The Habits tab (DESIGN.md §11): one card per active Habit, then an Archived section.
-/// Long-press to reorder; tap a card for its detail; the toggle checks today in and the
+/// The Habits tab (DESIGN.md §11): one card per active Habit, the ones checked in by hand
+/// first and the tracked ones (CONTEXT.md "Tracked habit") under their own header, then an
+/// Archived section. Long-press to reorder within a section; tap a card for its detail; the toggle checks today in and the
 /// amount control opens today's number sheet. Reads through the façade on every appearance
 /// and after every write.
 final class HabitsViewController: UIViewController {
@@ -10,7 +11,9 @@ final class HabitsViewController: UIViewController {
     private static let logger = Logger(category: "Habits")
 
     private enum Section: Hashable {
-        case active
+        /// Yes/no, number, and checklist Habits: the ones checked in by hand.
+        case checkIn
+        case tracked
         case archived
         /// Shown alone when there is no Habit at all.
         case empty
@@ -89,8 +92,12 @@ final class HabitsViewController: UIViewController {
             cell.onDelete = { [weak self] in self?.confirmDelete(habit) }
         }
         let emptyCell = UICollectionView.CellRegistration<EmptyStateCell, Item> { _, _, _ in }
-        let header = UICollectionView.SupplementaryRegistration<SectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { view, _, _ in
-            view.title = "Archived"
+        let header = UICollectionView.SupplementaryRegistration<SectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, indexPath in
+            switch self?.dataSource.sectionIdentifier(for: indexPath.section) {
+            case .checkIn: view.title = "Check in"
+            case .tracked: view.title = "Tracked"
+            default: view.title = "Archived"
+            }
         }
 
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, item in
@@ -111,7 +118,9 @@ final class HabitsViewController: UIViewController {
             return false
         }
         dataSource.reorderingHandlers.didReorder = { [weak self] transaction in
-            let ids = transaction.finalSnapshot.itemIdentifiers(inSection: .active).compactMap { item -> HabitRecord.ID? in
+            let snapshot = transaction.finalSnapshot
+            let items = [Section.checkIn, .tracked].filter(snapshot.sectionIdentifiers.contains).flatMap(snapshot.itemIdentifiers(inSection:))
+            let ids = items.compactMap { item -> HabitRecord.ID? in
                 if case .habit(let id) = item { return id }
                 return nil
             }
@@ -130,7 +139,7 @@ final class HabitsViewController: UIViewController {
             section.contentInsets = NSDirectionalEdgeInsets(
                 top: Metrics.spaceCard, leading: Metrics.spaceEdge, bottom: Metrics.spaceCard, trailing: Metrics.spaceEdge
             )
-            if self?.dataSource.sectionIdentifier(for: sectionIndex) == .archived {
+            if let self, hasHeader(dataSource.sectionIdentifier(for: sectionIndex)) {
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
                     elementKind: UICollectionView.elementKindSectionHeader,
@@ -139,6 +148,18 @@ final class HabitsViewController: UIViewController {
                 section.boundarySupplementaryItems = [header]
             }
             return section
+        }
+    }
+
+    /// Archived always has its header; the two active sections have theirs only side by
+    /// side, so a tab of one kind reads as it did before tracked Habits.
+    private func hasHeader(_ section: Section?) -> Bool {
+        switch section {
+        case .archived: return true
+        case .checkIn, .tracked:
+            let sections = dataSource.snapshot().sectionIdentifiers
+            return sections.contains(.checkIn) && sections.contains(.tracked)
+        case .empty, nil: return false
         }
     }
 
@@ -173,8 +194,16 @@ final class HabitsViewController: UIViewController {
             snapshot.appendSections([.empty])
             snapshot.appendItems([.empty], toSection: .empty)
         } else {
-            snapshot.appendSections([.active])
-            snapshot.appendItems(active.map { .habit($0.id) }, toSection: .active)
+            let checkIn = active.filter { $0.tracking == nil }
+            let tracked = active.filter { $0.tracking != nil }
+            if !checkIn.isEmpty || tracked.isEmpty {
+                snapshot.appendSections([.checkIn])
+                snapshot.appendItems(checkIn.map { .habit($0.id) }, toSection: .checkIn)
+            }
+            if !tracked.isEmpty {
+                snapshot.appendSections([.tracked])
+                snapshot.appendItems(tracked.map { .habit($0.id) }, toSection: .tracked)
+            }
             if !archivedHabits.isEmpty {
                 snapshot.appendSections([.archived])
                 snapshot.appendItems(archivedHabits.map { .archived($0.id) }, toSection: .archived)
@@ -285,7 +314,7 @@ extension HabitsViewController: UICollectionViewDelegate {
         navigationController?.pushViewController(HabitDetailViewController(dependencies: dependencies, habitID: id), animated: true)
     }
 
-    /// Reordering stays inside the active section.
+    /// Reordering stays inside its section.
     func collectionView(
         _ collectionView: UICollectionView,
         targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
