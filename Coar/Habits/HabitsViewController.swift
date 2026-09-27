@@ -80,11 +80,11 @@ final class HabitsViewController: UIViewController {
             render(switchingTab: true)
             collectionView.setContentOffset(CGPoint(x: 0, y: -collectionView.adjustedContentInset.top), animated: false)
         }, for: .valueChanged)
-        tabs.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(tabs)
 
+        // The control is the list's pinned header, not a view above it: the list runs under
+        // the navigation bar as UIKit expects of the scroll view a large title tracks, so a
+        // pulled title stretches with the control instead of sliding over it (as on Food).
         configureCollectionView()
-        setContentScrollView(collectionView, for: .top)
         remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
     }
 
@@ -103,10 +103,7 @@ final class HabitsViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
-            tabs.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Metrics.spaceTight),
-            tabs.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge),
-            tabs.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
-            collectionView.topAnchor.constraint(equalTo: tabs.bottomAnchor, constant: Metrics.spaceTight),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -141,8 +138,14 @@ final class HabitsViewController: UIViewController {
                 return collectionView.dequeueConfiguredReusableCell(using: emptyCell, for: indexPath, item: item)
             }
         }
+        let tabsHeader = UICollectionView.SupplementaryRegistration<TabsHeaderView>(elementKind: TabsHeaderView.elementKind) { [weak self] view, _, _ in
+            guard let self else { return }
+            view.hold(tabs)
+        }
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
-            collectionView.dequeueConfiguredReusableSupplementary(using: header, for: indexPath)
+            kind == TabsHeaderView.elementKind
+                ? collectionView.dequeueConfiguredReusableSupplementary(using: tabsHeader, for: indexPath)
+                : collectionView.dequeueConfiguredReusableSupplementary(using: header, for: indexPath)
         }
         dataSource.reorderingHandlers.canReorderItem = { item in
             if case .habit = item { return true }
@@ -160,7 +163,16 @@ final class HabitsViewController: UIViewController {
     }
 
     private func makeLayout() -> UICollectionViewLayout {
-        UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
+        let configuration = UICollectionViewCompositionalLayoutConfiguration()
+        let tabsHeader = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(48)),
+            elementKind: TabsHeaderView.elementKind,
+            alignment: .top
+        )
+        tabsHeader.pinToVisibleBounds = true
+        tabsHeader.zIndex = 2
+        configuration.boundarySupplementaryItems = [tabsHeader]
+        return UICollectionViewCompositionalLayout(sectionProvider: { [weak self] sectionIndex, _ in
             let size = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(220))
             let group = NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: [NSCollectionLayoutItem(layoutSize: size)])
             let section = NSCollectionLayoutSection(group: group)
@@ -177,7 +189,7 @@ final class HabitsViewController: UIViewController {
                 section.boundarySupplementaryItems = [header]
             }
             return section
-        }
+        }, configuration: configuration)
     }
 
     // MARK: - Rendering
@@ -379,5 +391,34 @@ private final class EmptyStateCell: CardCell {
         card.contentStack.addArrangedSubview(hero)
         card.contentStack.addArrangedSubview(caption)
         isAccessibilityElement = true
+    }
+}
+
+/// The pinned header holding the Check in / Tracked control. The screen owns the one
+/// control and hands it to whichever header the list dequeues, so its selection survives
+/// reuse. Opaque `background`, so cards scroll beneath it rather than through it.
+private final class TabsHeaderView: UICollectionReusableView {
+
+    static let elementKind = "habits-tabs-header"
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = UIColor.background
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    func hold(_ control: UIView) {
+        guard control.superview !== self else { return }
+        control.removeFromSuperview()
+        control.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(control)
+        NSLayoutConstraint.activate([
+            control.topAnchor.constraint(equalTo: topAnchor, constant: Metrics.spaceTight),
+            control.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Metrics.spaceEdge),
+            control.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Metrics.spaceEdge),
+            control.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Metrics.spaceTight),
+        ])
     }
 }
