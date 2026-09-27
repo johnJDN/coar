@@ -130,7 +130,7 @@ struct HabitChecklist: View {
 enum HabitCheckInSheet {
     static func sheet(for habit: HabitRecord, dependencies: AppDependencies, day: Day, onChange: @escaping () -> Void) -> UIViewController? {
         switch habit.kind {
-        case .yesNo: return nil
+        case .yesNo, .tracked: return nil
         case .quantitative: return HabitAmountViewController.sheet(dependencies: dependencies, habitID: habit.id, day: day, onChange: onChange)
         case .checklist: return HabitChecklistViewController.sheet(dependencies: dependencies, habitID: habit.id, day: day, onChange: onChange)
         }

@@ -73,7 +73,7 @@ struct HomeSnapshot: Equatable {
     /// read that fails is logged and its square shows `No data`, as the details do.
     @MainActor
     static func load(store: Store, health: HealthReader, healthStatus: HealthAccessStatus, unit: MassUnit, today: Day) async throws -> HomeSnapshot {
-        let habits = try habits(from: store, today: today)
+        let habits = try await habits(from: store, health: health, today: today)
         let macros = try macros(from: store, today: today)
         let bodyWeight = try bodyWeight(from: store, unit: unit)
         let lastWorkout = try store.recentWorkouts(limit: 1).first
@@ -91,9 +91,15 @@ struct HomeSnapshot: Equatable {
     }
 
     @MainActor
-    private static func habits(from store: Store, today: Day) throws -> Habits {
-        let rows = try store.habits().map { habit in
-            HabitCardModel(habit: habit, checkIns: try store.checkIns(for: habit.id), today: today)
+    private static func habits(from store: Store, health: HealthReader, today: Day) async throws -> Habits {
+        var rows: [HabitCardModel] = []
+        for habit in try store.habits() {
+            let values = if let tracking = habit.tracking {
+                await TrackedValues.load(tracking, store: store, health: health, today: today)
+            } else {
+                [Day: Double]()
+            }
+            rows.append(HabitCardModel(habit: habit, checkIns: try store.checkIns(for: habit.id), trackedValues: values, today: today))
         }
         guard !rows.isEmpty else { return .none }
         let done = rows.filter(\.isDoneToday).count

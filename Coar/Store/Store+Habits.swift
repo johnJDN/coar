@@ -15,6 +15,7 @@ extension Store {
         targetAmount: Double,
         period: HabitPeriod,
         items: [HabitItemDraft] = [],
+        tracking: HabitTracking? = nil,
         effectiveFrom: Day = .today()
     ) throws -> HabitRecord {
         let habit = Habit(context: context)
@@ -22,6 +23,8 @@ extension Store {
         habit.emoji = emoji
         habit.name = name
         habit.kind = kind.rawValue
+        habit.metric = kind == .tracked ? tracking?.metric.rawValue ?? 0 : 0
+        habit.comparison = tracking?.comparison.rawValue ?? 0
         habit.isArchived = false
         habit.sortOrder = try nextHabitSortOrder()
 
@@ -252,6 +255,9 @@ private extension HabitRecord {
                 .filter { !$0.isRemoved }
                 .sorted(by: Store.bySortOrder)
                 .compactMap { item in item.id.map { HabitItemRecord(id: $0, name: item.name ?? "") } },
+            tracking: TrackedMetric(rawValue: object.metric).map {
+                HabitTracking(metric: $0, comparison: HabitComparison(rawValue: object.comparison) ?? .atLeast)
+            },
             modifiedAt: modifiedAt
         )
     }

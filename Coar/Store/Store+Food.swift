@@ -110,6 +110,16 @@ extension Store {
         return entry
     }
 
+    /// Each Day's summed macros in the range, for the Days with at least one Entry: what a
+    /// tracked Habit judges food by (a Day with none has nothing logged).
+    func dailyTotals(from start: Day, to end: Day) throws -> [Day: Macros] {
+        let request = Entry.fetchRequest()
+        request.predicate = NSPredicate(format: "day >= %@ AND day <= %@", start.rawValue, end.rawValue)
+        return try context.fetch(request).compactMap(EntryRecord.init).reduce(into: [:]) { totals, entry in
+            totals[entry.day] = Macros.sum([totals[entry.day] ?? .zero, entry.macros])
+        }
+    }
+
     /// The Day's Entries, earliest first.
     func entries(on day: Day) throws -> [EntryRecord] {
         let request = Entry.fetchRequest()

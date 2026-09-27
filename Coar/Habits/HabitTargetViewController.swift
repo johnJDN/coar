@@ -19,7 +19,12 @@ final class HabitTargetViewController: UIHostingController<HabitTargetForm> {
     init(dependencies: AppDependencies, habit: HabitRecord, target: HabitTargetRecord?, onSaved: @escaping () -> Void) {
         self.dependencies = dependencies
         habitID = habit.id
-        current = HabitTargetDraft(kind: habit.kind, period: target?.period ?? .day, typedAmount: target?.amount, itemCount: habit.items.count)
+        var current = HabitTargetDraft(kind: habit.kind, period: target?.period ?? .day, typedAmount: target?.amount, itemCount: habit.items.count)
+        if let tracking = habit.tracking {
+            current.metric = tracking.metric
+            current.comparison = tracking.comparison
+        }
+        self.current = current
         draft = current
         self.onSaved = onSaved
         super.init(rootView: HabitTargetForm(draft: current) { _ in })

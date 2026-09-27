@@ -146,6 +146,18 @@ final class Store {
         return try context.fetch(request).first.flatMap(TargetRecord.init)
     }
 
+    /// The whole dated series, earliest first; when a Day starts two entries (before the
+    /// dedupe pass), the latest-modified stands.
+    func targets() throws -> [TargetRecord] {
+        let request = MacroTarget.fetchRequest()
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "effectiveFrom", ascending: true),
+            NSSortDescriptor(key: "modifiedAt", ascending: false),
+        ]
+        var seen: Set<Day> = []
+        return try context.fetch(request).compactMap(TargetRecord.init).filter { seen.insert($0.effectiveFrom).inserted }
+    }
+
     /// Sets the Target in force from `day` on. Past Days keep the Target that applied then
     /// (ADR 0003). Setting the same values as are already in force on `day` writes nothing;
     /// setting again on a Day that already starts an entry replaces that entry, so a Day

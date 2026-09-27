@@ -270,3 +270,7 @@ each ticket's Results in `human-testing.md`.
   mode), empty, or an Activity (name, optional distance and notes). Any finished Workout's
   detail has Edit; leaving the editor drops unticked sets after asking. No rest timer and no
   plan write-back for past Workouts.
+- **Tracked habits** (added 2026-09-26): a fourth Habit kind, on the Habits tab, judged from
+  sleep, steps, workout days, food logged, weigh-ins, or a macro as a % of that day's Target;
+  at least or at most, per day or per week. Weekly averages use only days with data; an
+  unlogged food day is a miss. The capsule shows the value; the calendar is read-only.

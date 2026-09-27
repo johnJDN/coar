@@ -369,3 +369,13 @@ simulator as the second device); every judgement call was kept unless its Result
 - [ ] Activity: type "Pickleball", a distance, a note; Add: it appears under Recent workouts with a running icon and "Sep 20 · 2 mi"; its page shows Duration, Distance, and the note; Edit changes them and saves as you type; the next time, "Pickleball" is offered as a shortcut.
 - [ ] Any finished workout: Edit opens the workout screen in editing mode; `…` → Date and time moves it (the grid follows); `…` → Delete workout asks first.
 - [ ] While a workout is active, logging a past one works and the active bar still returns to the active one.
+
+## Added after v1: Tracked habits (2026-09-26)
+
+- [ ] Habits → `+` → Kind "Tracked": Track and Goal (At least / At most) rows appear; picking a metric sets its usual goal (Sleep: at least 7 h average, week; Steps: 7,000 average, week; Workouts: 3 days a week; Food logged: every day; Weigh-ins: 3 days a week; Calories/Fat/Carbs: at most 110% a day; Protein: at least 90% a day); the name and emoji fill in if left empty; Save.
+- [ ] Workouts 3 days a week: the capsule reads "1/3" after one workout this week (an Activity counts); green at 3; the streak counts weeks.
+- [ ] Calories at most 110%: the capsule shows today's % of the calorie target and is green while under; a day with nothing logged misses; changing your targets doesn't change past days.
+- [ ] Protein at least 90%: green once today's protein reaches 90% of target.
+- [ ] Sleep / steps weekly averages: the caption reads "6.8h average this week"; a night without data doesn't lower it.
+- [ ] Tracked capsules don't open anything; the detail's Target card says where the data comes from; its calendar is read-only; Change target adjusts the amount and period from today.
+- [ ] Home's habits card counts tracked habits in "n of m done today".

@@ -120,7 +120,12 @@ final class HabitDetailViewController: ScreenViewController {
         return card
     }
 
-    private func render() {
+    /// A tracked Habit's values from the last read; `render` draws with them, then reads
+    /// again (Apple Health is async) and draws once more if they changed.
+    private var trackedValues: [Day: Double] = [:]
+    private var trackedLoad: Task<Void, Never>?
+
+    private func render(refreshingTracked: Bool = true) {
         let today = Day.today()
         do {
             guard let habit = try dependencies.store.habit(habitID) else {
@@ -129,13 +134,24 @@ final class HabitDetailViewController: ScreenViewController {
                 return
             }
             self.habit = habit
-            let model = HabitCardModel(habit: habit, checkIns: try dependencies.store.checkIns(for: habitID), today: today, columns: 1)
+            let model = HabitCardModel(habit: habit, checkIns: try dependencies.store.checkIns(for: habitID), trackedValues: trackedValues, today: today, columns: 1)
+            if refreshingTracked, let tracking = habit.tracking {
+                trackedLoad?.cancel()
+                trackedLoad = Task { [weak self] in
+                    guard let self else { return }
+                    let values = await TrackedValues.load(tracking, store: dependencies.store, health: dependencies.healthReader, today: today)
+                    guard !Task.isCancelled, values != trackedValues else { return }
+                    trackedValues = values
+                    render(refreshingTracked: false)
+                }
+            }
             title = "\(habit.emoji) \(habit.name)"
             streak.setStreak(model.streak, unit: model.streakUnit, caption: model.weekCaption)
-            let summary = model.target?.summary(for: habit.kind)
+            let summary = model.target?.summary(for: habit.kind, tracking: habit.tracking)
             targetValueLabel.text = summary?.value ?? "—"
             targetValueLabel.textColor = summary == nil ? UIColor.textTertiary : UIColor.accentGreen
-            targetUnitLabel.text = summary?.unit
+            targetUnitLabel.text = [summary?.unit, habit.tracking?.metric.source].compactMap { $0 }.joined(separator: "\n")
+            targetUnitLabel.numberOfLines = 0
             itemsCard.isHidden = habit.kind != .checklist
             itemsLabel.text = habit.items.map(\.name).joined(separator: "\n")
             calendar.model = .init(today: today, levels: model.levels, editableFrom: model.editableFrom)

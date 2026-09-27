@@ -6,12 +6,14 @@ enum HabitKind: Int16, CaseIterable {
     case yesNo = 0
     case quantitative = 1
     case checklist = 2
+    case tracked = 3
 
     var title: String {
         switch self {
         case .yesNo: return "Yes / no"
         case .quantitative: return "Amount"
         case .checklist: return "Checklist"
+        case .tracked: return "Tracked"
         }
     }
 }
@@ -50,6 +52,8 @@ struct HabitRecord: Hashable, Identifiable {
     /// A checklist Habit's Items in the user's order, removed ones left out; empty for the
     /// other kinds.
     var items: [HabitItemRecord] = []
+    /// A tracked Habit's metric and direction; nil for the other kinds.
+    var tracking: HabitTracking? = nil
     let modifiedAt: Date
 
     /// The target in force on a Day: the record with the latest effective-from Day on or
@@ -86,12 +90,16 @@ struct HabitTargetRecord: Hashable {
     let effectiveFrom: Day
 
     /// The target as a value and its unit: "20" "a day", "3" "days a week", "1" "a day".
-    func summary(for kind: HabitKind) -> (value: String, unit: String) {
+    func summary(for kind: HabitKind, tracking: HabitTracking? = nil) -> (value: String, unit: String) {
+        if kind == .tracked, let tracking {
+            return tracking.summary(amount: amount, period: period)
+        }
         let value = HabitAmount.text(amount)
         switch (kind, period) {
         case (.yesNo, .week): return (value, amount == 1 ? "day a week" : "days a week")
         case (.checklist, .day): return (value, amount == 1 ? "item a day" : "items a day")
         case (.checklist, .week): return (value, amount == 1 ? "item a week" : "items a week")
+        case (.tracked, _): return (value, "")
         case (_, .day): return (value, "a day")
         case (.quantitative, .week): return (value, "a week")
         }

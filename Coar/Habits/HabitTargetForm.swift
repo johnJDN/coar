@@ -10,6 +10,11 @@ struct HabitTargetDraft: Equatable {
     var typedAmount: Double? = 1
     /// A checklist's number of Items, which caps its amount; set by the form.
     var itemCount = 0
+    /// A tracked Habit's metric and direction; chosen when creating, fixed afterwards.
+    var metric: TrackedMetric = .sleep
+    var comparison: HabitComparison = .atLeast
+
+    var tracking: HabitTracking { HabitTracking(metric: metric, comparison: comparison) }
 
     init(kind: HabitKind = .yesNo, period: HabitPeriod = .day, typedAmount: Double? = 1, itemCount: Int = 0) {
         self.kind = kind
@@ -19,7 +24,13 @@ struct HabitTargetDraft: Equatable {
     }
 
     /// Whether the amount field applies.
-    var needsAmount: Bool { !(kind == .yesNo && period == .day) }
+    var needsAmount: Bool {
+        switch kind {
+        case .yesNo: return period != .day
+        case .tracked: return !(metric.isDayCount && period == .day)
+        case .quantitative, .checklist: return true
+        }
+    }
 
     /// The valid target amount, or nil while the field is empty or out of range: positive, a
     /// whole number of days for a weekly yes/no Habit and at most 7 of them.
@@ -32,6 +43,19 @@ struct HabitTargetDraft: Equatable {
             return typedAmount
         }
         guard let typedAmount, typedAmount > 0, typedAmount.isFinite else { return nil }
+        if kind == .tracked {
+            switch metric {
+            case .workouts, .foodLogged, .weighIns:
+                guard typedAmount.rounded() == typedAmount, typedAmount <= 7 else { return nil }
+            case .sleep:
+                guard typedAmount <= 24 else { return nil }
+            case .calories, .protein, .fat, .carbs:
+                guard typedAmount <= 500 else { return nil }
+            case .steps:
+                break
+            }
+            return typedAmount
+        }
         if kind == .yesNo {
             guard typedAmount.rounded() == typedAmount, typedAmount <= 7 else { return nil }
         }
@@ -44,6 +68,16 @@ struct HabitTargetDraft: Equatable {
         case (.quantitative, .day): return "Amount a day"
         case (.quantitative, .week): return "Amount a week"
         case (.checklist, _): return "Items to tick"
+        case (.tracked, _):
+            switch (metric, period) {
+            case (.sleep, .day): return "Hours a night"
+            case (.sleep, .week): return "Average hours a night"
+            case (.steps, .day): return "Steps a day"
+            case (.steps, .week): return "Average steps a day"
+            case (.workouts, _), (.foodLogged, _), (.weighIns, _): return "Days a week"
+            case (_, .day): return "% of target"
+            case (_, .week): return "Average % of target"
+            }
         }
     }
 
@@ -60,6 +94,29 @@ struct HabitTargetDraft: Equatable {
         case (.quantitative, .week): return "Enter a total each day. The week counts once its days add up to this amount."
         case (.checklist, .day): return "Tick items off one by one; the list starts fresh each day. The day counts once this many are ticked."
         case (.checklist, .week): return "Tick items off one by one; a tick lasts the whole week. The week counts once this many are ticked."
+        case (.tracked, _): return trackedFooter
+        }
+    }
+
+    /// Where a tracked Habit reads from and how a Period is judged.
+    private var trackedFooter: String {
+        let side = comparison == .atMost ? "at most" : "at least"
+        switch metric {
+        case .sleep, .steps:
+            let what = metric == .sleep ? "sleep" : "steps"
+            return period == .day
+                ? "Read from Apple Health. Each day counts when its \(what) is \(side) this."
+                : "Read from Apple Health. The week counts when its average is \(side) this, over the days that have data."
+        case .workouts, .foodLogged, .weighIns:
+            let what = metric == .workouts ? "a workout (activities too)" : metric == .foodLogged ? "food logged" : "a Body Weight"
+            return period == .day
+                ? "Every day needs \(what); a day without is a miss."
+                : "The week counts once this many of its days have \(what)."
+        case .calories, .protein, .fat, .carbs:
+            let base = "Compared with that day's \(metric.title.lowercased()) target; a day with no food logged is a miss."
+            return period == .day
+                ? "\(base) Each day counts when it is \(side) this share of the target."
+                : "\(base) The week counts when its average is \(side) this share."
         }
     }
 
@@ -72,6 +129,7 @@ struct HabitTargetDraft: Equatable {
         case (.quantitative, .week): return "For example, “Run 15 miles a week”."
         case (.checklist, .day): return "For example, “Take my 5 supplements”."
         case (.checklist, .week): return "For example, “Text each of these friends”."
+        case (.tracked, _): return "Nothing to check in: Coar keeps the streak from data it already has."
         }
     }
 }
@@ -96,11 +154,39 @@ struct HabitTargetSection: View {
                             Text(kind.title).tag(kind)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                     .labelsHidden()
-                    .fixedSize()
                 }
                 .formRow()
+                if draft.kind == .tracked {
+                    HStack(spacing: Metrics.spaceInner) {
+                        Text("Track").foregroundStyle(Color.textPrimary)
+                        Spacer()
+                        Picker("Track", selection: $draft.metric) {
+                            ForEach(TrackedMetric.allCases, id: \.self) { metric in
+                                Text("\(metric.emoji) \(metric.title)").tag(metric)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                    }
+                    .formRow()
+                    if !draft.metric.isDayCount {
+                        HStack(spacing: Metrics.spaceInner) {
+                            Text("Goal").foregroundStyle(Color.textPrimary)
+                            Spacer()
+                            Picker("Goal", selection: $draft.comparison) {
+                                ForEach(HabitComparison.allCases, id: \.self) { comparison in
+                                    Text(comparison.title).tag(comparison)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .fixedSize()
+                        }
+                        .formRow()
+                    }
+                }
             }
             HStack(spacing: Metrics.spaceInner) {
                 Text("Period").foregroundStyle(Color.textPrimary)
@@ -120,7 +206,7 @@ struct HabitTargetSection: View {
                     Text(draft.amountLabel).foregroundStyle(Color.textPrimary)
                     Spacer()
                     TextField(draft.amountPlaceholder, value: $draft.typedAmount, format: .number)
-                        .keyboardType(draft.kind == .quantitative ? .decimalPad : .numberPad)
+                        .keyboardType(draft.kind == .quantitative || (draft.kind == .tracked && draft.metric == .sleep) ? .decimalPad : .numberPad)
                         .multilineTextAlignment(.trailing)
                         .font(Font.metricNumber)
                         .foregroundStyle(Color.accentGreen)

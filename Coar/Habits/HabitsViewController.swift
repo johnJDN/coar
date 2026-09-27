@@ -144,7 +144,12 @@ final class HabitsViewController: UIViewController {
 
     // MARK: - Rendering
 
-    private func render() {
+    /// Tracked Habits' values from the last read (Apple Health reads are async); a render
+    /// draws with these at once and then refreshes them.
+    private var trackedValues: [HabitRecord.ID: [Day: Double]] = [:]
+    private var trackedLoad: Task<Void, Never>?
+
+    private func render(refreshingTracked: Bool = true) {
         let today = Day.today()
         let active: [HabitRecord]
         let archivedHabits: [HabitRecord]
@@ -152,7 +157,10 @@ final class HabitsViewController: UIViewController {
             active = try dependencies.store.habits()
             archivedHabits = try dependencies.store.archivedHabits()
             cards = Dictionary(uniqueKeysWithValues: try active.map { habit in
-                (habit.id, HabitCardModel(habit: habit, checkIns: try dependencies.store.checkIns(for: habit.id), today: today))
+                (habit.id, HabitCardModel(
+                    habit: habit, checkIns: try dependencies.store.checkIns(for: habit.id),
+                    trackedValues: trackedValues[habit.id] ?? [:], today: today
+                ))
             })
         } catch {
             Self.logger.error("Failed to read Habits: \(error, privacy: .public)")
@@ -173,6 +181,26 @@ final class HabitsViewController: UIViewController {
             }
         }
         dataSource.apply(reconfiguringExisting: snapshot)
+        if refreshingTracked {
+            refreshTracked(active, today: today)
+        }
+    }
+
+    /// Reads every tracked Habit's values, then draws again if anything changed.
+    private func refreshTracked(_ habits: [HabitRecord], today: Day) {
+        let tracked = habits.compactMap { habit in habit.tracking.map { (habit.id, $0) } }
+        guard !tracked.isEmpty else { return }
+        trackedLoad?.cancel()
+        trackedLoad = Task { [weak self] in
+            guard let self else { return }
+            var values: [HabitRecord.ID: [Day: Double]] = [:]
+            for (id, tracking) in tracked {
+                values[id] = await TrackedValues.load(tracking, store: dependencies.store, health: dependencies.healthReader, today: today)
+            }
+            guard !Task.isCancelled, values != trackedValues else { return }
+            trackedValues = values
+            render(refreshingTracked: false)
+        }
     }
 
     // MARK: - Actions

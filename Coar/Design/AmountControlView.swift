@@ -15,6 +15,8 @@ final class AmountControlView: CapsuleControlView {
     private var amount: Double = 0
     /// A checklist's number of Items: the capsule then reads "2/5" rather than an amount.
     private var total: Int?
+    /// A tracked Habit's value as text ("6.8h"): shown as is.
+    private var text: String?
     private var isMet = false
 
     override init() {
@@ -44,6 +46,7 @@ final class AmountControlView: CapsuleControlView {
         let changed = amount != self.amount || isMet != self.isMet || total != nil
         self.amount = amount
         self.total = nil
+        self.text = nil
         self.isMet = isMet
         stateChanged(animated: animated && changed)
     }
@@ -53,11 +56,28 @@ final class AmountControlView: CapsuleControlView {
         let changed = Double(ticked) != amount || isMet != self.isMet || total != self.total
         amount = Double(ticked)
         self.total = total
+        self.text = nil
+        self.isMet = isMet
+        stateChanged(animated: animated && changed)
+    }
+
+    /// A tracked Habit: its current value as text, green once the goal is met.
+    func setText(_ text: String, isMet: Bool, animated: Bool) {
+        let changed = text != self.text || isMet != self.isMet
+        self.text = text
+        total = nil
         self.isMet = isMet
         stateChanged(animated: animated && changed)
     }
 
     override func render(animated: Bool) {
+        if let text {
+            label.text = text
+            label.textColor = isMet ? .white : text == "—" ? UIColor.textSecondary : UIColor.textPrimary
+            accessibilityValue = text == "—" ? "Nothing yet" : text + (isMet ? ", on track" : "")
+            setAlive(isMet, animated: animated)
+            return
+        }
         if let total {
             let ticked = Int(amount)
             label.text = "\(ticked)/\(total)"

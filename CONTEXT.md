@@ -18,6 +18,14 @@ applies over. Yes/no (done or not), quantitative (an amount), or a checklist (It
 off one by one; the target is how many of them).
 _Avoid_: Routine, goal, streak
 
+**Tracked habit**:
+A Habit Coar keeps from data it already has instead of Check-ins: sleep or steps (Apple
+Health), workout days (Activities included), days with food logged, weigh-ins, or a macro as
+a share of that day's Target. Its target is at least or at most an amount per day, or per
+week (an average over the days that have data, or a count of days). A day with nothing to
+judge (no food logged) is a miss for a daily goal.
+_Avoid_: Goal, auto habit, metric habit
+
 **Item**:
 One named thing on a checklist Habit, ticked off on its own: a friend to text, a supplement
 to take. An Item ticked on any day of a Period counts for that whole Period, once. Removing

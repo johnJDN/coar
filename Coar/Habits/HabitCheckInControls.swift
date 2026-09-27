@@ -47,7 +47,12 @@ final class HabitCheckInControls: UIView {
         case .checklist:
             amountControl.setCount(model.tickedItemCount, of: model.itemCount, isMet: model.isDoneToday, animated: true)
             amountControl.accessibilityLabel = "Check in \(model.name)"
+        case .tracked:
+            amountControl.setText(model.trackedText ?? "—", isMet: model.isDoneToday, animated: true)
+            amountControl.accessibilityLabel = model.name
         }
+        // A tracked Habit is read, not checked in: its capsule only shows the value.
+        amountControl.isUserInteractionEnabled = model.kind != .tracked
     }
 
     /// Forgets the shown state, so a recycled cell never springs from another Habit's.
