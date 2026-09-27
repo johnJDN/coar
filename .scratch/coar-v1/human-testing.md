@@ -361,3 +361,11 @@ simulator as the second device); every judgement call was kept unless its Result
 - [ ] Detail: Target reads "5 items a day"; the Items card lists them; Edit: rename, add, swipe to delete, drag to reorder; it saves as you type and on Done; a goal of all follows the list (adding a sixth makes it 6 from today; past days keep 5); deleting every Item saves nothing.
 - [ ] Detail calendar: tap a past day: the sheet opens for that day (or that week) and ticks land there.
 - [ ] Home: the checklist capsule opens the same sheet and Home updates when it closes.
+
+## Added after v1: Past workouts and activities (2026-09-26)
+
+- [ ] Train: Start's menu has "Log past workout…"; a "Log past workout" button sits under Recent workouts; tapping an empty past day on the grid opens the sheet set to 6 PM that day.
+- [ ] Strength: the most recently used plan is pre-picked; Add opens the workout screen titled with the plan and "Sep 20 · 6:00 PM · 1 h", sets already ticked, no rest-timer button, Done instead of Finish; untick a set and tap Done (or back): "Drop 1 set left unticked?"; the grid marks the day.
+- [ ] Activity: type "Pickleball", a distance, a note; Add: it appears under Recent workouts with a running icon and "Sep 20 · 2 mi"; its page shows Duration, Distance, and the note; Edit changes them and saves as you type; the next time, "Pickleball" is offered as a shortcut.
+- [ ] Any finished workout: Edit opens the workout screen in editing mode; `…` → Date and time moves it (the grid follows); `…` → Delete workout asks first.
+- [ ] While a workout is active, logging a past one works and the active bar still returns to the active one.

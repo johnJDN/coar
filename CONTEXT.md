@@ -110,6 +110,12 @@ One training session that actually happened, on a date, containing the Exercises
 performed and the Logged Sets performed for each. May or may not come from a Plan.
 _Avoid_: Session, training, workout log
 
+**Activity**:
+A Workout that is not strength training: pickleball, a run, basketball. It has a name, a
+start and duration, and optionally a distance and notes, but no Exercises or sets. It counts
+as a workout day like any other Workout.
+_Avoid_: Cardio, sport, session
+
 **Active Workout**:
 The one Workout currently in progress. There is never more than one.
 _Avoid_: Current workout, live workout, in-progress session

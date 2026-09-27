@@ -24,23 +24,86 @@ extension Store {
         workout.startedAt = now
         workout.day = Day(now, in: calendar).rawValue
         if let planID, let plan = try fetchPlan(planID) {
-            workout.plan = plan
-            for (position, planRow) in plan.exerciseObjects.sorted(by: Self.bySortOrder).enumerated() {
-                let row = makeWorkoutExercise(from: planRow.exercise, name: planRow.exercise?.name, position: position, in: workout)
-                row.supersetGroup = planRow.supersetGroup
-                for (setPosition, planned) in planRow.plannedSetObjects.sorted(by: Self.bySortOrder).enumerated() {
-                    let set = makeLoggedSet(position: setPosition, in: row)
-                    set.targetKilograms = NSNumber(value: planned.targetKilograms)
-                    set.repMin = NSNumber(value: planned.repMin)
-                    set.repMax = NSNumber(value: planned.repMax)
-                    set.kilograms = planned.targetKilograms
-                    set.reps = planned.repMin
-                }
-            }
+            copyRows(of: plan, into: workout, completed: false)
         }
         try save()
         notifyActiveWorkoutChanged()
         return WorkoutRecord(workout)!
+    }
+
+    /// Records a Workout done without starting it in the app: finished from the start, on
+    /// the Day `startedAt` falls on, lasting `duration`. From a Plan, every set is copied
+    /// already completed (it was done), for the user to correct; empty otherwise. It is
+    /// never the Active Workout, so one can be logged while another is running.
+    @discardableResult
+    func logPastWorkout(from planID: PlanRecord.ID?, startedAt: Date, duration: TimeInterval, in calendar: Calendar = .current) throws -> WorkoutRecord {
+        let workout = Workout(context: context)
+        workout.id = UUID()
+        workout.startedAt = startedAt
+        workout.finishedAt = startedAt.addingTimeInterval(duration)
+        workout.day = Day(startedAt, in: calendar).rawValue
+        if let planID, let plan = try fetchPlan(planID) {
+            copyRows(of: plan, into: workout, completed: true)
+        }
+        try save()
+        return WorkoutRecord(workout)!
+    }
+
+    /// Records an Activity (CONTEXT.md "Activity"): a finished Workout with a name and no
+    /// sets, on the Day `startedAt` falls on. Distance (metres) and notes are optional.
+    @discardableResult
+    func logActivity(name: String, startedAt: Date, duration: TimeInterval, distanceMeters: Double?, notes: String?, in calendar: Calendar = .current) throws -> WorkoutRecord {
+        let workout = Workout(context: context)
+        workout.id = UUID()
+        workout.startedAt = startedAt
+        workout.finishedAt = startedAt.addingTimeInterval(duration)
+        workout.day = Day(startedAt, in: calendar).rawValue
+        write(activityName: name, distanceMeters: distanceMeters, notes: notes, to: workout)
+        try save()
+        return WorkoutRecord(workout)!
+    }
+
+    /// Replaces an Activity's name, distance, and notes.
+    func updateActivity(_ id: WorkoutRecord.ID, name: String, distanceMeters: Double?, notes: String?) throws {
+        guard let workout = try fetchWorkout(id), workout.activityName != nil else { return }
+        write(activityName: name, distanceMeters: distanceMeters, notes: notes, to: workout)
+        try save()
+    }
+
+    /// Every Activity name used, most recent first, each once (case-insensitively): the
+    /// suggestions offered when logging the next one.
+    func activityNames() throws -> [String] {
+        let request = Workout.fetchRequest()
+        request.predicate = NSPredicate(format: "activityName != nil")
+        request.sortDescriptors = [NSSortDescriptor(key: "startedAt", ascending: false)]
+        var seen: Set<String> = []
+        return try context.fetch(request).compactMap(\.activityName).filter { seen.insert($0.lowercased()).inserted }
+    }
+
+    private func write(activityName name: String, distanceMeters: Double?, notes: String?, to workout: Workout) {
+        let trimmedNotes = notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        workout.activityName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        workout.distanceMeters = max(0, distanceMeters ?? 0)
+        workout.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
+    }
+
+    /// Moves a finished Workout to another start time and length; its Day follows the start.
+    func setWorkoutTime(_ id: WorkoutRecord.ID, startedAt: Date, duration: TimeInterval, in calendar: Calendar = .current) throws {
+        guard let workout = try fetchWorkout(id), workout.finishedAt != nil else { return }
+        workout.startedAt = startedAt
+        workout.finishedAt = startedAt.addingTimeInterval(duration)
+        workout.day = Day(startedAt, in: calendar).rawValue
+        try save()
+    }
+
+    /// Deletes a finished Workout's uncompleted sets, as Finish does: leaving the editor of a
+    /// past Workout keeps only what was performed.
+    func dropUncompletedSets(_ id: WorkoutRecord.ID) throws {
+        guard let workout = try fetchWorkout(id), workout.finishedAt != nil else { return }
+        for set in workout.loggedSetObjects where !set.isCompleted {
+            context.delete(set)
+        }
+        try save()
     }
 
     /// The one Workout with no `finishedAt`, if any.
@@ -216,6 +279,25 @@ extension Store {
 
     // MARK: - Object building
 
+    /// Copies the Plan's rows (name snapshot, Exercise reference, Superset group, rest
+    /// default) and its Planned Sets as pre-filled Logged Sets (ADR 0003).
+    private func copyRows(of plan: Plan, into workout: Workout, completed: Bool) {
+        workout.plan = plan
+        for (position, planRow) in plan.exerciseObjects.sorted(by: Self.bySortOrder).enumerated() {
+            let row = makeWorkoutExercise(from: planRow.exercise, name: planRow.exercise?.name, position: position, in: workout)
+            row.supersetGroup = planRow.supersetGroup
+            for (setPosition, planned) in planRow.plannedSetObjects.sorted(by: Self.bySortOrder).enumerated() {
+                let set = makeLoggedSet(position: setPosition, in: row)
+                set.targetKilograms = NSNumber(value: planned.targetKilograms)
+                set.repMin = NSNumber(value: planned.repMin)
+                set.repMax = NSNumber(value: planned.repMax)
+                set.kilograms = planned.targetKilograms
+                set.reps = planned.repMin
+                set.isCompleted = completed
+            }
+        }
+    }
+
     private func makeWorkoutExercise(from exercise: Exercise?, name: String?, position: Int, in workout: Workout) -> WorkoutExercise {
         let row = WorkoutExercise(context: context)
         row.id = UUID()
@@ -263,6 +345,7 @@ private extension WorkoutRecord {
             planID: object.plan?.id,
             planName: object.plan?.name ?? object.planName,
             exercises: object.exerciseRecords,
+            activity: object.activityName.map { WorkoutActivity(name: $0, distanceMeters: object.distanceMeters > 0 ? object.distanceMeters : nil, notes: object.notes) },
             modifiedAt: modifiedAt
         )
     }

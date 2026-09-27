@@ -5,8 +5,9 @@ import UIKit
 /// ran, and what it held. Tapping opens the Workout.
 final class WorkoutCardControl: CardControl {
 
-    init(workout: WorkoutRecord) {
-        super.init(card: CardView(title: workout.title, systemImage: "dumbbell.fill", iconTint: workout.isActive ? UIColor.accentGreen : UIColor.textPrimary, accessory: .navigates))
+    init(workout: WorkoutRecord, distanceUnit: DistanceUnit = .miles) {
+        let icon = workout.activity == nil ? "dumbbell.fill" : "figure.run"
+        super.init(card: CardView(title: workout.title, systemImage: icon, iconTint: workout.isActive ? UIColor.accentGreen : UIColor.textPrimary, accessory: .navigates))
 
         let when = UILabel()
         when.text = Self.whenText(workout)
@@ -15,7 +16,7 @@ final class WorkoutCardControl: CardControl {
         when.adjustsFontForContentSizeCategory = true
 
         let caption = UILabel()
-        caption.text = TrainText.caption(of: workout)
+        caption.text = TrainText.caption(of: workout, distanceUnit: distanceUnit)
         caption.font = UIFont.label
         caption.textColor = UIColor.textSecondary
         caption.adjustsFontForContentSizeCategory = true

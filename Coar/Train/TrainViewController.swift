@@ -65,7 +65,14 @@ final class TrainViewController: ScreenViewController {
         recentStack.axis = .vertical
         recentStack.spacing = Metrics.spaceCard
         contentStack.addArrangedSubview(recentStack)
-        contentStack.setCustomSpacing(Metrics.spaceSection, after: recentStack)
+        contentStack.setCustomSpacing(Metrics.spaceCard, after: recentStack)
+
+        let logPast = UIStackView(arrangedSubviews: [
+            UIButton.glassAction(title: "Log past workout", systemImage: "clock.arrow.circlepath") { [weak self] in self?.logPastWorkout(on: nil) },
+        ])
+        logPast.alignment = .leading
+        contentStack.addArrangedSubview(logPast)
+        contentStack.setCustomSpacing(Metrics.spaceSection, after: logPast)
 
         contentStack.addArrangedSubview(archivedHeader)
         contentStack.setCustomSpacing(Metrics.spaceTight, after: archivedHeader)
@@ -152,7 +159,8 @@ final class TrainViewController: ScreenViewController {
 
     // MARK: - Month grid
 
-    /// Days with a Workout light up `accentGreen` and open it; every other Day is inert.
+    /// Days with a Workout light up `accentGreen` and open it; any other Day up to today
+    /// offers to log a past Workout on it.
     private func renderGrid() {
         let today = Day.today()
         let days: Set<Day>
@@ -165,8 +173,7 @@ final class TrainViewController: ScreenViewController {
         calendar.model = .init(
             today: today,
             levels: Dictionary(uniqueKeysWithValues: days.map { ($0, Heatmap.Level.done) }),
-            editableFrom: .distantPast,
-            tappableDays: days
+            editableFrom: .distantPast
         )
     }
 
@@ -178,7 +185,7 @@ final class TrainViewController: ScreenViewController {
             Self.logger.error("Failed to read Workouts: \(error, privacy: .public)")
             return
         }
-        guard let only = workouts.first else { return }
+        guard let only = workouts.first else { return logPastWorkout(on: day) }
         let screen = workouts.count == 1
             ? WorkoutScreens.screen(for: only, dependencies: dependencies)
             : WorkoutsOnDayViewController(dependencies: dependencies, day: day)
@@ -227,7 +234,8 @@ final class TrainViewController: ScreenViewController {
                 UIAction(title: plan.name, subtitle: TrainText.count(plan.exercises.count, "exercise")) { [weak self] _ in self?.start(from: plan.id) }
             }
             let empty = UIAction(title: "Empty workout", image: UIImage(systemName: "square.dashed")) { [weak self] _ in self?.start(from: nil) }
-            startButton.menu = UIMenu(children: fromPlans + [UIMenu(options: .displayInline, children: [empty])])
+            let past = UIAction(title: "Log past workout…", image: UIImage(systemName: "clock.arrow.circlepath")) { [weak self] _ in self?.logPastWorkout(on: nil) }
+            startButton.menu = UIMenu(children: fromPlans + [UIMenu(options: .displayInline, children: [empty, past])])
             startButton.showsMenuAsPrimaryAction = true
         }
         startButton.accessibilityLabel = startButton.configuration?.title
@@ -240,6 +248,19 @@ final class TrainViewController: ScreenViewController {
         } catch {
             Self.logger.error("Failed to start Workout: \(error, privacy: .public)")
         }
+    }
+
+    /// Logs a Workout done without the app. A strength one opens in the logger's editing
+    /// mode to correct its pre-ticked sets; an Activity just lands in Recent workouts.
+    private func logPastWorkout(on day: Day?) {
+        let sheet = PastWorkoutViewController.sheet(dependencies: dependencies, purpose: .create(day: day), onCreated: { [weak self] workout in
+            guard let self else { return }
+            render()
+            if workout.activity == nil {
+                navigationController?.pushViewController(WorkoutLoggerViewController(dependencies: dependencies, workoutID: workout.id, mode: .editing), animated: true)
+            }
+        })
+        present(sheet, animated: true)
     }
 
     private func showLogger(for workoutID: WorkoutRecord.ID) {
@@ -312,7 +333,7 @@ final class TrainViewController: ScreenViewController {
             recentStack.addArrangedSubview(CardView.emptyState(caption: "Finished workouts land here.", accessibilityLabel: "No workouts yet. Finished workouts land here."))
         }
         for workout in recent {
-            let card = WorkoutCardControl(workout: workout)
+            let card = WorkoutCardControl(workout: workout, distanceUnit: DistanceUnit(dependencies.preferences.massUnit))
             card.addAction(UIAction { [weak self] _ in
                 guard let self else { return }
                 navigationController?.pushViewController(WorkoutScreens.screen(for: workout, dependencies: dependencies), animated: true)

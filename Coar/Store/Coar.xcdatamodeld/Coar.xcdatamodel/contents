@@ -160,10 +160,13 @@
         <relationship name="planExercise" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlanExercise" inverseName="plannedSets" inverseEntity="PlanExercise"/>
     </entity>
     <entity name="Workout" representedClassName="Workout" syncable="YES" codeGenerationType="class">
+        <attribute name="activityName" optional="YES" attributeType="String"/>
         <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="distanceMeters" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="finishedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
         <attribute name="planName" optional="YES" attributeType="String"/>
         <attribute name="startedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="exercises" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="WorkoutExercise" inverseName="workout" inverseEntity="WorkoutExercise"/>

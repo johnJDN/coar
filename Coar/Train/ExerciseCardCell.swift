@@ -11,8 +11,9 @@ final class ExerciseCardCell: CardCell {
     struct Model: Equatable {
         let name: String
         let subtitle: String
-        /// What the timer button starts: the row's rest default, or the 120 s fallback.
-        let restSeconds: Int
+        /// What the timer button starts: the row's rest default, or the 120 s fallback; nil
+        /// hides the button (a finished Workout being edited has no rest).
+        let restSeconds: Int?
         let sets: [SetRowView.Model]
         /// False when the row's Exercise is gone from the catalogue: there is no page to open.
         let canOpenProgression: Bool
@@ -113,7 +114,8 @@ final class ExerciseCardCell: CardCell {
         nameLabel.text = model.name
         subtitleLabel.text = model.subtitle
         restSeconds = model.restSeconds
-        timerButton.accessibilityLabel = "Start rest timer, \(TrainText.count(model.restSeconds, "second"))"
+        timerButton.isHidden = model.restSeconds == nil
+        timerButton.accessibilityLabel = model.restSeconds.map { "Start rest timer, \(TrainText.count($0, "second"))" }
         setIDs = model.sets.map(\.id)
         while rows.count > model.sets.count {
             let row = rows.removeLast()

@@ -10,7 +10,15 @@ import os
 /// stay where they are with a link between them, and nothing scrolls or moves focus on
 /// completion. Finish drops the sets never completed and then offers to move today's
 /// weights into the Plan.
+///
+/// In `.editing` mode the same screen edits a finished Workout (a past one logged after
+/// the fact, or any from its detail): no rest timer, no accessory bar, no Finish; Done, and
+/// leaving drops the sets left unticked, as Finish does, after asking.
 final class WorkoutLoggerViewController: UIViewController {
+
+    enum Mode {
+        case active, editing
+    }
 
     private static let logger = Logger(category: "Train")
 
@@ -24,7 +32,10 @@ final class WorkoutLoggerViewController: UIViewController {
     }
 
     private let dependencies: AppDependencies
-    private let workoutID: WorkoutRecord.ID
+    /// Read by the shell to find the Active Workout's logger in the Train stack.
+    let workoutID: WorkoutRecord.ID
+    let mode: Mode
+    private var backGuard: BackGuard?
     private var workout: WorkoutRecord?
     /// Equipment is not snapshotted; it is read live for the card subtitle.
     private var equipment: [ExerciseRecord.ID: String] = [:]
@@ -35,9 +46,10 @@ final class WorkoutLoggerViewController: UIViewController {
     /// screen pops itself once fully on screen, never mid-transition.
     private var workoutExists = true
 
-    init(dependencies: AppDependencies, workoutID: WorkoutRecord.ID) {
+    init(dependencies: AppDependencies, workoutID: WorkoutRecord.ID, mode: Mode = .active) {
         self.dependencies = dependencies
         self.workoutID = workoutID
+        self.mode = mode
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -49,14 +61,29 @@ final class WorkoutLoggerViewController: UIViewController {
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .never
 
-        let finish = UIBarButtonItem(title: "Finish", primaryAction: UIAction { [weak self] _ in self?.finish() })
-        finish.tintColor = UIColor.accentCoral
-        let discard = UIAction(title: "Discard workout", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-            self?.confirmDiscard()
+        switch mode {
+        case .active:
+            let finish = UIBarButtonItem(title: "Finish", primaryAction: UIAction { [weak self] _ in self?.finish() })
+            finish.tintColor = UIColor.accentCoral
+            let discard = UIAction(title: "Discard workout", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+                self?.confirmDiscard()
+            }
+            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [discard]))
+            more.accessibilityLabel = "More"
+            navigationItem.rightBarButtonItems = [finish, more]
+        case .editing:
+            let done = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in self?.doneEditing() })
+            let time = UIAction(title: "Date and time", image: UIImage(systemName: "calendar")) { [weak self] _ in self?.presentTime() }
+            let delete = UIAction(title: "Delete workout", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+                self?.confirmDelete()
+            }
+            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [time, delete]))
+            more.accessibilityLabel = "More"
+            navigationItem.rightBarButtonItems = [done, more]
+            backGuard = BackGuard(controller: self, verdict: { [weak self] in self?.leaveVerdict ?? .leave }, onDiscard: { [weak self] in
+                self?.dropUnticked()
+            })
         }
-        let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [discard]))
-        more.accessibilityLabel = "More"
-        navigationItem.rightBarButtonItems = [finish, more]
 
         configureCollectionView()
         unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.render() }
@@ -65,7 +92,9 @@ final class WorkoutLoggerViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = true
+        if mode == .active {
+            (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = true
+        }
         render()
     }
 
@@ -78,7 +107,8 @@ final class WorkoutLoggerViewController: UIViewController {
     /// logger, or a switch to another tab, keeps the logger where it is.
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        if isMovingFromParent {
+        backGuard?.release()
+        if isMovingFromParent, mode == .active {
             (tabBarController as? RootTabBarController)?.loggerIsInTrainStack = false
         }
     }
@@ -144,7 +174,13 @@ final class WorkoutLoggerViewController: UIViewController {
         guard reload() else { return }
         guard let workout else { return }
         title = workout.title
-        navigationItem.subtitle = "Started \(TrainText.timeText(workout.startedAt))"
+        switch mode {
+        case .active:
+            navigationItem.subtitle = "Started \(TrainText.timeText(workout.startedAt))"
+        case .editing:
+            navigationItem.subtitle = TrainText.when(workout)
+            backGuard?.refresh()
+        }
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
         snapshot.appendSections([0])
         snapshot.appendItems(Self.items(for: workout.exercises), toSection: 0)
@@ -211,7 +247,7 @@ final class WorkoutLoggerViewController: UIViewController {
         return ExerciseCardCell.Model(
             name: row.name,
             subtitle: subtitle,
-            restSeconds: RestTimerRule.seconds(restDefault: row.restSeconds),
+            restSeconds: mode == .active ? RestTimerRule.seconds(restDefault: row.restSeconds) : nil,
             sets: sets,
             canOpenProgression: row.exerciseID != nil
         )
@@ -261,7 +297,7 @@ final class WorkoutLoggerViewController: UIViewController {
             Self.logger.error("Failed to complete Logged Set: \(error, privacy: .public)")
         }
         render()
-        if completed, let workout, let row = workout.exercises.first(where: { $0.sets.contains { $0.id == id } }),
+        if mode == .active, completed, let workout, let row = workout.exercises.first(where: { $0.sets.contains { $0.id == id } }),
            let seconds = workout.restSeconds(afterSetOn: row.id) {
             dependencies.restTimer.start(seconds: seconds)
         }
@@ -401,6 +437,60 @@ final class WorkoutLoggerViewController: UIViewController {
 
     private func leave() {
         navigationController?.popToRootViewController(animated: true)
+    }
+
+    // MARK: - Editing a finished Workout
+
+    /// Unticked sets are dropped on the way out, as Finish drops them; asking first.
+    private var leaveVerdict: BackGuard.Verdict {
+        guard let workout, workout.uncompletedSetCount > 0 else { return .leave }
+        let count = TrainText.count(workout.uncompletedSetCount, "set")
+        return .ask(title: "Drop \(count) left unticked?", message: "A finished workout keeps only the sets you ticked.", discard: "Drop and Leave")
+    }
+
+    private func doneEditing() {
+        view.endEditing(true)
+        guard case .ask(let title, let message, let discard) = leaveVerdict else {
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Keep Editing", style: .cancel))
+        alert.addAction(UIAlertAction(title: discard, style: .destructive) { [weak self] _ in
+            self?.dropUnticked()
+            self?.navigationController?.popViewController(animated: true)
+        })
+        present(alert, animated: true)
+    }
+
+    private func dropUnticked() {
+        do {
+            try dependencies.store.dropUncompletedSets(workoutID)
+        } catch {
+            Self.logger.error("Failed to drop unticked sets: \(error, privacy: .public)")
+        }
+    }
+
+    private func presentTime() {
+        view.endEditing(true)
+        guard let workout else { return }
+        present(PastWorkoutViewController.sheet(dependencies: dependencies, purpose: .editTime(workout), onChange: { [weak self] in self?.render() }), animated: true)
+    }
+
+    private func confirmDelete() {
+        view.endEditing(true)
+        let alert = DeletePermanently.confirmation(name: "this workout", consequences: ["Its sets leave your history and progression charts."]) { [weak self] in
+            guard let self else { return }
+            do {
+                try dependencies.store.discardWorkout(workoutID)
+            } catch {
+                Self.logger.error("Failed to delete Workout: \(error, privacy: .public)")
+                return
+            }
+            backGuard?.release()
+            navigationController?.popViewController(animated: true)
+        }
+        present(alert, animated: true)
     }
 }
 

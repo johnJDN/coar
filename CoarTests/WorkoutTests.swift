@@ -261,6 +261,64 @@ final class WorkoutTests: XCTestCase {
         XCTAssertEqual(try store.plan(push.id)?.exercises.count, 3)
     }
 
+    // MARK: Past Workouts and Activities
+
+    func test_pastWorkout_isFinishedOnItsDay_withThePlansSetsTicked_andNeverActive() throws {
+        let store = Store.inMemory()
+        let catalogue = try stock(store)
+        let push = try makePush(store, catalogue)
+        let running = try store.startWorkout(from: nil, at: noon)
+        let lastWeek = noon.addingTimeInterval(-7 * 86_400)
+
+        let past = try store.logPastWorkout(from: push.id, startedAt: lastWeek, duration: 3_600)
+
+        XCTAssertEqual(past.day, Day(lastWeek))
+        XCTAssertEqual(past.finishedAt, lastWeek.addingTimeInterval(3_600))
+        XCTAssertEqual(past.title, "Push")
+        XCTAssertEqual(past.completedSetCount, 6)
+        XCTAssertEqual(try store.activeWorkout()?.id, running.id)
+    }
+
+    func test_editingAPastWorkout_movesItsDay_andDropsWhatWasLeftUnticked() throws {
+        let store = Store.inMemory()
+        let catalogue = try stock(store)
+        let push = try makePush(store, catalogue)
+        let past = try store.logPastWorkout(from: push.id, startedAt: noon, duration: 3_600)
+        let firstSet = past.exercises[0].sets[0]
+        try store.updateLoggedSet(firstSet.id, kilograms: firstSet.kilograms, reps: firstSet.reps, isCompleted: false)
+        let dayBefore = noon.addingTimeInterval(-86_400)
+
+        try store.setWorkoutTime(past.id, startedAt: dayBefore, duration: 5_400)
+        try store.dropUncompletedSets(past.id)
+
+        let edited = try XCTUnwrap(store.workout(past.id))
+        XCTAssertEqual(edited.day, Day(dayBefore))
+        XCTAssertEqual(edited.duration, 5_400)
+        XCTAssertEqual(edited.completedSetCount, 5)
+        XCTAssertEqual(edited.uncompletedSetCount, 0)
+    }
+
+    func test_activity_isAWorkoutDayWithNoSets_andItsNamesAreSuggestedMostRecentFirst() throws {
+        let store = Store.inMemory()
+        let yesterday = noon.addingTimeInterval(-86_400)
+        try store.logActivity(name: "Run", startedAt: yesterday.addingTimeInterval(-86_400), duration: 1_800, distanceMeters: 5_000, notes: nil)
+        try store.logActivity(name: " Pickleball ", startedAt: yesterday, duration: 3_600, distanceMeters: nil, notes: "Doubles")
+        let game = try store.logActivity(name: "pickleball", startedAt: noon, duration: 5_400, distanceMeters: nil, notes: "  ")
+
+        XCTAssertEqual(game.title, "pickleball")
+        XCTAssertNil(game.activity?.notes)
+        XCTAssertTrue(game.exercises.isEmpty)
+        XCTAssertEqual(try store.activityNames(), ["pickleball", "Run"])
+        XCTAssertEqual(try store.workoutDays(from: Day(noon).advanced(by: -7), to: Day(noon)).count, 3)
+
+        try store.updateActivity(game.id, name: "Basketball", distanceMeters: 1_609.344, notes: "Pickup")
+        let edited = try XCTUnwrap(store.workout(game.id)?.activity)
+        XCTAssertEqual(edited.name, "Basketball")
+        XCTAssertEqual(edited.distanceMeters, 1_609.344)
+        XCTAssertEqual(edited.notes, "Pickup")
+        XCTAssertEqual(DistanceUnit.miles.text(meters: 1_609.344), "1 mi")
+    }
+
     // MARK: History
 
     func test_twoFinishedWorkoutsOnOneDay_bothCount_andTheDayIsMarkedOnce() throws {

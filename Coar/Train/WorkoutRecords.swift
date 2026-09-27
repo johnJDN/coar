@@ -1,8 +1,9 @@
 import Foundation
 
 /// A Workout as read through the façade (CONTEXT.md "Workout"): one training session on a
-/// Day, holding its own copy of the Exercises performed and their Logged Sets (ADR 0003).
-/// Active while `finishedAt` is nil (CONTEXT.md "Active Workout").
+/// Day, holding its own copy of the Exercises performed and their Logged Sets (ADR 0003),
+/// or an Activity (pickleball, a run) with no sets. Active while `finishedAt` is nil
+/// (CONTEXT.md "Active Workout").
 struct WorkoutRecord: Hashable, Identifiable {
     let id: UUID
     let startedAt: Date
@@ -15,12 +16,18 @@ struct WorkoutRecord: Hashable, Identifiable {
     /// for an Empty workout.
     let planName: String?
     let exercises: [WorkoutExerciseRecord]
+    /// Set for an Activity (CONTEXT.md "Activity"); nil for a strength Workout.
+    var activity: WorkoutActivity? = nil
     let modifiedAt: Date
 
     var isActive: Bool { finishedAt == nil }
 
-    /// "Push", or "Empty workout" when it was not started from a Plan.
-    var title: String { planName ?? "Empty workout" }
+    /// "Pickleball" for an Activity; "Push", or "Empty workout" when it was not started
+    /// from a Plan.
+    var title: String { activity?.name ?? planName ?? "Empty workout" }
+
+    /// How long it ran; nil while active.
+    var duration: TimeInterval? { finishedAt.map { $0.timeIntervalSince(startedAt) } }
 
     /// An Active Workout left this long is offered finish or discard on launch rather than
     /// carried on: the app never guesses the user's numbers.
@@ -72,4 +79,12 @@ struct LoggedSetRecord: Hashable, Identifiable {
 struct SetTarget: Hashable {
     let kilograms: Double
     let reps: RepRange
+}
+
+/// What an Activity carries beyond its time: a name, and optionally how far and a note.
+struct WorkoutActivity: Hashable {
+    let name: String
+    /// Metres; nil when none was entered.
+    let distanceMeters: Double?
+    let notes: String?
 }

@@ -38,7 +38,7 @@ final class WorkoutsOnDayViewController: ScreenViewController {
         navigationItem.subtitle = TrainText.count(workouts.count, "workout")
         contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for workout in workouts {
-            let card = WorkoutCardControl(workout: workout)
+            let card = WorkoutCardControl(workout: workout, distanceUnit: DistanceUnit(dependencies.preferences.massUnit))
             card.addAction(UIAction { [weak self] _ in self?.open(workout) }, for: .touchUpInside)
             contentStack.addArrangedSubview(card)
         }

@@ -264,3 +264,9 @@ each ticket's Results in `human-testing.md`.
   each Day; a weekly Item counts once for the week. The capsule reads "2/5" and opens a sheet
   of ticks; a checklist's detail page has an Items card with Edit (saves as it changes;
   removed Items stay in history; a goal of "all" follows the list from today).
+- **Past Workouts and Activities** (added 2026-09-26): Log past workout (Start menu, a button
+  under Recent workouts, or tapping an empty past day) records a finished Workout at a chosen
+  start and duration: from a Plan (sets arrive ticked, then open in the logger's editing
+  mode), empty, or an Activity (name, optional distance and notes). Any finished Workout's
+  detail has Edit; leaving the editor drops unticked sets after asking. No rest timer and no
+  plan write-back for past Workouts.

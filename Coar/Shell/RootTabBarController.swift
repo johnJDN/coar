@@ -158,7 +158,7 @@ final class RootTabBarController: UITabBarController {
     private func showActiveWorkout() {
         guard let active = activeWorkout() else { return refreshAccessory() }
         guard let navigation = select(.train) else { return }
-        if let logger = navigation.viewControllers.first(where: { $0 is WorkoutLoggerViewController }) {
+        if let logger = navigation.viewControllers.first(where: { ($0 as? WorkoutLoggerViewController)?.workoutID == active.id }) {
             navigation.popToViewController(logger, animated: true)
         } else {
             navigation.pushViewController(WorkoutLoggerViewController(dependencies: dependencies, workoutID: active.id), animated: true)

@@ -56,7 +56,10 @@ enum TrainText {
     }
 
     /// "Sep 10 · 3 exercises · 12 sets": what a Workout card says under its title.
-    static func caption(of workout: WorkoutRecord) -> String {
+    static func caption(of workout: WorkoutRecord, distanceUnit: DistanceUnit = .miles) -> String {
+        if let activity = workout.activity {
+            return [workout.day.shortText, activity.distanceMeters.map { distanceUnit.text(meters: $0) } ?? "Activity"].joined(separator: " · ")
+        }
         let sets = workout.exercises.reduce(0) { $0 + $1.sets.count }
         return [workout.day.shortText, count(workout.exercises.count, "exercise"), count(sets, "set")].joined(separator: " · ")
     }
@@ -74,7 +77,44 @@ enum TrainText {
 
     /// "42 min" / "1 h 12 min": how long a Workout has run or ran.
     static func duration(from start: Date, to end: Date) -> String {
-        let minutes = Swift.max(0, Int(end.timeIntervalSince(start) / 60))
-        return minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h \(minutes % 60) min"
+        duration(minutes: Swift.max(0, Int(end.timeIntervalSince(start) / 60)))
+    }
+
+    /// "Sep 10 · 6:12 PM · 50 min"; the length only once finished.
+    static func when(_ workout: WorkoutRecord) -> String {
+        var parts = [workout.day.shortText, timeText(workout.startedAt)]
+        if let finishedAt = workout.finishedAt {
+            parts.append(duration(from: workout.startedAt, to: finishedAt))
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    /// "45 min", "1 h 15 min".
+    static func duration(minutes: Int) -> String {
+        if minutes < 60 { return "\(minutes) min" }
+        return minutes % 60 == 0 ? "\(minutes / 60) h" : "\(minutes / 60) h \(minutes % 60) min"
+    }
+}
+
+/// Distances follow the weight unit: miles alongside pounds, kilometres alongside kilograms
+/// (there is no separate setting). Stored in metres.
+enum DistanceUnit {
+    case miles, kilometers
+
+    init(_ mass: MassUnit) {
+        self = mass == .pounds ? .miles : .kilometers
+    }
+
+    var symbol: String { self == .miles ? "mi" : "km" }
+
+    private var meters: Double { self == .miles ? 1_609.344 : 1_000 }
+
+    func value(meters: Double) -> Double { meters / self.meters }
+
+    func meters(from value: Double) -> Double { value * meters }
+
+    /// "3.1 mi".
+    func text(meters: Double) -> String {
+        "\(value(meters: meters).formatted(.number.precision(.fractionLength(0...2)))) \(symbol)"
     }
 }

@@ -85,7 +85,7 @@ struct HomeSnapshot: Equatable {
             sleep: sleep,
             steps: steps,
             bodyWeight: bodyWeight,
-            lastWorkout: lastWorkout.map { HomeSquare(value: $0.day.relativeTitle(to: today), caption: $0.planName ?? "Workout") } ?? .noWorkout,
+            lastWorkout: lastWorkout.map { HomeSquare(value: $0.day.relativeTitle(to: today), caption: $0.activity?.name ?? $0.planName ?? "Workout") } ?? .noWorkout,
             lastWorkoutID: lastWorkout?.id
         )
     }
