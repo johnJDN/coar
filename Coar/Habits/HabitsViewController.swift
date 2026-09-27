@@ -1,7 +1,7 @@
 import UIKit
 import os
 
-/// The Habits tab (DESIGN.md §11): `SegmentedTabs` Check in / Tracked (CONTEXT.md "Tracked
+/// The Habits tab (DESIGN.md §11): a segmented control, Check in / Tracked (CONTEXT.md "Tracked
 /// habit"), then one card per active Habit of that kind and an Archived section for it.
 /// Long-press to reorder; tap a card for its detail; the toggle checks today in and the
 /// amount control opens today's number sheet. Reads through the façade on every appearance
@@ -43,7 +43,7 @@ final class HabitsViewController: UIViewController {
     private let dependencies: AppDependencies
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
-    private let tabs = SegmentedTabsView(titles: ["Check in", "Tracked"])
+    private let tabs = UISegmentedControl(items: ["Check in", "Tracked"])
     private var shownTab = Tab.checkIn
     /// Every active Habit in the user's order, both tabs, for saving a reorder.
     private var activeHabits: [HabitRecord] = []
@@ -73,12 +73,13 @@ final class HabitsViewController: UIViewController {
         add.accessibilityLabel = "New habit"
         navigationItem.rightBarButtonItem = add
 
-        tabs.onSelect = { [weak self] index in
-            guard let self, let tab = Tab(rawValue: index), tab != self.shownTab else { return }
+        tabs.selectedSegmentIndex = shownTab.rawValue
+        tabs.addAction(UIAction { [weak self] _ in
+            guard let self, let tab = Tab(rawValue: tabs.selectedSegmentIndex), tab != shownTab else { return }
             self.shownTab = tab
             render(switchingTab: true)
             collectionView.setContentOffset(CGPoint(x: 0, y: -collectionView.adjustedContentInset.top), animated: false)
-        }
+        }, for: .valueChanged)
         tabs.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tabs)
 
@@ -102,10 +103,10 @@ final class HabitsViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
-            tabs.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tabs.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Metrics.spaceTight),
             tabs.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge),
             tabs.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
-            collectionView.topAnchor.constraint(equalTo: tabs.bottomAnchor),
+            collectionView.topAnchor.constraint(equalTo: tabs.bottomAnchor, constant: Metrics.spaceTight),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),

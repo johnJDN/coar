@@ -236,10 +236,11 @@ Charts never show a legend when color already maps to a label on screen.
   Sleep | Steps (push a 30-day detail in Home's own stack), Body Weight (Trend Weight) |
   Last Workout (relative Day as the hero, Plan name as the caption); both switch to Train
   and push the screen.
-- **Habits** — `SegmentedTabs` Check in / Tracked pinned under the title (+ on Tracked
-  starts a tracked habit); then one card per habit of that tab: emoji, name, `CheckToggle` or amount, streak as the
-  hero number, 7-row heatmap (Monday on top; yes/no cells binary, quantitative cells by
-  intensity; weekly habits get a week-met dot per column). Detail page has a calendar
+- **Habits** — a system segmented control (`UISegmentedControl`), Check in / Tracked,
+  pinned under the title (+ on Tracked starts a tracked habit); then one card per habit
+  of that tab: emoji, name, `CheckToggle` or amount, streak as the hero number, 7-row
+  heatmap (Monday on top; yes/no cells binary, quantitative cells by intensity; weekly
+  habits get a week-met dot per column). Detail page has a calendar
   for retroactive edits. Each tab's archived habits in a section at its bottom. Home lists
   check-in habits first, then tracked.
 - **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Foods /
