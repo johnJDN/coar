@@ -107,6 +107,16 @@ final class TrackedTests: XCTestCase {
         XCTAssertNil(draft.amount)
     }
 
+    func test_aNewHabitFromTheTrackedTab_startsAtTheMetricsUsualGoal() {
+        let draft = HabitForm.Draft(kind: .tracked)
+        XCTAssertEqual(draft.target.kind, .tracked)
+        XCTAssertEqual(draft.target.tracking, HabitTracking(metric: .sleep, comparison: .atLeast))
+        XCTAssertEqual(draft.target.period, .week)
+        XCTAssertEqual(draft.target.amount, 7)
+        XCTAssertEqual(draft.resolvedName, "Sleep 7h")
+        XCTAssertTrue(draft.isComplete, "Save is ready without typing anything")
+    }
+
     // MARK: Store
 
     func test_trackedHabit_keepsItsMetricAndDirection() throws {

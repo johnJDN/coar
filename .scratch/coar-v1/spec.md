@@ -274,3 +274,5 @@ each ticket's Results in `human-testing.md`.
   sleep, steps, workout days, food logged, weigh-ins, or a macro as a % of that day's Target;
   at least or at most, per day or per week. Weekly averages use only days with data; an
   unlogged food day is a miss. The capsule shows the value; the calendar is read-only.
+  The Habits tab splits into Check in / Tracked tabs (added 2026-09-27); + on Tracked
+  starts a tracked habit. Home lists check-in habits first, then tracked.

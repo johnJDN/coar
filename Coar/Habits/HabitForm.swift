@@ -205,6 +205,21 @@ final class EmojiTextField: UITextField {
     override var textInputContextIdentifier: String? { "" }
 }
 
+extension HabitForm.Draft {
+    /// A new one of `kind`; a tracked one starts at its metric's usual goal.
+    init(kind: HabitKind) {
+        target.kind = kind
+        if kind == .tracked {
+            let defaults = target.metric.defaults
+            target.comparison = defaults.comparison
+            target.period = defaults.period
+            target.typedAmount = defaults.amount
+        } else if kind == .checklist {
+            target.typedAmount = nil
+        }
+    }
+}
+
 #Preview {
     HabitForm(draft: .init(emoji: "📵", name: "No phone on waking")) { _ in }
 }

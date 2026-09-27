@@ -1,9 +1,9 @@
 import UIKit
 import os
 
-/// The Habits tab (DESIGN.md §11): one card per active Habit, the ones checked in by hand
-/// first and the tracked ones (CONTEXT.md "Tracked habit") under their own header, then an
-/// Archived section. Long-press to reorder within a section; tap a card for its detail; the toggle checks today in and the
+/// The Habits tab (DESIGN.md §11): `SegmentedTabs` Check in / Tracked (CONTEXT.md "Tracked
+/// habit"), then one card per active Habit of that kind and an Archived section for it.
+/// Long-press to reorder; tap a card for its detail; the toggle checks today in and the
 /// amount control opens today's number sheet. Reads through the façade on every appearance
 /// and after every write.
 final class HabitsViewController: UIViewController {
@@ -11,9 +11,7 @@ final class HabitsViewController: UIViewController {
     private static let logger = Logger(category: "Habits")
 
     private enum Section: Hashable {
-        /// Yes/no, number, and checklist Habits: the ones checked in by hand.
-        case checkIn
-        case tracked
+        case active
         case archived
         /// Shown alone when there is no Habit at all.
         case empty
@@ -25,9 +23,30 @@ final class HabitsViewController: UIViewController {
         case empty
     }
 
+    private enum Tab: Int {
+        /// Yes/no, number, and checklist Habits: the ones checked in by hand.
+        case checkIn
+        case tracked
+
+        func shows(_ habit: HabitRecord) -> Bool {
+            (habit.tracking != nil) == (self == .tracked)
+        }
+
+        var emptyCaption: String {
+            switch self {
+            case .checkIn: return "Tap + to add your first habit."
+            case .tracked: return "Tap + to add a habit that fills itself in from your sleep, steps, workouts, food, or weigh-ins."
+            }
+        }
+    }
+
     private let dependencies: AppDependencies
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+    private let tabs = SegmentedTabsView(titles: ["Check in", "Tracked"])
+    private var shownTab = Tab.checkIn
+    /// Every active Habit in the user's order, both tabs, for saving a reorder.
+    private var activeHabits: [HabitRecord] = []
     private var cards: [HabitRecord.ID: HabitCardModel] = [:]
     private var archived: [HabitRecord.ID: HabitRecord] = [:]
     private var remoteObserver: NSObjectProtocol?
@@ -54,7 +73,17 @@ final class HabitsViewController: UIViewController {
         add.accessibilityLabel = "New habit"
         navigationItem.rightBarButtonItem = add
 
+        tabs.onSelect = { [weak self] index in
+            guard let self, let tab = Tab(rawValue: index), tab != self.shownTab else { return }
+            self.shownTab = tab
+            render(switchingTab: true)
+            collectionView.setContentOffset(CGPoint(x: 0, y: -collectionView.adjustedContentInset.top), animated: false)
+        }
+        tabs.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tabs)
+
         configureCollectionView()
+        setContentScrollView(collectionView, for: .top)
         remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
     }
 
@@ -73,7 +102,10 @@ final class HabitsViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            tabs.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tabs.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge),
+            tabs.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
+            collectionView.topAnchor.constraint(equalTo: tabs.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -91,13 +123,11 @@ final class HabitsViewController: UIViewController {
             cell.onRestore = { [weak self] in self?.restore(id) }
             cell.onDelete = { [weak self] in self?.confirmDelete(habit) }
         }
-        let emptyCell = UICollectionView.CellRegistration<EmptyStateCell, Item> { _, _, _ in }
-        let header = UICollectionView.SupplementaryRegistration<SectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, indexPath in
-            switch self?.dataSource.sectionIdentifier(for: indexPath.section) {
-            case .checkIn: view.title = "Check in"
-            case .tracked: view.title = "Tracked"
-            default: view.title = "Archived"
-            }
+        let emptyCell = UICollectionView.CellRegistration<EmptyStateCell, Item> { [weak self] cell, _, _ in
+            cell.caption = self?.shownTab.emptyCaption
+        }
+        let header = UICollectionView.SupplementaryRegistration<SectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { view, _, _ in
+            view.title = "Archived"
         }
 
         dataSource = UICollectionViewDiffableDataSource(collectionView: collectionView) { collectionView, indexPath, item in
@@ -118,13 +148,11 @@ final class HabitsViewController: UIViewController {
             return false
         }
         dataSource.reorderingHandlers.didReorder = { [weak self] transaction in
-            let snapshot = transaction.finalSnapshot
-            let items = [Section.checkIn, .tracked].filter(snapshot.sectionIdentifiers.contains).flatMap(snapshot.itemIdentifiers(inSection:))
-            let ids = items.compactMap { item -> HabitRecord.ID? in
+            let ids = transaction.finalSnapshot.itemIdentifiers(inSection: .active).compactMap { item -> HabitRecord.ID? in
                 if case .habit(let id) = item { return id }
                 return nil
             }
-            self?.persistOrder(ids)
+            self?.persistOrder(showing: ids)
         }
 
         collectionView.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress)))
@@ -139,7 +167,7 @@ final class HabitsViewController: UIViewController {
             section.contentInsets = NSDirectionalEdgeInsets(
                 top: Metrics.spaceCard, leading: Metrics.spaceEdge, bottom: Metrics.spaceCard, trailing: Metrics.spaceEdge
             )
-            if let self, hasHeader(dataSource.sectionIdentifier(for: sectionIndex)) {
+            if self?.dataSource.sectionIdentifier(for: sectionIndex) == .archived {
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
                     elementKind: UICollectionView.elementKindSectionHeader,
@@ -151,18 +179,6 @@ final class HabitsViewController: UIViewController {
         }
     }
 
-    /// Archived always has its header; the two active sections have theirs only side by
-    /// side, so a tab of one kind reads as it did before tracked Habits.
-    private func hasHeader(_ section: Section?) -> Bool {
-        switch section {
-        case .archived: return true
-        case .checkIn, .tracked:
-            let sections = dataSource.snapshot().sectionIdentifiers
-            return sections.contains(.checkIn) && sections.contains(.tracked)
-        case .empty, nil: return false
-        }
-    }
-
     // MARK: - Rendering
 
     /// Tracked Habits' values from the last read (Apple Health reads are async); a render
@@ -170,13 +186,16 @@ final class HabitsViewController: UIViewController {
     private var trackedValues: [HabitRecord.ID: [Day: Double]] = [:]
     private var trackedLoad: Task<Void, Never>?
 
-    private func render(refreshingTracked: Bool = true) {
+    /// `switchingTab` reloads outright: the other tab's cards are other Habits, so there is
+    /// nothing to animate between, and reused cells are measured afresh.
+    private func render(refreshingTracked: Bool = true, switchingTab: Bool = false) {
         let today = Day.today()
         let active: [HabitRecord]
         let archivedHabits: [HabitRecord]
         do {
-            active = try dependencies.store.habits()
-            archivedHabits = try dependencies.store.archivedHabits()
+            activeHabits = try dependencies.store.habits()
+            active = activeHabits.filter(shownTab.shows)
+            archivedHabits = try dependencies.store.archivedHabits().filter(shownTab.shows)
             cards = Dictionary(uniqueKeysWithValues: try active.map { habit in
                 (habit.id, HabitCardModel(
                     habit: habit, checkIns: try dependencies.store.checkIns(for: habit.id),
@@ -194,24 +213,20 @@ final class HabitsViewController: UIViewController {
             snapshot.appendSections([.empty])
             snapshot.appendItems([.empty], toSection: .empty)
         } else {
-            let checkIn = active.filter { $0.tracking == nil }
-            let tracked = active.filter { $0.tracking != nil }
-            if !checkIn.isEmpty || tracked.isEmpty {
-                snapshot.appendSections([.checkIn])
-                snapshot.appendItems(checkIn.map { .habit($0.id) }, toSection: .checkIn)
-            }
-            if !tracked.isEmpty {
-                snapshot.appendSections([.tracked])
-                snapshot.appendItems(tracked.map { .habit($0.id) }, toSection: .tracked)
-            }
+            snapshot.appendSections([.active])
+            snapshot.appendItems(active.map { .habit($0.id) }, toSection: .active)
             if !archivedHabits.isEmpty {
                 snapshot.appendSections([.archived])
                 snapshot.appendItems(archivedHabits.map { .archived($0.id) }, toSection: .archived)
             }
         }
-        dataSource.apply(reconfiguringExisting: snapshot)
+        if switchingTab {
+            dataSource.applySnapshotUsingReloadData(snapshot)
+        } else {
+            dataSource.apply(reconfiguringExisting: snapshot)
+        }
         if refreshingTracked {
-            refreshTracked(active, today: today)
+            refreshTracked(activeHabits, today: today)
         }
     }
 
@@ -243,9 +258,12 @@ final class HabitsViewController: UIViewController {
         render()
     }
 
-    private func persistOrder(_ ids: [HabitRecord.ID]) {
+    /// Saves the shown tab's new order; the other tab's Habits keep theirs, check-in ones
+    /// first so Home lists them in the same order.
+    private func persistOrder(showing ids: [HabitRecord.ID]) {
+        let others = activeHabits.filter { !shownTab.shows($0) }.map(\.id)
         do {
-            try dependencies.store.reorderHabits(ids)
+            try dependencies.store.reorderHabits(shownTab == .checkIn ? ids + others : others + ids)
         } catch {
             Self.logger.error("Failed to reorder Habits: \(error, privacy: .public)")
             render()
@@ -280,7 +298,8 @@ final class HabitsViewController: UIViewController {
     }
 
     private func presentNewHabit() {
-        present(HabitFormViewController.sheet(dependencies: dependencies) { [weak self] in self?.render() }, animated: true)
+        let kind: HabitKind = shownTab == .tracked ? .tracked : .yesNo
+        present(HabitFormViewController.sheet(dependencies: dependencies, kind: kind) { [weak self] in self?.render() }, animated: true)
     }
 
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -314,7 +333,7 @@ extension HabitsViewController: UICollectionViewDelegate {
         navigationController?.pushViewController(HabitDetailViewController(dependencies: dependencies, habitID: id), animated: true)
     }
 
-    /// Reordering stays inside its section.
+    /// Reordering stays inside the active section.
     func collectionView(
         _ collectionView: UICollectionView,
         targetIndexPathForMoveOfItemFromOriginalIndexPath originalIndexPath: IndexPath,
@@ -326,9 +345,19 @@ extension HabitsViewController: UICollectionViewDelegate {
     }
 }
 
-/// The empty state (DESIGN.md §1.5): the card the first Habit will occupy, with `—` in its
-/// hero slot, so the tab never reads as broken.
+/// The empty state (DESIGN.md §1.5): the card the tab's first Habit will occupy, with `—`
+/// in its hero slot, so the tab never reads as broken.
 private final class EmptyStateCell: CardCell {
+
+    private let captionLabel = UILabel()
+
+    var caption: String? {
+        get { captionLabel.text }
+        set {
+            captionLabel.text = newValue
+            accessibilityLabel = "No habits yet. \(newValue ?? "")"
+        }
+    }
 
     override class var header: (title: String, systemImage: String, iconTint: UIColor)? {
         ("Habits", "checkmark.circle.fill", UIColor.textPrimary)
@@ -341,8 +370,7 @@ private final class EmptyStateCell: CardCell {
         hero.font = UIFont.heroNumber
         hero.textColor = UIColor.textTertiary
         hero.adjustsFontForContentSizeCategory = true
-        let caption = UILabel()
-        caption.text = "Tap + to add your first habit."
+        let caption = captionLabel
         caption.font = UIFont.label
         caption.textColor = UIColor.textSecondary
         caption.adjustsFontForContentSizeCategory = true
@@ -350,6 +378,5 @@ private final class EmptyStateCell: CardCell {
         card.contentStack.addArrangedSubview(hero)
         card.contentStack.addArrangedSubview(caption)
         isAccessibilityElement = true
-        accessibilityLabel = "No habits yet. Tap + to add your first habit."
     }
 }

@@ -236,12 +236,12 @@ Charts never show a legend when color already maps to a label on screen.
   Sleep | Steps (push a 30-day detail in Home's own stack), Body Weight (Trend Weight) |
   Last Workout (relative Day as the hero, Plan name as the caption); both switch to Train
   and push the screen.
-- **Habits** — one card per habit: emoji, name, `CheckToggle` or amount, streak as the
+- **Habits** — `SegmentedTabs` Check in / Tracked pinned under the title (+ on Tracked
+  starts a tracked habit); then one card per habit of that tab: emoji, name, `CheckToggle` or amount, streak as the
   hero number, 7-row heatmap (Monday on top; yes/no cells binary, quantitative cells by
   intensity; weekly habits get a week-met dot per column). Detail page has a calendar
-  for retroactive edits. Habits checked in by hand come first; tracked habits follow under a
-  "Tracked" header (both sections get headers only when both exist; Home keeps the same
-  order). Archived habits in a section at the bottom.
+  for retroactive edits. Each tab's archived habits in a section at its bottom. Home lists
+  check-in habits first, then tracked.
 - **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Foods /
   Meals segments (Search is added only when a food database exists).
 - **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans

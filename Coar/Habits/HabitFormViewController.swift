@@ -10,20 +10,23 @@ final class HabitFormViewController: UIHostingController<HabitForm> {
 
     private let dependencies: AppDependencies
     private let onCreated: () -> Void
-    private var draft = HabitForm.Draft()
+    private var draft: HabitForm.Draft
     private let saveItem = UIBarButtonItem(systemItem: .save)
 
-    init(dependencies: AppDependencies, onCreated: @escaping () -> Void) {
+    /// `kind` pre-picks the kind: the Habits tab's Tracked tab starts a tracked Habit.
+    init(dependencies: AppDependencies, kind: HabitKind = .yesNo, onCreated: @escaping () -> Void) {
         self.dependencies = dependencies
         self.onCreated = onCreated
+        let draft = HabitForm.Draft(kind: kind)
+        self.draft = draft
         super.init(rootView: HabitForm { _ in })
-        rootView = HabitForm { [weak self] in self?.draftChanged($0) }
+        rootView = HabitForm(draft: draft) { [weak self] in self?.draftChanged($0) }
         title = "New Habit"
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
             self?.dismiss(animated: true)
         })
         saveItem.primaryAction = UIAction(title: "Save") { [weak self] _ in self?.save() }
-        saveItem.isEnabled = false
+        saveItem.isEnabled = draft.isComplete
         navigationItem.rightBarButtonItem = saveItem
     }
 
@@ -36,8 +39,8 @@ final class HabitFormViewController: UIHostingController<HabitForm> {
     }
 
     /// The sheet the Habits tab presents.
-    static func sheet(dependencies: AppDependencies, onCreated: @escaping () -> Void) -> UIViewController {
-        HabitFormViewController(dependencies: dependencies, onCreated: onCreated).inSheet(detents: [.large()])
+    static func sheet(dependencies: AppDependencies, kind: HabitKind = .yesNo, onCreated: @escaping () -> Void) -> UIViewController {
+        HabitFormViewController(dependencies: dependencies, kind: kind, onCreated: onCreated).inSheet(detents: [.large()])
     }
 
     private func draftChanged(_ draft: HabitForm.Draft) {
