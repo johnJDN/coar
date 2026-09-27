@@ -257,6 +257,7 @@ extension Store {
     }
 }
 
+extension HabitItem: SortOrdered {}
 extension Serving: SortOrdered {}
 extension MealComponent: SortOrdered {}
 extension EntryComponent: SortOrdered {}
@@ -273,6 +274,7 @@ protocol ModifiedAtStamped: AnyObject {
 }
 
 extension Habit: ModifiedAtStamped {}
+extension HabitItem: ModifiedAtStamped {}
 extension HabitTarget: ModifiedAtStamped {}
 extension CheckIn: ModifiedAtStamped {}
 extension FoodItem: ModifiedAtStamped {}

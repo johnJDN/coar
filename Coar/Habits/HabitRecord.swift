@@ -1,14 +1,17 @@
 import Foundation
 
-/// Whether a Habit is done-or-not or an amount (CONTEXT.md "Habit"). Raw values are stored.
+/// Whether a Habit is done-or-not, an amount, or a checklist of Items (CONTEXT.md "Habit").
+/// Raw values are stored.
 enum HabitKind: Int16, CaseIterable {
     case yesNo = 0
     case quantitative = 1
+    case checklist = 2
 
     var title: String {
         switch self {
         case .yesNo: return "Yes / no"
         case .quantitative: return "Amount"
+        case .checklist: return "Checklist"
         }
     }
 }
@@ -44,6 +47,9 @@ struct HabitRecord: Hashable, Identifiable {
     let sortOrder: Int
     /// The dated target series (ADR 0003), earliest first; one record per effective-from Day.
     let targets: [HabitTargetRecord]
+    /// A checklist Habit's Items in the user's order, removed ones left out; empty for the
+    /// other kinds.
+    var items: [HabitItemRecord] = []
     let modifiedAt: Date
 
     /// The target in force on a Day: the record with the latest effective-from Day on or
@@ -84,6 +90,8 @@ struct HabitTargetRecord: Hashable {
         let value = HabitAmount.text(amount)
         switch (kind, period) {
         case (.yesNo, .week): return (value, amount == 1 ? "day a week" : "days a week")
+        case (.checklist, .day): return (value, amount == 1 ? "item a day" : "items a day")
+        case (.checklist, .week): return (value, amount == 1 ? "item a week" : "items a week")
         case (_, .day): return (value, "a day")
         case (.quantitative, .week): return (value, "a week")
         }
@@ -91,8 +99,26 @@ struct HabitTargetRecord: Hashable {
 }
 
 /// A Check-in as read through the façade (CONTEXT.md "Check-in"): a Day's total for a Habit.
+/// A checklist Habit's Check-in also names the Items ticked that Day; its amount is how many.
 struct CheckInRecord: Hashable {
     let day: Day
     let amount: Double
     let modifiedAt: Date
+    var itemIDs: Set<HabitItemRecord.ID> = []
+}
+
+/// One Item of a checklist Habit (CONTEXT.md "Item"): a thing ticked off on its own, such as
+/// one friend to text or one supplement to take.
+struct HabitItemRecord: Hashable, Identifiable {
+    let id: UUID
+    let name: String
+}
+
+/// An Item as typed on the Habit's form: an existing Item keeps its `id`, a new one gets a
+/// fresh one.
+struct HabitItemDraft: Hashable, Identifiable {
+    var id = UUID()
+    var name = ""
+
+    var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 }

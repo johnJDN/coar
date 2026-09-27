@@ -6,7 +6,7 @@ extension Store {
     // MARK: - Habits
 
     /// Creates a Habit at the end of the list with its first target in force from
-    /// `effectiveFrom`.
+    /// `effectiveFrom`. A checklist Habit gets its Items, blank names left out.
     @discardableResult
     func createHabit(
         emoji: String,
@@ -14,6 +14,7 @@ extension Store {
         kind: HabitKind,
         targetAmount: Double,
         period: HabitPeriod,
+        items: [HabitItemDraft] = [],
         effectiveFrom: Day = .today()
     ) throws -> HabitRecord {
         let habit = Habit(context: context)
@@ -29,8 +30,30 @@ extension Store {
         target.period = period.rawValue
         target.effectiveFrom = effectiveFrom.rawValue
         target.habit = habit
+        if kind == .checklist {
+            writeItems(items, to: habit)
+        }
         try save()
         return HabitRecord(habit)!
+    }
+
+    /// Replaces a checklist Habit's Items: drafts carrying an existing Item's `id` rename and
+    /// reorder it, new ids add one, and Items left out are marked removed rather than
+    /// deleted, so past Check-ins still name them. When the count changes, the goal follows
+    /// (`Checklist.goal`) as a new dated target from `effectiveFrom`. An empty list is not
+    /// written: a checklist always has an Item.
+    func setHabitItems(_ id: HabitRecord.ID, items drafts: [HabitItemDraft], effectiveFrom: Day = .today()) throws {
+        guard let habit = try fetchHabit(id), let record = HabitRecord(habit) else { return }
+        let kept = drafts.filter { !$0.trimmedName.isEmpty }
+        guard !kept.isEmpty else { return }
+        writeItems(kept, to: habit)
+        if let inForce = record.target(inForceOn: effectiveFrom),
+           let goal = Checklist.goal(current: inForce.amount, oldCount: record.items.count, newCount: kept.count) {
+            try save()
+            try setHabitTarget(id, amount: goal, period: inForce.period, effectiveFrom: effectiveFrom)
+        } else {
+            try save()
+        }
     }
 
     /// Sets the target in force from `effectiveFrom` on, as a new dated record (ADR 0003):
@@ -115,6 +138,30 @@ extension Store {
         }
     }
 
+    /// Ticks or unticks one Item of a checklist Habit. A tick lands on `day`. On a weekly
+    /// list an Item counts once a week, so ticking one already ticked this week writes
+    /// nothing, and unticking clears it from every Day of the week. A Day left with no Items
+    /// loses its Check-in; its amount is always its count of Items.
+    func setChecklistItem(_ id: HabitRecord.ID, item: HabitItemRecord.ID, on day: Day, ticked: Bool) throws {
+        guard let habit = try fetchHabit(id), let record = HabitRecord(habit) else { return }
+        let period = record.target(inForceOn: day)?.period ?? .day
+        let days = period == .week ? (0..<7).map { day.startOfWeek.advanced(by: $0) } : [day]
+        let checkIns = try days.compactMap { try fetchCheckIn(habit: habit, on: $0) }
+        if ticked {
+            guard !checkIns.contains(where: { $0.itemIDSet.contains(item) }) else { return }
+            let checkIn = try fetchCheckIn(habit: habit, on: day) ?? CheckIn(context: context)
+            checkIn.habit = habit
+            checkIn.day = day.rawValue
+            checkIn.itemIDSet = checkIn.itemIDSet.union([item])
+        } else {
+            for checkIn in checkIns where checkIn.itemIDSet.contains(item) {
+                checkIn.itemIDSet = checkIn.itemIDSet.subtracting([item])
+                if checkIn.itemIDSet.isEmpty { context.delete(checkIn) }
+            }
+        }
+        try save()
+    }
+
     /// Removes the Day's Check-in, if any: a yes/no Habit toggled off.
     func removeCheckIn(_ id: HabitRecord.ID, on day: Day) throws {
         guard let habit = try fetchHabit(id), let record = try fetchCheckIn(habit: habit, on: day) else { return }
@@ -164,6 +211,22 @@ extension Store {
         return try context.fetch(request).first
     }
 
+    private func writeItems(_ drafts: [HabitItemDraft], to habit: Habit) {
+        let existing = Dictionary(habit.itemObjects.compactMap { item in item.id.map { ($0, item) } }, uniquingKeysWith: { first, _ in first })
+        let keptIDs = Set(drafts.map(\.id))
+        for item in habit.itemObjects where !keptIDs.contains(item.id ?? UUID()) {
+            item.isRemoved = true
+        }
+        for (position, draft) in drafts.filter({ !$0.trimmedName.isEmpty }).enumerated() {
+            let item = existing[draft.id] ?? HabitItem(context: context)
+            item.id = draft.id
+            item.name = draft.trimmedName
+            item.sortOrder = Int32(position)
+            item.isRemoved = false
+            item.habit = habit
+        }
+    }
+
     private func nextHabitSortOrder() throws -> Int32 {
         let request = Habit.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "sortOrder", ascending: false)]
@@ -185,6 +248,10 @@ private extension HabitRecord {
             isArchived: object.isArchived,
             sortOrder: Int(object.sortOrder),
             targets: object.targetSeries,
+            items: object.itemObjects
+                .filter { !$0.isRemoved }
+                .sorted(by: Store.bySortOrder)
+                .compactMap { item in item.id.map { HabitItemRecord(id: $0, name: item.name ?? "") } },
             modifiedAt: modifiedAt
         )
     }
@@ -193,6 +260,10 @@ private extension HabitRecord {
 private extension Habit {
     var targetObjects: [HabitTarget] {
         Array(targets as? Set<HabitTarget> ?? [])
+    }
+
+    var itemObjects: [HabitItem] {
+        Array(items as? Set<HabitItem> ?? [])
     }
 
     /// The dated series earliest first. When a Day starts several records (two devices
@@ -218,6 +289,18 @@ private extension HabitTargetRecord {
 private extension CheckInRecord {
     init?(_ object: CheckIn) {
         guard let raw = object.day, let day = Day(rawValue: raw), let modifiedAt = object.modifiedAt else { return nil }
-        self.init(day: day, amount: object.amount, modifiedAt: modifiedAt)
+        self.init(day: day, amount: object.amount, modifiedAt: modifiedAt, itemIDs: object.itemIDSet)
+    }
+}
+
+extension CheckIn {
+    /// The Items ticked this Day, stored as comma-joined UUIDs (additive, ADR 0002). Setting
+    /// it keeps `amount` as the count, so the Day reads the same to every kind-blind rule.
+    var itemIDSet: Set<UUID> {
+        get { Set((itemIDs ?? "").split(separator: ",").compactMap { UUID(uuidString: String($0)) }) }
+        set {
+            itemIDs = newValue.isEmpty ? nil : newValue.map(\.uuidString).sorted().joined(separator: ",")
+            amount = Double(newValue.count)
+        }
     }
 }

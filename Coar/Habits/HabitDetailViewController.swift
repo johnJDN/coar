@@ -16,6 +16,8 @@ final class HabitDetailViewController: ScreenViewController {
     private let targetValueLabel = UILabel()
     private let targetUnitLabel = UILabel()
     private let calendar = MonthCalendarView()
+    private let itemsLabel = UILabel()
+    private lazy var itemsCard = makeItemsCard()
     private var habit: HabitRecord?
     /// False once a render finds the Habit gone (deleted elsewhere); the screen pops itself
     /// once it is fully on screen, never mid-transition.
@@ -41,6 +43,8 @@ final class HabitDetailViewController: ScreenViewController {
         contentStack.addArrangedSubview(streakCard)
 
         contentStack.addArrangedSubview(makeTargetCard())
+        contentStack.addArrangedSubview(itemsCard)
+        itemsCard.isHidden = true
 
         calendar.onTapDay = { [weak self] day in self?.edit(day) }
         let calendarCard = CardView()
@@ -89,6 +93,33 @@ final class HabitDetailViewController: ScreenViewController {
         return card
     }
 
+    /// A checklist's Items, one per line, with Edit (hidden for the other kinds).
+    private func makeItemsCard() -> UIView {
+        itemsLabel.font = UIFont.bodyText
+        itemsLabel.textColor = UIColor.textPrimary
+        itemsLabel.adjustsFontForContentSizeCategory = true
+        itemsLabel.numberOfLines = 0
+
+        var configuration = UIButton.Configuration.filled()
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = UIColor.fill
+        configuration.baseForegroundColor = UIColor.textPrimary
+        configuration.title = "Edit"
+        configuration.titleTextAttributesTransformer = .cardTitle
+        let edit = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.presentEditItems() })
+        edit.accessibilityLabel = "Edit items"
+        edit.setContentHuggingPriority(.required, for: .horizontal)
+
+        let row = UIStackView(arrangedSubviews: [itemsLabel, edit])
+        row.axis = .horizontal
+        row.alignment = .top
+        row.spacing = Metrics.spaceTight
+
+        let card = CardView(title: "Items", systemImage: "checklist", iconTint: UIColor.accentGreen)
+        card.contentStack.addArrangedSubview(row)
+        return card
+    }
+
     private func render() {
         let today = Day.today()
         do {
@@ -105,6 +136,8 @@ final class HabitDetailViewController: ScreenViewController {
             targetValueLabel.text = summary?.value ?? "—"
             targetValueLabel.textColor = summary == nil ? UIColor.textTertiary : UIColor.accentGreen
             targetUnitLabel.text = summary?.unit
+            itemsCard.isHidden = habit.kind != .checklist
+            itemsLabel.text = habit.items.map(\.name).joined(separator: "\n")
             calendar.model = .init(today: today, levels: model.levels, editableFrom: model.editableFrom)
         } catch {
             Self.logger.error("Failed to read Habit: \(error, privacy: .public)")
@@ -120,14 +153,14 @@ final class HabitDetailViewController: ScreenViewController {
 
     // MARK: - Actions
 
-    /// A yes/no Day toggles its Check-in; a quantitative Day opens its number sheet.
+    /// A yes/no Day toggles its Check-in; a quantitative Day opens its number sheet, a
+    /// checklist Day its list for that Day's Period.
     private func edit(_ day: Day) {
         guard let habit else { return }
-        switch habit.kind {
-        case .yesNo:
+        if let sheet = HabitCheckInSheet.sheet(for: habit, dependencies: dependencies, day: day, onChange: { [weak self] in self?.render() }) {
+            present(sheet, animated: true)
+        } else {
             toggle(day)
-        case .quantitative:
-            present(HabitAmountViewController.sheet(dependencies: dependencies, habitID: habitID, day: day) { [weak self] in self?.render() }, animated: true)
         }
     }
 
@@ -137,6 +170,11 @@ final class HabitDetailViewController: ScreenViewController {
             self?.render()
         }
         present(sheet, animated: true)
+    }
+
+    private func presentEditItems() {
+        guard let habit else { return }
+        present(HabitItemsViewController.sheet(dependencies: dependencies, habit: habit) { [weak self] in self?.render() }, animated: true)
     }
 
     private func toggle(_ day: Day) {

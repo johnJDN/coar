@@ -351,3 +351,13 @@ simulator as the second device); every judgement call was kept unless its Result
 - [x] The runner (launch + remote-change scheduling) has no unit test, since the in-memory store posts no remote-change notifications; it was verified in the simulator log.
 
 **Results (2026-09-26): passed.** Tested with John's iPhone (offline via Airplane Mode) and the iPhone 18 Pro simulator on the same iCloud account (online), since the simulator shares the Mac's network. 1 (Habit check-ins and amount: one Check-in, the later edit) and 5 (live update on the other device) checked; 2–4 assumed from 1, 6 not reported (counted as passing); judgement calls not disputed.
+
+## Added after v1: Checklist habits (2026-09-26)
+
+- [ ] Habits → `+` → Kind "Checklist": an Items section appears with one empty row; Return adds the next row; the goal field reads "All 3" once three are named; Save stays disabled until there is a name and one named Item.
+- [ ] Daily list (supplements): the card's capsule reads "0/5"; tapping it opens the sheet titled with the Habit and "Today"; each tap fills a circle green and the footer counts "2 of 5 ticked"; Done: the capsule reads "2/5"; tick all five: it turns green, the streak counts the day. Tomorrow the list starts empty.
+- [ ] Weekly list (friends): tick a friend on Monday; on Wednesday the sheet ("This week") still shows them ticked; unticking clears them for the whole week; the week counts once every friend (or the goal) is ticked; the card caption reads "3 of 6 this week".
+- [ ] Goal below all: create with goal 3 of 6; the sheet's footer adds "· 3 needed"; the capsule turns green at 3.
+- [ ] Detail: Target reads "5 items a day"; the Items card lists them; Edit: rename, add, swipe to delete, drag to reorder; it saves as you type and on Done; a goal of all follows the list (adding a sixth makes it 6 from today; past days keep 5); deleting every Item saves nothing.
+- [ ] Detail calendar: tap a past day: the sheet opens for that day (or that week) and ticks land there.
+- [ ] Home: the checklist capsule opens the same sheet and Home updates when it closes.

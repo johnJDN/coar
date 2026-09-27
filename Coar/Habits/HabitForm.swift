@@ -2,8 +2,8 @@ import SwiftUI
 import UIKit
 
 /// The new-habit sheet's content (ADR 0001: SwiftUI leaf, values in, closures out). Emoji,
-/// name, kind, Period, and target amount. Every edit reports the whole draft so the host
-/// can enable Save.
+/// name, kind, Period, target amount, and a checklist's Items. Every edit reports the whole
+/// draft so the host can enable Save.
 struct HabitForm: View {
 
     struct Draft: Equatable {
@@ -13,6 +13,11 @@ struct HabitForm: View {
         var emoji = ""
         var name = ""
         var target = HabitTargetDraft()
+        /// A checklist's Items as typed; one empty row to start.
+        var items = [HabitItemDraft()]
+
+        /// The Items to save: the named ones.
+        var namedItems: [HabitItemDraft] { items.filter { !$0.trimmedName.isEmpty } }
 
         var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -21,7 +26,7 @@ struct HabitForm: View {
 
         /// Saveable: a name and a valid target. The emoji always has a value.
         var isComplete: Bool {
-            !trimmedName.isEmpty && target.amount != nil
+            !trimmedName.isEmpty && target.amount != nil && (target.kind != .checklist || !namedItems.isEmpty)
         }
     }
 
@@ -60,14 +65,71 @@ struct HabitForm: View {
             }
 
             HabitTargetSection(draft: $draft.target)
+
+            if draft.target.kind == .checklist {
+                HabitItemsSection(items: $draft.items)
+            }
         }
         .font(Font.bodyText)
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
         .keyboardDoneBar()
         .background(Color.background)
+        .onChange(of: draft.items) { _, _ in draft.target.itemCount = draft.namedItems.count }
+        // A checklist's goal starts as every Item (the empty field); the other kinds start at 1.
+        .onChange(of: draft.target.kind) { old, new in
+            if new == .checklist {
+                draft.target.typedAmount = nil
+            } else if old == .checklist, draft.target.typedAmount == nil {
+                draft.target.typedAmount = 1
+            }
+        }
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onAppear { focus = .name }
+    }
+}
+
+/// A checklist's Items as an editable list (ADR 0001: SwiftUI leaf): a row per Item, Add
+/// item below, swipe to delete, drag to reorder. Shared by the new-habit sheet and the
+/// Edit items sheet.
+struct HabitItemsSection: View {
+
+    @Binding var items: [HabitItemDraft]
+    /// An extra line under the footer, e.g. how an edit applies.
+    var note: String?
+    @FocusState private var focused: HabitItemDraft.ID?
+
+    var body: some View {
+        Section {
+            ForEach($items) { $item in
+                TextField("Item", text: $item.name)
+                    .focused($focused, equals: item.id)
+                    .foregroundStyle(Color.textPrimary)
+                    .submitLabel(.next)
+                    .onSubmit { addItem(after: item.id) }
+                    .formRow()
+            }
+            .onDelete { items.remove(atOffsets: $0) }
+            .onMove { items.move(fromOffsets: $0, toOffset: $1) }
+            Button {
+                addItem(after: items.last?.id)
+            } label: {
+                Label("Add item", systemImage: "plus")
+            }
+            .formRow()
+        } header: {
+            Text("Items")
+        } footer: {
+            Text(["Each one is ticked off on its own, for example a friend to text or a supplement to take. Swipe to delete; hold and drag to reorder.", note].compactMap { $0 }.joined(separator: " "))
+        }
+    }
+
+    /// Adds an empty row after `id` (at the end without one) and moves the cursor into it.
+    private func addItem(after id: HabitItemDraft.ID?) {
+        let item = HabitItemDraft()
+        let index = id.flatMap { id in items.firstIndex { $0.id == id } }.map { $0 + 1 } ?? items.endIndex
+        items.insert(item, at: index)
+        focused = item.id
     }
 }
 

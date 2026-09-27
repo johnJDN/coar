@@ -14,8 +14,16 @@ _Avoid_: Date (when a time is meant), timestamp
 
 **Habit**:
 Something the user intends to do repeatedly, with a target and the period that target
-applies over. Either yes/no (done or not) or quantitative (an amount).
+applies over. Yes/no (done or not), quantitative (an amount), or a checklist (Items ticked
+off one by one; the target is how many of them).
 _Avoid_: Routine, goal, streak
+
+**Item**:
+One named thing on a checklist Habit, ticked off on its own: a friend to text, a supplement
+to take. An Item ticked on any day of a Period counts for that whole Period, once. Removing
+an Item from the list keeps it in past days. Ticking is the action; what it writes is still
+that day's Check-in, naming the Items ticked.
+_Avoid_: Sub-habit, task, step
 
 **Period**:
 The span a Habit's target applies over: a day, or a Monday-to-Sunday week.
@@ -23,7 +31,8 @@ _Avoid_: Schedule, frequency, cadence
 
 **Check-in**:
 The record that a habit happened on a given date, carrying that day's total amount.
-There is at most one per Habit per day; a yes/no habit's check-in has an amount of 1.
+There is at most one per Habit per day; a yes/no habit's check-in has an amount of 1; a
+checklist habit's check-in names the Items ticked that day and its amount is how many.
 _Avoid_: Entry, completion, log, tick
 
 **Streak**:

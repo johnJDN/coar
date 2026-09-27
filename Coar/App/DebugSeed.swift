@@ -26,6 +26,11 @@ enum DebugSeed {
             try store.createHabit(emoji: "🏃", name: "Run", kind: .yesNo, targetAmount: 3, period: .week, effectiveFrom: today.advanced(by: -10))
             try store.checkIn(phone.id, on: today, amount: 1)
             try store.checkIn(read.id, on: today, amount: 12)
+            let supplements = try store.createHabit(
+                emoji: "💊", name: "Supplements", kind: .checklist, targetAmount: 3, period: .day,
+                items: ["Vitamin D", "Fish oil", "Magnesium"].map { HabitItemDraft(name: $0) }, effectiveFrom: today.advanced(by: -10)
+            )
+            try store.setChecklistItem(supplements.id, item: supplements.items[0].id, on: today, ticked: true)
 
             try store.setTarget(Macros(calories: 2_100, protein: 180, fat: 60, carbs: 210), effectiveFrom: today.advanced(by: -10))
             let eggs = try store.createFoodItem(name: "Eggs", servings: [ServingDraft(name: "1 egg", macros: Macros(calories: 70, protein: 6, fat: 5, carbs: 0), isDefault: true)])

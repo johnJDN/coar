@@ -13,6 +13,8 @@ final class AmountControlView: CapsuleControlView {
 
     private let label = UILabel()
     private var amount: Double = 0
+    /// A checklist's number of Items: the capsule then reads "2/5" rather than an amount.
+    private var total: Int?
     private var isMet = false
 
     override init() {
@@ -39,13 +41,31 @@ final class AmountControlView: CapsuleControlView {
     }
 
     func setAmount(_ amount: Double, isMet: Bool, animated: Bool) {
-        let changed = amount != self.amount || isMet != self.isMet
+        let changed = amount != self.amount || isMet != self.isMet || total != nil
         self.amount = amount
+        self.total = nil
+        self.isMet = isMet
+        stateChanged(animated: animated && changed)
+    }
+
+    /// A checklist: `ticked` of `total` Items, as "2/5".
+    func setCount(_ ticked: Int, of total: Int, isMet: Bool, animated: Bool) {
+        let changed = Double(ticked) != amount || isMet != self.isMet || total != self.total
+        amount = Double(ticked)
+        self.total = total
         self.isMet = isMet
         stateChanged(animated: animated && changed)
     }
 
     override func render(animated: Bool) {
+        if let total {
+            let ticked = Int(amount)
+            label.text = "\(ticked)/\(total)"
+            label.textColor = isMet ? .white : ticked > 0 ? UIColor.textPrimary : UIColor.textSecondary
+            accessibilityValue = "\(ticked) of \(total) ticked" + (isMet ? ", done" : "")
+            setAlive(isMet, animated: animated)
+            return
+        }
         let entered = amount > 0
         label.text = entered ? HabitAmount.text(amount) : "—"
         label.textColor = isMet ? .white : entered ? UIColor.textPrimary : UIColor.textSecondary

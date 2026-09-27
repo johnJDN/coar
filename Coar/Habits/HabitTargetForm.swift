@@ -2,17 +2,20 @@ import SwiftUI
 
 /// The target fields as typed on the new-habit and change-target sheets: kind, Period, and
 /// the amount that makes a Period count. A daily yes/no Habit needs no amount (one Check-in
-/// is the day).
+/// is the day); a checklist's amount is how many of its Items, all of them when left empty.
 struct HabitTargetDraft: Equatable {
     var kind: HabitKind = .yesNo
     var period: HabitPeriod = .day
     /// As typed; nil while empty.
     var typedAmount: Double? = 1
+    /// A checklist's number of Items, which caps its amount; set by the form.
+    var itemCount = 0
 
-    init(kind: HabitKind = .yesNo, period: HabitPeriod = .day, typedAmount: Double? = 1) {
+    init(kind: HabitKind = .yesNo, period: HabitPeriod = .day, typedAmount: Double? = 1, itemCount: Int = 0) {
         self.kind = kind
         self.period = period
         self.typedAmount = typedAmount
+        self.itemCount = itemCount
     }
 
     /// Whether the amount field applies.
@@ -22,6 +25,12 @@ struct HabitTargetDraft: Equatable {
     /// whole number of days for a weekly yes/no Habit and at most 7 of them.
     var amount: Double? {
         guard needsAmount else { return 1 }
+        if kind == .checklist {
+            guard itemCount > 0 else { return nil }
+            guard let typedAmount else { return Double(itemCount) }
+            guard typedAmount >= 1, typedAmount.rounded() == typedAmount, typedAmount <= Double(itemCount) else { return nil }
+            return typedAmount
+        }
         guard let typedAmount, typedAmount > 0, typedAmount.isFinite else { return nil }
         if kind == .yesNo {
             guard typedAmount.rounded() == typedAmount, typedAmount <= 7 else { return nil }
@@ -34,7 +43,13 @@ struct HabitTargetDraft: Equatable {
         case (.yesNo, _): return "Days a week"
         case (.quantitative, .day): return "Amount a day"
         case (.quantitative, .week): return "Amount a week"
+        case (.checklist, _): return "Items to tick"
         }
+    }
+
+    /// What the empty field stands for: `—`, or all of a checklist's Items.
+    var amountPlaceholder: String {
+        kind == .checklist ? (itemCount > 0 ? "All \(itemCount)" : "All") : "—"
     }
 
     var footer: String {
@@ -43,6 +58,8 @@ struct HabitTargetDraft: Equatable {
         case (.yesNo, .week): return "The week counts once you have checked in on this many days."
         case (.quantitative, .day): return "Enter a total each day. The day counts once it reaches this amount."
         case (.quantitative, .week): return "Enter a total each day. The week counts once its days add up to this amount."
+        case (.checklist, .day): return "Tick items off one by one; the list starts fresh each day. The day counts once this many are ticked."
+        case (.checklist, .week): return "Tick items off one by one; a tick lasts the whole week. The week counts once this many are ticked."
         }
     }
 
@@ -53,6 +70,8 @@ struct HabitTargetDraft: Equatable {
         case (.yesNo, .week): return "For example, “Go to the gym 3 days a week”."
         case (.quantitative, .day): return "For example, “Read 20 pages a day”."
         case (.quantitative, .week): return "For example, “Run 15 miles a week”."
+        case (.checklist, .day): return "For example, “Take my 5 supplements”."
+        case (.checklist, .week): return "For example, “Text each of these friends”."
         }
     }
 }
@@ -100,8 +119,8 @@ struct HabitTargetSection: View {
                 HStack(spacing: Metrics.spaceInner) {
                     Text(draft.amountLabel).foregroundStyle(Color.textPrimary)
                     Spacer()
-                    TextField("—", value: $draft.typedAmount, format: .number)
-                        .keyboardType(draft.kind == .yesNo ? .numberPad : .decimalPad)
+                    TextField(draft.amountPlaceholder, value: $draft.typedAmount, format: .number)
+                        .keyboardType(draft.kind == .quantitative ? .decimalPad : .numberPad)
                         .multilineTextAlignment(.trailing)
                         .font(Font.metricNumber)
                         .foregroundStyle(Color.accentGreen)

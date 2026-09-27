@@ -259,3 +259,8 @@ each ticket's Results in `human-testing.md`.
 - **Habits**: a habit's first Target also covers the days before it, so past days can be edited.
 - **Logger**: an unfinished set's check shows a grey tick, not `—`.
 - **Home**: tapping anywhere on a card (not just its buttons) opens what it leads to.
+- **Checklist habits** (added 2026-09-26, after testing): a third Habit kind whose target is
+  how many of its Items to tick per Day or week (all by default). A daily list starts fresh
+  each Day; a weekly Item counts once for the week. The capsule reads "2/5" and opens a sheet
+  of ticks; a checklist's detail page has an Items card with Edit (saves as it changes;
+  removed Items stay in history; a goal of "all" follows the list from today).

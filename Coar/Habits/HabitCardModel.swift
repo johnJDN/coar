@@ -17,6 +17,10 @@ struct HabitCardModel: Hashable, Identifiable {
     let target: HabitTargetRecord?
     /// Today's Check-in total; 0 without one.
     let todayAmount: Double
+    /// Checklist Habits: the active Items, and how many of them are ticked in the current
+    /// Period (today, or this week). Zero for the other kinds.
+    let itemCount: Int
+    let tickedItemCount: Int
     /// Yes/no: today has a Check-in. Quantitative: the current Period has met its target.
     let isDoneToday: Bool
     let streak: Int
@@ -36,7 +40,12 @@ struct HabitCardModel: Hashable, Identifiable {
     let editableFrom: Day?
 
     init(habit: HabitRecord, checkIns: [CheckInRecord], today: Day, columns: Int = Heatmap.columns) {
-        let amounts = Dictionary(checkIns.filter { $0.day <= today }.map { ($0.day, $0.amount) }, uniquingKeysWith: { $1 })
+        let past = checkIns.filter { $0.day <= today }
+        // A checklist Day's amount is how many Items it ticked.
+        let amounts = Dictionary(
+            past.map { ($0.day, habit.kind == .checklist ? Double($0.itemIDs.count) : $0.amount) },
+            uniquingKeysWith: { $1 }
+        )
         let target = habit.target(inForceOn: today)
         let period = target?.period ?? .day
 
@@ -46,7 +55,7 @@ struct HabitCardModel: Hashable, Identifiable {
             let inForce = habit.target(inForceOn: day)
             switch habit.kind {
             case .yesNo: levels[day] = inForce != nil && amount > 0 ? .done : .empty
-            case .quantitative: levels[day] = Heatmap.level(amount: amount, target: inForce?.amount)
+            case .quantitative, .checklist: levels[day] = Heatmap.level(amount: amount, target: inForce?.amount)
             }
             // A daily yes/no Habit is met by any Check-in, whatever amount its target stores.
             if let inForce, inForce.period == .day, habit.kind == .yesNo ? amount > 0 : amount >= inForce.amount {
@@ -54,7 +63,10 @@ struct HabitCardModel: Hashable, Identifiable {
             }
         }
 
-        let weekTotals = Dictionary(amounts.map { ($0.key.startOfWeek, $0.value) }, uniquingKeysWith: +)
+        // A checklist week counts each Item once, however many Days ticked it.
+        let weekTotals: [Day: Double] = habit.kind == .checklist
+            ? Dictionary(grouping: past, by: { $0.day.startOfWeek }).mapValues { Double(Checklist.ticked(in: $0, period: .week, containing: $0[0].day).count) }
+            : Dictionary(amounts.map { ($0.key.startOfWeek, $0.value) }, uniquingKeysWith: +)
         let metWeeks = Set(weekTotals.compactMap { monday, total -> Day? in
             guard let inForce = habit.target(inForceOn: monday.advanced(by: 6)), inForce.period == .week, total >= inForce.amount else { return nil }
             return monday
@@ -72,8 +84,11 @@ struct HabitCardModel: Hashable, Identifiable {
         self.todayAmount = todayAmount
         isDoneToday = switch habit.kind {
         case .yesNo: todayAmount > 0
-        case .quantitative: period == .week ? metWeeks.contains(today.startOfWeek) : metDays.contains(today)
+        case .quantitative, .checklist: period == .week ? metWeeks.contains(today.startOfWeek) : metDays.contains(today)
         }
+        itemCount = habit.items.count
+        let active = Set(habit.items.map(\.id))
+        tickedItemCount = habit.kind == .checklist ? Checklist.ticked(in: past, period: period, containing: today).intersection(active).count : 0
         self.streak = streak
         streakUnit = period.streakUnit(streak)
         if let target, period == .week {

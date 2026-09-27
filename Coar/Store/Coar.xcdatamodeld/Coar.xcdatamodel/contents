@@ -16,7 +16,16 @@
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="sortOrder" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="checkIns" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CheckIn" inverseName="habit" inverseEntity="CheckIn"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HabitItem" inverseName="habit" inverseEntity="HabitItem"/>
         <relationship name="targets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HabitTarget" inverseName="habit" inverseEntity="HabitTarget"/>
+    </entity>
+    <entity name="HabitItem" representedClassName="HabitItem" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isRemoved" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="sortOrder" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="habit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Habit" inverseName="items" inverseEntity="Habit"/>
     </entity>
     <entity name="HabitTarget" representedClassName="HabitTarget" syncable="YES" codeGenerationType="class">
         <attribute name="amount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -28,6 +37,7 @@
     <entity name="CheckIn" representedClassName="CheckIn" syncable="YES" codeGenerationType="class">
         <attribute name="amount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="itemIDs" optional="YES" attributeType="String"/>
         <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="habit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Habit" inverseName="checkIns" inverseEntity="Habit"/>
     </entity>

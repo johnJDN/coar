@@ -19,7 +19,7 @@ final class HabitTargetViewController: UIHostingController<HabitTargetForm> {
     init(dependencies: AppDependencies, habit: HabitRecord, target: HabitTargetRecord?, onSaved: @escaping () -> Void) {
         self.dependencies = dependencies
         habitID = habit.id
-        current = HabitTargetDraft(kind: habit.kind, period: target?.period ?? .day, typedAmount: target?.amount)
+        current = HabitTargetDraft(kind: habit.kind, period: target?.period ?? .day, typedAmount: target?.amount, itemCount: habit.items.count)
         draft = current
         self.onSaved = onSaved
         super.init(rootView: HabitTargetForm(draft: current) { _ in })

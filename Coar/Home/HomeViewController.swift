@@ -144,7 +144,8 @@ final class HomeViewController: ScreenViewController {
     }
 
     private func presentAmount(_ id: HabitRecord.ID) {
-        present(HabitAmountViewController.sheet(dependencies: dependencies, habitID: id, day: .today()) { [weak self] in self?.load() }, animated: true)
+        guard let sheet = HabitCheckInSheet.sheet(habitID: id, dependencies: dependencies, day: .today(), onChange: { [weak self] in self?.load() }) else { return }
+        present(sheet, animated: true)
     }
 
     // MARK: - Apple Health

@@ -218,7 +218,8 @@ final class HabitsViewController: UIViewController {
     }
 
     private func presentAmount(_ id: HabitRecord.ID) {
-        present(HabitAmountViewController.sheet(dependencies: dependencies, habitID: id, day: .today()) { [weak self] in self?.render() }, animated: true)
+        guard let sheet = HabitCheckInSheet.sheet(habitID: id, dependencies: dependencies, day: .today(), onChange: { [weak self] in self?.render() }) else { return }
+        present(sheet, animated: true)
     }
 
     private func presentNewHabit() {
