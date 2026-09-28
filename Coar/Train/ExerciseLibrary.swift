@@ -2,8 +2,8 @@ import Foundation
 
 /// The built-in exercise library (`.scratch/exercise-library/`): common gym and home exercises
 /// with their muscle groups and equipment in Coar's own terms, generated from the reviewed
-/// `list.md`. Adding one copies it into the user's catalogue as an ordinary Exercise; nothing
-/// links back here.
+/// `list.md`. Adding one copies it into the user's catalogue; nothing links back here but the
+/// name, which is why a library exercise can't be renamed (its other details can change).
 enum ExerciseLibrary {
 
     struct Entry: Hashable {
@@ -200,6 +200,12 @@ extension ExerciseLibrary {
     /// A name as the library compares names: case and spacing don't matter.
     static func key(_ name: String) -> String {
         name.lowercased().split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
+
+    /// An exercise with this name is the library's, and keeps the name: the library is
+    /// matched by name, so a renamed copy would be offered again and could be added twice.
+    static func isLibraryName(_ name: String) -> Bool {
+        entry(named: name) != nil
     }
 
     /// The entry with exactly this name, if the library has one.

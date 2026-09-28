@@ -28,7 +28,7 @@ starting with Coar.
 3. As John, I want the filter to search the library too, by name or by muscle group ("chest"), so that I find things quickly.
 4. As John, I want library exercises I already have (same name, active or archived) left out, so that I never create duplicates.
 5. As John, I want Exercises → + to open the library with New exercise at the top, and to stay open as I tap several, each disappearing once added, so that setting up all my exercises is a run of taps.
-6. As John, I want an exercise added from the library to be an ordinary exercise of mine, so that I can rename it ("Incline DB press 30°") and its history is mine.
+6. As John, I want an exercise added from the library to keep the library's name, with its muscle groups, equipment and rest still mine to change, so that the library stays the one name for it and is never added twice. A variation the library lacks is a New exercise, which I can name as I like. (Changed 2026-09-27: first built as renameable; John: "that shouldn't be possible".)
 7. As John, I want New exercise to fill in the muscle groups and equipment shortly after I type a name (from the library when the name is in it, otherwise from AI), with a note saying so, so that I only check it rather than look it up.
 8. As John, I want a fill-in never to overwrite muscle groups or equipment I've set myself, so that the AI can't undo my choice.
 9. As John, I want New exercise to work exactly as today without a key or a connection, so that the fill-in is a help, not a requirement.

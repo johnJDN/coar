@@ -58,3 +58,14 @@ Entries you already have (by name, active or archived) are hidden. Spec: stories
     - no link back to the library, so later library changes don't touch your copies;
     - the catalogue sheet doesn't focus the filter (tapping through is the common use there),
       while the plan picker still does.
+- 2026-09-27 (agent, after John: renaming library exercises "shouldn't be possible"): a
+  library exercise now keeps its name. There's no schema change: `ExerciseLibrary.isLibraryName`
+  recognises one by its name (case and spacing ignored), and the edit form shows that name as
+  fixed text with a library icon. Its footer reads "From the library, so its name stays as it
+  is. Its muscle groups and equipment are yours to change."; groups, equipment and rest still
+  edit. Custom exercises rename as before. This also ends the duplicate risk from the last
+  comment: a copy can't be renamed away from its library name. An exercise the user created
+  under a library name counts as the library's. The store façade doesn't enforce the lock; the
+  form is the only place a name is edited. Test `test_aLibraryExercise_isKnownByItsName_soItsNameIsKept`
+  replaced the rename test; suite green at 329. Checked in the simulator: Exercises → Bench
+  press → Edit showed the fixed name and note.

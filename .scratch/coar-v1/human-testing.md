@@ -428,10 +428,10 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 Spec and tickets: `.scratch/exercise-library/`.
 
 - [ ] Train → Exercises → +: "Add Exercises" with New exercise, then "Library · Chest", Back, … Tap + on each of your exercises (Incline dumbbell press, Pull-up, …): each disappears from the list. Done: they're all in Exercises with their muscle groups and equipment.
-- [ ] Rename one (Incline dumbbell press → "Incline DB press 30°"): it keeps everything else. The library now offers "Incline dumbbell press" again, since you no longer have that name, so don't add it twice.
+- [ ] Edit an exercise added from the library (or Bench press): the name is fixed text with a library icon and "From the library, so its name stays as it is"; muscle groups, equipment, and rest still change. An exercise you made with New exercise (a name not in the library) can still be renamed.
 - [ ] A plan → Add exercise: your exercises first, then the library; tapping a library exercise adds it to the plan and to Exercises in one go.
 - [ ] Type "back" or "curl" in the filter: the library narrows to back exercises / curls.
-- [ ] Judgement calls (01): library exercises start with no rest default; an exercise you archived isn't offered again (restore it instead); renaming a copy means the library will offer the original name again (it's a different name now).
+- [ ] Judgement calls (01): library exercises start with no rest default; an exercise you archived isn't offered again (restore it instead); a library exercise is recognised by its name, so one you made yourself with a library name is locked the same way.
 - [ ] Exercises → + → New exercise, type "Hammer curl" (in the library) and wait a moment: Biceps + Forearms, Dumbbell fill in, with "Filled in from the library." under the muscle groups.
 - [ ] Type a name that isn't in the library ("Copenhagen plank", "Landmine row"): after about a second, AI fills them in with "Filled in by AI from the name. Check it." ("Landmine row" → Back + Biceps…, Other: Landmine).
 - [ ] Set the muscle group yourself first, then type a name: nothing gets overwritten. Edit an existing exercise: no fill-in at all.

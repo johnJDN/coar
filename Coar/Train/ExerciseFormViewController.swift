@@ -5,7 +5,8 @@ import os
 /// The Exercise sheet, presented from the catalogue and from the Plan editor's list. Hosts
 /// `ExerciseForm` per ADR 0001. A new Exercise has Cancel and Save (and asks before a
 /// half-filled one is discarded); an existing one saves as it changes and has Done
-/// (`EditorSaving`). Archive (existing Exercises only) hides it from what Plans can add.
+/// (`EditorSaving`). Archive (existing Exercises only) hides it from what Plans can add. A
+/// library exercise (its name is one of `ExerciseLibrary`'s) keeps its name: the rest edits.
 final class ExerciseFormViewController: UIHostingController<ExerciseForm> {
 
     enum Mode {
@@ -33,6 +34,7 @@ final class ExerciseFormViewController: UIHostingController<ExerciseForm> {
         self.mode = mode
         self.onSaved = onSaved
         let canArchive: Bool
+        var nameLocked = false
         switch mode {
         case .create(let name):
             var draft = ExerciseForm.Draft()
@@ -42,6 +44,7 @@ final class ExerciseFormViewController: UIHostingController<ExerciseForm> {
         case .edit(let exercise):
             draft = ExerciseForm.Draft(exercise)
             canArchive = true
+            nameLocked = ExerciseLibrary.isLibraryName(exercise.name)
         }
         initial = draft
         super.init(rootView: ExerciseForm(draft: draft, canArchive: canArchive, onChange: { _ in }, onArchive: {}))
@@ -53,6 +56,7 @@ final class ExerciseFormViewController: UIHostingController<ExerciseForm> {
         rootView = ExerciseForm(
             draft: draft,
             canArchive: canArchive,
+            nameLocked: nameLocked,
             onChange: { [weak self] in self?.draftChanged($0) },
             onArchive: { [weak self] in self?.archive() },
             suggest: suggest

@@ -2,8 +2,8 @@ import XCTest
 @testable import Coar
 
 /// The built-in exercise library (`.scratch/exercise-library/`): its data holds together, it
-/// never offers what the user already has, the filter finds names and muscle groups, and
-/// adding copies an entry into an ordinary Exercise.
+/// never offers what the user already has, the filter finds names and muscle groups, adding
+/// copies an entry into the catalogue, and a library exercise is known (and its name kept) by name.
 @MainActor
 final class ExerciseLibraryTests: XCTestCase {
 
@@ -66,7 +66,11 @@ final class ExerciseLibraryTests: XCTestCase {
         XCTAssertEqual(added.equipment, "Dumbbell")
         XCTAssertNil(added.restSeconds)
         XCTAssertEqual(try store.exercises().map(\.id), [added.id])
-        try store.updateExercise(added.id, name: "Incline DB press 30°", muscleGroup: .chest, secondaryMuscleGroups: [.shoulders, .triceps], equipment: "Dumbbell", restSeconds: 150)
-        XCTAssertEqual(try store.exercise(added.id)?.name, "Incline DB press 30°", "renamed like any other")
+    }
+
+    func test_aLibraryExercise_isKnownByItsName_soItsNameIsKept() {
+        XCTAssertTrue(ExerciseLibrary.isLibraryName("Incline dumbbell press"))
+        XCTAssertTrue(ExerciseLibrary.isLibraryName("incline  DUMBBELL press"), "however it's cased or spaced")
+        XCTAssertFalse(ExerciseLibrary.isLibraryName("Incline DB press 30°"), "a custom exercise can be renamed")
     }
 }

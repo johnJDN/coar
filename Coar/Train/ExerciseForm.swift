@@ -100,6 +100,8 @@ struct ExerciseForm: View {
 
     /// Whether the Archive action is offered (an existing Exercise).
     let canArchive: Bool
+    /// A library exercise keeps the library's name: shown, not editable.
+    var nameLocked = false
     let onChange: (Draft) -> Void
     let onArchive: () -> Void
     /// Fills in the details from the name (New exercise only); nil turns it off.
@@ -110,8 +112,9 @@ struct ExerciseForm: View {
     @State private var suggestion: ExerciseSuggestion?
     @FocusState private var nameFocused: Bool
 
-    init(draft: Draft, canArchive: Bool, onChange: @escaping (Draft) -> Void, onArchive: @escaping () -> Void, suggest: ((String) async -> ExerciseSuggestion?)? = nil) {
+    init(draft: Draft, canArchive: Bool, nameLocked: Bool = false, onChange: @escaping (Draft) -> Void, onArchive: @escaping () -> Void, suggest: ((String) async -> ExerciseSuggestion?)? = nil) {
         self.canArchive = canArchive
+        self.nameLocked = nameLocked
         self.onChange = onChange
         self.onArchive = onArchive
         self.suggest = suggest
@@ -121,12 +124,24 @@ struct ExerciseForm: View {
     var body: some View {
         Form {
             Section {
-                TextField("Name", text: $draft.name, prompt: Text("Incline dumbbell press"))
-                    .font(Font.cardTitle)
-                    .foregroundStyle(Color.textPrimary)
-                    .focused($nameFocused)
-                    .submitLabel(.done)
+                if nameLocked {
+                    Label {
+                        Text(draft.name)
+                            .font(Font.cardTitle)
+                            .foregroundStyle(Color.textPrimary)
+                    } icon: {
+                        Image(systemName: "books.vertical").foregroundStyle(Color.textSecondary)
+                    }
+                    .accessibilityHint("From the library; its name can't be changed")
                     .formRow()
+                } else {
+                    TextField("Name", text: $draft.name, prompt: Text("Incline dumbbell press"))
+                        .font(Font.cardTitle)
+                        .foregroundStyle(Color.textPrimary)
+                        .focused($nameFocused)
+                        .submitLabel(.done)
+                        .formRow()
+                }
                 Picker("Muscle group", selection: $draft.muscleGroup) {
                     ForEach(MuscleGroup.allCases, id: \.self) { group in
                         Text(group.title).tag(group)
@@ -158,7 +173,9 @@ struct ExerciseForm: View {
                 }
                 .formRow()
             } footer: {
-                if let suggestion, draft.acceptsSuggestion(after: suggestion), !draft.acceptsSuggestion(after: nil) {
+                if nameLocked {
+                    Text("From the library, so its name stays as it is. Its muscle groups and equipment are yours to change.")
+                } else if let suggestion, draft.acceptsSuggestion(after: suggestion), !draft.acceptsSuggestion(after: nil) {
                     Text(suggestion.note)
                 } else {
                     Text("Pick the muscle it works most, then any others it also works: dips are Chest, also Triceps and Shoulders.")
