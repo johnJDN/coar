@@ -113,6 +113,27 @@ extension Store {
         return EntryRecord(entry)!
     }
 
+    /// Save as food (AI food logging 05): a new Food Item with its one Serving, and an Entry
+    /// of `quantity` of that Serving linked to it, in one save. The Entry snapshots
+    /// `servingName`, `quantity`, and the Serving's macros for the quantity like any other.
+    @discardableResult
+    func logEntrySavingFood(
+        name: String,
+        serving draft: ServingDraft,
+        quantity: Double,
+        at instant: Date,
+        in calendar: Calendar = .current
+    ) throws -> EntryRecord {
+        let item = FoodItem(context: context)
+        item.id = UUID()
+        item.isArchived = false
+        apply(name: name, servings: [draft], to: item)
+        let entry = makeEntry(name: name, servingName: draft.name, quantity: quantity, macros: draft.macros.scaled(by: quantity), at: instant, in: calendar)
+        entry.foodItem = item
+        try save()
+        return EntryRecord(entry)!
+    }
+
     /// A new Entry with its snapshot filled in (ADR 0003) and its Day fixed (ADR 0005); the
     /// caller sets the reference and saves. For the `Store+<Domain>` extensions only.
     func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, at instant: Date, in calendar: Calendar) -> Entry {
@@ -172,6 +193,11 @@ extension Store {
     // MARK: - Writes
 
     private func write(name: String, servings drafts: [ServingDraft], to item: FoodItem) throws {
+        apply(name: name, servings: drafts, to: item)
+        try save()
+    }
+
+    private func apply(name: String, servings drafts: [ServingDraft], to item: FoodItem) {
         item.name = name
         let existing = reconcile(item.servingObjects, keeping: Set(drafts.map(\.id)), id: \.id)
         let defaultID = drafts.first { $0.isDefault }?.id ?? drafts.first?.id
@@ -185,7 +211,6 @@ extension Store {
             serving.sortOrder = Int32(position)
             serving.foodItem = item
         }
-        try save()
     }
 
     /// Syncs a parent's child objects with the drafts about to be written: a child without

@@ -89,13 +89,16 @@ final class DescribeLineCell: UICollectionViewListCell {
         case .checking:
             return plain("Checking…", color: UIColor.textTertiary)
         case .waiting:
-            return withSymbol("wifi.slash", "Waiting for connection. Tap to try again.", color: UIColor.textSecondary)
+            return withSymbol("wifi.slash", "Waiting for connection.", color: UIColor.textSecondary)
         case .failed(let reason):
             let sentence = reason.last.map { ".!?".contains($0) } == true ? reason : reason + "."
-            return withSymbol("exclamationmark.triangle.fill", "\(sentence) Tap to try again.", color: UIColor.accentCoral, textColor: UIColor.textPrimary)
+            return withSymbol("exclamationmark.triangle.fill", "\(sentence) Tap to try again or type it in.", color: UIColor.accentCoral, textColor: UIColor.textPrimary)
         case .filled(let estimate):
             let text = NSMutableAttributedString(attributedString: FoodText.styledMacroLineUIKit(estimate.macros))
             text.append(plain("\n\([estimate.name, estimate.portion, estimate.source.title].joined(separator: " · "))", color: UIColor.textSecondary))
+            if line.saveAsFood {
+                text.append(plain(" · Saving to Foods", color: UIColor.accentGreen))
+            }
             if estimate.caloriesDisagree {
                 text.append(NSAttributedString(string: "\n"))
                 text.append(withSymbol("exclamationmark.triangle.fill", "Calories don't match the macros. Check before adding.", color: UIColor.accentCoral, textColor: UIColor.textSecondary))

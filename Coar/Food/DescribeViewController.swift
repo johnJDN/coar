@@ -126,7 +126,7 @@ final class DescribeViewController: UIViewController {
         for line in draft.filled {
             guard let estimate = line.estimate else { continue }
             do {
-                try log(estimate, typed: line.trimmedText)
+                try log(estimate, typed: line.trimmedText, savingAsFood: line.saveAsFood)
                 logged.insert(line.id)
             } catch {
                 Self.logger.error("Failed to log Entry: \(error, privacy: .public)")
@@ -159,8 +159,13 @@ final class DescribeViewController: UIViewController {
     /// One Entry: through the Food Item or Meal it matched, so it links to it (spec "Your
     /// library wins"); on its own otherwise. A match archived or deleted since it was made is
     /// logged on its own with the numbers shown, rather than lost.
-    private func log(_ estimate: Estimate, typed: String) throws {
+    private func log(_ estimate: Estimate, typed: String, savingAsFood: Bool) throws {
         let store = dependencies.store
+        if savingAsFood, estimate.match == nil {
+            let (serving, quantity) = estimate.servingToSave
+            try store.logEntrySavingFood(name: estimate.name.isEmpty ? typed : estimate.name, serving: serving, quantity: quantity, at: instant)
+            return
+        }
         do {
             switch estimate.match {
             case .foodItem(let id, let serving):
@@ -265,6 +270,38 @@ final class DescribeViewController: UIViewController {
             }
             Self.logger.error("Estimate failed: \(error.message, privacy: .public)")
         }
+        reconfigure(id)
+        onChange()
+    }
+
+    // MARK: - The line page
+
+    private func openLine(_ line: DescribeLine) {
+        view.endEditing(true)
+        let problem: String?
+        switch line.state {
+        case .failed(let reason): problem = reason
+        case .waiting: problem = "Waiting for a connection. It fills in by itself once there is one."
+        case .typing, .checking, .filled: problem = nil
+        }
+        let id = line.id
+        let page = DescribeLineViewController(line: line, problem: problem, onChange: { [weak self] edit in
+            self?.edited(id, on: edit)
+        }, onTryAgain: { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+            self?.send(id)
+        })
+        navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// The page writes into its line as it changes (DESIGN.md §7a). While it holds nothing
+    /// addable (a cleared quantity, nothing typed yet), the line keeps what it had.
+    private func edited(_ id: DescribeLine.ID, on edit: DescribeLineEdit) {
+        if let estimate = edit.estimate {
+            timers[id]?.cancel()
+            draft.setEstimate(id, estimate)
+        }
+        draft.setSaveAsFood(id, edit.saveAsFood && edit.offersSaveAsFood)
         reconfigure(id)
         onChange()
     }
@@ -407,14 +444,15 @@ final class DescribeViewController: UIViewController {
 
 extension DescribeViewController: UICollectionViewDelegate {
 
-    /// Tapping a line's caption tries a failed or waiting line again.
+    /// Tapping under a line's text opens its page once it has something to show: its
+    /// Estimate to adjust, or why it has none, with Try again and fields to type it in.
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         guard case .line(let id) = dataSource.itemIdentifier(for: indexPath), let line = draft.line(id) else { return }
         switch line.state {
-        case .failed, .waiting:
-            send(id)
-        case .typing, .checking, .filled:
+        case .filled, .failed, .waiting:
+            openLine(line)
+        case .typing, .checking:
             (collectionView.cellForItem(at: indexPath) as? DescribeLineCell)?.focus()
         }
     }

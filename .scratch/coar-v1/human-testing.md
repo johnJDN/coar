@@ -409,3 +409,9 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Add a matched line: on the timeline the Entry is linked (tap it: it re-logs from your food), and the food moves to the top of Foods (most recently used).
 - [ ] With no key (or Airplane Mode), saved foods typed by exact name still fill in.
 - [ ] Judgement calls (ticket 04): an exact name beats the model; a Food Item beats a Meal of the same name; a matched food archived before you tap Add is logged on its own with the numbers shown.
+- [ ] Tap under a filled line: its page shows Name, Quantity, Unit, the macro strip and fields, and "Estimated. (what it assumed)". Set Quantity 2: the macros double. Back: the line shows the new numbers.
+- [ ] Change Calories on the page: the note says "Typed by you" and the line shows "Typed".
+- [ ] A failed line ("asdf"): tap it: the page shows why, Try again, and empty macro fields. Type Calories 600, back: the line is filled ("Typed") and Add logs it. (This is also how to log offline.)
+- [ ] Save as food on an estimated line, back: "· Saving to Foods" in green. Add: the food is at the top of Foods with that portion as its serving; the timeline Entry is linked. For "150g chicken breast", the saved serving is "100 g".
+- [ ] A line matched to your saved food has no Save as food; changing its quantity keeps "Your food"; changing its name or macros makes it "Typed".
+- [ ] Judgement calls (ticket 05): typed numbers aren't checked against the 5,000 kcal limit; one typed macro is enough (the rest count as 0); a gram-counted line saves a "100 g" serving.

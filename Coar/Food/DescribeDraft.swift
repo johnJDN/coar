@@ -19,11 +19,26 @@ struct DescribeLine: Identifiable, Equatable, Codable {
     let id: UUID
     var text: String
     var state: State
+    /// Add also saves it to Foods (ticket 05).
+    var saveAsFood = false
 
     init(id: UUID = UUID(), text: String = "", state: State = .typing) {
         self.id = id
         self.text = text
         self.state = state
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, text, state, saveAsFood
+    }
+
+    /// Reads drafts saved before a field existed: a missing one takes its default.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        text = try container.decode(String.self, forKey: .text)
+        state = try container.decode(State.self, forKey: .state)
+        saveAsFood = try container.decodeIfPresent(Bool.self, forKey: .saveAsFood) ?? false
     }
 
     /// The text as it is sent, and as a reply is matched against.
@@ -156,6 +171,20 @@ struct DescribeDraft: Equatable, Codable {
     /// Nothing typed: Clear has nothing to do.
     var isEmpty: Bool {
         lines.allSatisfy { $0.trimmedText.isEmpty }
+    }
+
+    // MARK: The line page
+
+    /// The line as edited on its page: filled with what the page holds, whatever it was
+    /// before. Numbers the user typed are taken as they are (no impossibility check).
+    mutating func setEstimate(_ id: DescribeLine.ID, _ estimate: Estimate) {
+        guard let index = index(id) else { return }
+        lines[index].state = .filled(estimate)
+    }
+
+    mutating func setSaveAsFood(_ id: DescribeLine.ID, _ saveAsFood: Bool) {
+        guard let index = index(id) else { return }
+        lines[index].saveAsFood = saveAsFood
     }
 
     // MARK: Logging
