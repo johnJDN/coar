@@ -15,7 +15,7 @@ protocol FoodEstimator {
 /// The models, one constant each, so swapping one is a one-line change (ADR 0007).
 enum FoodModels {
     /// Everyday foods, typed: cheap and quick, with strict JSON.
-    static let text = "google/gemini-3.1-flash-lite"
+    static let text = "google/gemini-3.5-flash-lite"
     /// Restaurant and brand foods: searches the web for the published numbers. No strict
     /// JSON on OpenRouter, so its reply is read leniently (`FoodLookupPrompt.object(in:)`).
     static let lookup = "perplexity/sonar"

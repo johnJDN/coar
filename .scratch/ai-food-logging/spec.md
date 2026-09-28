@@ -127,7 +127,7 @@ one before it had no answer:
 2. **Cache (free).** Normalised text seen before gets its last result. The cache is a JSON file
    in Caches, kept on this iPhone only, holding at most 500 lines with the least recently used
    dropped first. Library matches aren't cached, because the library can change.
-3. **Text model: `google/gemini-3.1-flash-lite`**, with structured output.
+3. **Text model: `google/gemini-3.5-flash-lite`** (switched from 3.1 after `model-test.md`), with structured output.
    - The input is the line plus the library as short handles, not UUIDs, which cost tokens:
      `f1 "Eggs" [s1 "1 large", s2 "100 g"]`, `m1 "Post-workout shake"`.
    - The output is an estimate: name, portion (quantity, unit, grams if known), macros for the
