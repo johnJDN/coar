@@ -1,6 +1,6 @@
 # AI food logging
 
-Status: ready-for-agent
+Status: done (2026-09-27; see each ticket's comments, and human-testing.md for the test pass)
 
 Vocabulary is `CONTEXT.md`. This feature widens **Entry** and adds **Estimate**, and ticket 02
 updates the glossary. Decided in conversation with John on 2026-09-27. Supersedes the v1 Out of
