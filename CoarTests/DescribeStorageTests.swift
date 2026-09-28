@@ -76,13 +76,13 @@ final class DescribeStorageTests: XCTestCase {
         let url = temporaryURL()
 
         let first = CachingFoodEstimator(wrapping: fake, url: url)
-        _ = try await first.estimate("toast")
-        let again = try await first.estimate("  Toast")
+        _ = try await first.estimate("toast", library: .empty)
+        let again = try await first.estimate("  Toast", library: .empty)
         XCTAssertEqual(again, toast)
         XCTAssertEqual(fake.sent, ["toast"])
 
         let relaunched = CachingFoodEstimator(wrapping: fake, url: url)
-        _ = try await relaunched.estimate("TOAST")
+        _ = try await relaunched.estimate("TOAST", library: .empty)
         XCTAssertEqual(fake.sent, ["toast"], "read from the file")
     }
 
@@ -94,10 +94,10 @@ final class DescribeStorageTests: XCTestCase {
         fake.replies["down"] = .failure(OpenRouterError.offline)
         let estimator = CachingFoodEstimator(wrapping: fake, url: nil)
 
-        _ = try? await estimator.estimate("huge")
-        _ = try? await estimator.estimate("huge")
-        _ = try? await estimator.estimate("down")
-        _ = try? await estimator.estimate("down")
+        _ = try? await estimator.estimate("huge", library: .empty)
+        _ = try? await estimator.estimate("huge", library: .empty)
+        _ = try? await estimator.estimate("down", library: .empty)
+        _ = try? await estimator.estimate("down", library: .empty)
         XCTAssertEqual(fake.sent, ["huge", "huge", "down", "down"])
     }
 }

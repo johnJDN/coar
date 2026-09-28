@@ -403,3 +403,9 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Type "2 eggs" (fills in), Clear, type "2 Eggs" again: it fills in at once with no "Checking…" wait worth noticing (answered from the phone, free).
 - [ ] Airplane Mode, type "apple", close the sheet, turn Airplane Mode off, reopen `+`: it fills in by itself. (Also: leave the sheet open while turning it off: it fills in without a tap.)
 - [ ] Judgement calls (ticket 03): the kept lines aren't timed; Add logs them at the time the sheet was opened for; Clear doesn't ask first.
+- [ ] With a saved food (say "Eggs"), type "2 eggs": it fills in at once as "Eggs · 2 × (your serving) · Your food", with your own numbers. Try "½ eggs" and "egg" too.
+- [ ] Type a looser name for a saved food or meal ("my usual shake", "a couple of eggs"): after the wait it shows "Your food"/"Your meal" with your numbers.
+- [ ] Type a saved food plus something ("protein shake with milk"): it's "Estimated", not matched.
+- [ ] Add a matched line: on the timeline the Entry is linked (tap it: it re-logs from your food), and the food moves to the top of Foods (most recently used).
+- [ ] With no key (or Airplane Mode), saved foods typed by exact name still fill in.
+- [ ] Judgement calls (ticket 04): an exact name beats the model; a Food Item beats a Meal of the same name; a matched food archived before you tap Add is logged on its own with the numbers shown.

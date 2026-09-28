@@ -126,13 +126,7 @@ final class DescribeViewController: UIViewController {
         for line in draft.filled {
             guard let estimate = line.estimate else { continue }
             do {
-                try dependencies.store.logEntry(
-                    name: estimate.name.isEmpty ? line.trimmedText : estimate.name,
-                    servingName: estimate.unit,
-                    quantity: estimate.quantity,
-                    macros: estimate.macros,
-                    at: instant
-                )
+                try log(estimate, typed: line.trimmedText)
                 logged.insert(line.id)
             } catch {
                 Self.logger.error("Failed to log Entry: \(error, privacy: .public)")
@@ -160,6 +154,28 @@ final class DescribeViewController: UIViewController {
         render()
         onChange()
         focusFirstEmptyLine()
+    }
+
+    /// One Entry: through the Food Item or Meal it matched, so it links to it (spec "Your
+    /// library wins"); on its own otherwise. A match archived or deleted since it was made is
+    /// logged on its own with the numbers shown, rather than lost.
+    private func log(_ estimate: Estimate, typed: String) throws {
+        let store = dependencies.store
+        do {
+            switch estimate.match {
+            case .foodItem(let id, let serving):
+                try store.logEntry(foodItem: id, serving: serving, quantity: estimate.quantity, at: instant)
+                return
+            case .meal(let id):
+                try store.logEntry(meal: id, quantity: estimate.quantity, at: instant)
+                return
+            case nil:
+                break
+            }
+        } catch is Store.NotFound {
+            Self.logger.info("Matched food is gone; logging the line on its own")
+        }
+        try store.logEntry(name: estimate.name.isEmpty ? typed : estimate.name, servingName: estimate.unit, quantity: estimate.quantity, macros: estimate.macros, at: instant)
     }
 
     // MARK: - Key
@@ -209,17 +225,33 @@ final class DescribeViewController: UIViewController {
     private func send(_ id: DescribeLine.ID) {
         timers[id]?.cancel()
         timers[id] = nil
-        guard problem == nil, let text = draft.begin(id) else { return }
+        guard let text = draft.line(id)?.trimmedText, !text.isEmpty else { return }
+        let library = currentLibrary()
+        if let match = library.exactMatch(text), draft.begin(id) != nil {
+            received(id, sentText: text, result: .success(match))
+            return
+        }
+        guard problem == nil, draft.begin(id) != nil else { return }
         reconfigure(id)
         let estimator = dependencies.foodEstimator
         Task { [weak self] in
             let result: Result<Estimate, Error>
             do {
-                result = .success(try await estimator.estimate(text))
+                result = .success(try await estimator.estimate(text, library: library))
             } catch {
                 result = .failure(error)
             }
             self?.received(id, sentText: text, result: result)
+        }
+    }
+
+    /// The catalogue as it is now; empty (so nothing matches) if it can't be read.
+    private func currentLibrary() -> FoodLibrary {
+        do {
+            return FoodLibrary(foodItems: try dependencies.store.foodItems(), meals: try dependencies.store.meals())
+        } catch {
+            Self.logger.error("Failed to read the catalogue: \(error, privacy: .public)")
+            return .empty
         }
     }
 

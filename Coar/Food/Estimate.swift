@@ -8,9 +8,13 @@ struct Estimate: Equatable, Codable {
     /// Where the numbers came from, shown beside them so the user knows which to check.
     enum Source: String, Codable {
         case estimated, lookedUp, photo, label, typed
+        /// One of the user's own Food Items or Meals.
+        case food, meal
 
         var title: String {
             switch self {
+            case .food: return "Your food"
+            case .meal: return "Your meal"
             case .estimated: return "Estimated"
             case .lookedUp: return "Looked up"
             case .photo: return "From photo"
@@ -35,6 +39,8 @@ struct Estimate: Equatable, Codable {
     var assumption: String
     /// The model thinks a published figure (a chain, a brand) would beat its estimate.
     var needsLookup = false
+    /// The Food Item or Meal this is, when it is one of the user's: logged through it.
+    var match: LibraryMatch?
 
     /// "2 × large egg".
     var portion: String {
@@ -80,8 +86,20 @@ extension Estimate {
         case unreadable
     }
 
+    /// A model's pick from the user's catalogue, by handle (`FoodLibrary.promptListing`).
+    struct ModelMatch: Decodable, Equatable {
+        let food: String
+        let serving: String?
+        let quantity: Double
+    }
+
     /// The Estimate in a model's JSON reply (the shape `FoodEstimatePrompt.schema` asks for).
     init(reply: Data, source: Source) throws {
+        self = try Self.parse(reply: reply, source: source).estimate
+    }
+
+    /// The Estimate in a model's reply and, when it named one, its pick from the catalogue.
+    static func parse(reply: Data, source: Source) throws -> (estimate: Estimate, match: ModelMatch?) {
         struct Reply: Decodable {
             let is_food: Bool
             let name: String
@@ -94,11 +112,12 @@ extension Estimate {
             let carbs: Double
             let needs_lookup: Bool?
             let assumption: String?
+            let match: ModelMatch?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw ReplyError.unreadable }
         guard reply.is_food else { throw ReplyError.notFood }
         let unit = reply.unit.trimmingCharacters(in: .whitespaces)
-        self.init(
+        let estimate = Estimate(
             name: reply.name.trimmingCharacters(in: .whitespaces),
             quantity: reply.quantity,
             unit: unit.isEmpty ? "serving" : unit,
@@ -108,5 +127,6 @@ extension Estimate {
             assumption: reply.assumption?.trimmingCharacters(in: .whitespaces) ?? "",
             needsLookup: reply.needs_lookup ?? false
         )
+        return (estimate, reply.match)
     }
 }

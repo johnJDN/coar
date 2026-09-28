@@ -1,10 +1,11 @@
 import Foundation
 
 /// Turns one line the user typed into an Estimate (`.scratch/ai-food-logging/spec.md`,
-/// "Estimating, cheapest first"). Throws an `OpenRouterError` when the request fails, or an
+/// "Estimating, cheapest first"), matching the user's catalogue when the line means one of
+/// its foods. Throws an `OpenRouterError` when the request fails, or an
 /// `Estimate.ReplyError` when the reply is not a food.
 protocol FoodEstimator {
-    func estimate(_ line: String) async throws -> Estimate
+    func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate
 }
 
 /// The models, one constant each, so swapping one is a one-line change (ADR 0007).
@@ -30,12 +31,22 @@ enum FoodEstimatePrompt {
     - needs_lookup: true only when the line names a restaurant chain, a brand, or a packaged product whose published nutrition would be more accurate than an estimate. Otherwise false.
     - assumption: one short sentence on what you assumed, or "" if nothing.
     - is_food: false if the line is not something eaten or drunk; then the numbers are 0.
+    - match: null, unless a list of the person's saved foods follows.
     """
+
+    /// The catalogue section, added after the rules when the user has saved foods.
+    static func library(_ listing: String) -> String {
+        """
+
+        The person's saved foods and meals, by handle. If the line clearly means one of them, set match: food is its handle, serving is the handle of the serving that fits what they said (null for a meal, or when they don't say), and quantity is how many of that serving (or of the meal). Match only when it is the same food as saved: not when the line adds something the saved food doesn't include ("with milk", "and fries"). Otherwise match is null. Fill in the estimate fields either way.
+        \(listing)
+        """
+    }
 
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption"],
+        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match"],
         "properties": [
             "is_food": ["type": "boolean"],
             "name": ["type": "string"],
@@ -48,6 +59,19 @@ enum FoodEstimatePrompt {
             "carbs": ["type": "number"],
             "needs_lookup": ["type": "boolean"],
             "assumption": ["type": "string"],
+            "match": ["anyOf": [
+                ["type": "null"],
+                [
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["food", "serving", "quantity"],
+                    "properties": [
+                        "food": ["type": "string"],
+                        "serving": ["type": ["string", "null"]],
+                        "quantity": ["type": "number"],
+                    ],
+                ] as [String: Any],
+            ]],
         ],
     ]
 }
@@ -61,15 +85,16 @@ final class OpenRouterFoodEstimator: FoodEstimator {
         self.client = client
     }
 
-    func estimate(_ line: String) async throws -> Estimate {
+    func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         let reply = try await client.complete(
             model: FoodModels.text,
-            system: FoodEstimatePrompt.system,
+            system: FoodEstimatePrompt.system + (library.promptListing.map(FoodEstimatePrompt.library) ?? ""),
             user: [.text(line)],
             schema: (name: "estimate", json: FoodEstimatePrompt.schema),
             timeout: 20
         )
-        return try Estimate(reply: Data(reply.utf8), source: .estimated)
+        let (estimate, match) = try Estimate.parse(reply: Data(reply.utf8), source: .estimated)
+        return match.flatMap { library.resolve(food: $0.food, serving: $0.serving, quantity: $0.quantity) } ?? estimate
     }
 }
 
@@ -92,7 +117,7 @@ final class DebugFoodEstimator: FoodEstimator {
         func delete() throws { key = nil }
     }
 
-    func estimate(_ line: String) async throws -> Estimate {
+    func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         try await Task.sleep(for: .seconds(1))
         let text = line.lowercased()
         if text.contains("offline") { throw OpenRouterError.offline }

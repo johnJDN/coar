@@ -88,7 +88,8 @@ struct EstimateCache: Codable, Equatable {
 }
 
 /// Answers from the cache when it can and asks the wrapped estimator otherwise, keeping every
-/// loggable answer. Failures and impossible numbers are never kept, so they are asked again.
+/// loggable answer. Failures and impossible numbers are never kept, so they are asked again;
+/// nor are matches to the user's catalogue, which can change or be archived.
 /// Safe to call from any task: the cache is behind a lock, and written to Caches (which the
 /// system may empty; it is only a cache) after each new answer.
 final class CachingFoodEstimator: FoodEstimator {
@@ -105,12 +106,12 @@ final class CachingFoodEstimator: FoodEstimator {
         cache = url.flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode(EstimateCache.self, from: $0) } ?? EstimateCache(capacity: capacity)
     }
 
-    func estimate(_ line: String) async throws -> Estimate {
+    func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         if let cached = lock.withLock({ cache.estimate(for: line) }) {
             return cached
         }
-        let estimate = try await wrapped.estimate(line)
-        guard estimate.impossibility == nil else { return estimate }
+        let estimate = try await wrapped.estimate(line, library: library)
+        guard estimate.impossibility == nil, estimate.match == nil else { return estimate }
         let snapshot = lock.withLock {
             cache.store(estimate, for: line)
             return cache
