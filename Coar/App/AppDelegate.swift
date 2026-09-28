@@ -15,7 +15,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             health: health,
             healthReader: health,
             bodyWeightWriter: health,
-            restTimer: RestTimer()
+            restTimer: RestTimer(),
+            openRouter: OpenRouterClient(keys: KeychainKeyStore())
         )
     }()
 

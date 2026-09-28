@@ -214,7 +214,7 @@ steps are read from HealthKit and never stored. Every screen follows `DESIGN.md`
 
 ### Settings
 
-- Sheet: macro Targets (edits the current dated entry, creating a new one effective today if changed), units, HealthKit access. Nothing else.
+- Sheet: macro Targets (edits the current dated entry, creating a new one effective today if changed), units, HealthKit access. Nothing else. (The OpenRouter key was added 2026-09-27 for AI food logging: `.scratch/ai-food-logging/`, ADR 0007.)
 
 ## Testing Decisions
 

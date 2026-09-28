@@ -253,4 +253,6 @@ Charts never show a legend when color already maps to a label on screen.
   chart plus recent sets.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).
 - **Settings** — sheet from avatar button: targets, units (lbs default), HealthKit
-  access. iCloud is always on and shown as read-only status at most.
+  access, and the OpenRouter key (AI section: pasted once and checked before it is kept,
+  then shown only as "•••• last four" with its spending and Remove key; ADR 0007). iCloud
+  is always on and shown as read-only status at most.

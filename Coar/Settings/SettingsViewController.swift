@@ -23,7 +23,8 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         self.model = SettingsForm.Model(
             target: Self.targetToday(in: dependencies.store),
             massUnit: dependencies.preferences.massUnit,
-            healthStatus: nil
+            healthStatus: nil,
+            aiKey: dependencies.openRouter.keys.lastFour.map { .saved(lastFour: $0, spend: nil, problem: nil) } ?? .missing(problem: nil)
         )
         super.init(rootView: SettingsForm(model: model, onTargetsChanged: { _ in }, onChangeMassUnit: { _ in }, onConnectHealth: {}))
         title = "Settings"
@@ -40,6 +41,7 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         view.backgroundColor = UIColor.background
         render()
         refreshHealthStatus()
+        refreshKeySpending()
     }
 
     /// The sheet Home presents.
@@ -87,6 +89,62 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         }
     }
 
+    /// Checks a pasted key with OpenRouter, then keeps it in the Keychain. Only a key
+    /// OpenRouter refuses is not kept: with no connection, or a spent limit, it is saved and
+    /// the problem shown, since the key itself is fine.
+    private func saveKey(_ key: String) {
+        model.aiKey = .checking
+        render()
+        Task {
+            var spend: String?
+            var problem: String?
+            do {
+                spend = try await dependencies.openRouter.keyStatus(of: key).spendText
+            } catch {
+                let error = OpenRouterError.from(error)
+                if error == .keyRejected {
+                    model.aiKey = .missing(problem: error.message)
+                    render()
+                    return
+                }
+                problem = error == .offline ? "Couldn't check the key: no connection." : error.message
+            }
+            do {
+                try dependencies.openRouter.keys.save(key)
+                model.aiKey = .saved(lastFour: String(key.suffix(4)), spend: spend, problem: problem)
+            } catch {
+                Self.logger.error("Failed to save the OpenRouter key: \(error, privacy: .public)")
+                model.aiKey = .missing(problem: "Couldn't save the key on this iPhone (\(error)).")
+            }
+            render()
+        }
+    }
+
+    private func removeKey() {
+        do {
+            try dependencies.openRouter.keys.delete()
+            model.aiKey = .missing(problem: nil)
+        } catch {
+            Self.logger.error("Failed to remove the OpenRouter key: \(error, privacy: .public)")
+        }
+        render()
+    }
+
+    /// Reads the saved key's spending, if there is a key.
+    private func refreshKeySpending() {
+        guard case .saved(let lastFour, _, _) = model.aiKey else { return }
+        Task {
+            do {
+                let status = try await dependencies.openRouter.keyStatus()
+                model.aiKey = .saved(lastFour: lastFour, spend: status.spendText, problem: nil)
+            } catch {
+                let error = OpenRouterError.from(error)
+                model.aiKey = .saved(lastFour: lastFour, spend: nil, problem: error == .offline ? "Couldn't check spending: no connection." : error.message)
+            }
+            render()
+        }
+    }
+
     private func refreshHealthStatus() {
         Task {
             model.healthStatus = await dependencies.health.status()
@@ -101,7 +159,9 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             model: model,
             onTargetsChanged: { [weak self] in self?.pendingTargets = $0 },
             onChangeMassUnit: { [weak self] in self?.changeMassUnit($0) },
-            onConnectHealth: { [weak self] in self?.connectHealth() }
+            onConnectHealth: { [weak self] in self?.connectHealth() },
+            onSaveKey: { [weak self] in self?.saveKey($0) },
+            onRemoveKey: { [weak self] in self?.removeKey() }
         )
     }
 

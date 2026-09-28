@@ -379,3 +379,12 @@ simulator as the second device); every judgement call was kept unless its Result
 - [ ] Sleep / steps weekly averages: the caption reads "6.8h average this week"; a night without data doesn't lower it.
 - [ ] Tracked capsules don't open anything; the detail's Target card says where the data comes from; its calendar is read-only; Change target adjusts the amount and period from today.
 - [ ] Home's habits card counts tracked habits in "n of m done today".
+
+## Added after v1: AI food logging (2026-09-27)
+
+Spec and tickets: `.scratch/ai-food-logging/`.
+
+- [ ] Settings → AI: paste your OpenRouter key → Save key: "Checking the key…" then "OpenRouter key •••• (last four)" and "Spent $0 of $2 this week". Close and reopen Settings: the spending is read again.
+- [ ] Paste something that isn't a key (a word) → Save key: a coral "OpenRouter rejected the key…" row, the field is empty again, and nothing is kept.
+- [ ] Remove key: back to the paste field. Paste your key again afterwards so the Food tests below work.
+- [ ] Judgement calls (ticket 01): a key that can't be checked for lack of a connection, or whose limit is spent, is still kept (only a rejected key isn't); the key has its own Save because it's checked first, unlike the Targets.
