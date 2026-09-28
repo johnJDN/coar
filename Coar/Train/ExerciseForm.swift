@@ -61,6 +61,34 @@ struct ExerciseForm: View {
             !trimmedName.isEmpty && (restSeconds.map { $0 > 0 } ?? true)
         }
 
+        /// The details a suggestion sets: primary, secondary, equipment as stored.
+        private var details: (MuscleGroup, [MuscleGroup], String?) {
+            (muscleGroup, secondaryGroups, equipment)
+        }
+
+        /// A suggestion may fill in the details only while they are untouched: still the
+        /// new form's, or still the last suggestion's. The user's own choice stops it.
+        func acceptsSuggestion(after last: ExerciseSuggestion?) -> Bool {
+            let untouched = Draft()
+            if details == untouched.details { return true }
+            guard let last else { return false }
+            return details == (last.muscleGroup, last.secondaryMuscleGroups, last.equipment)
+        }
+
+        mutating func apply(_ suggestion: ExerciseSuggestion) {
+            muscleGroup = suggestion.muscleGroup
+            secondaryMuscleGroups = suggestion.secondaryMuscleGroups
+            switch Equipment.choice(for: suggestion.equipment) {
+            case nil:
+                equipmentChoice = .none
+            case .some(nil):
+                equipmentChoice = .other
+                otherEquipment = suggestion.equipment ?? ""
+            case .some(.some(let named)):
+                equipmentChoice = .named(named)
+            }
+        }
+
         mutating func toggleSecondary(_ group: MuscleGroup) {
             if let index = secondaryMuscleGroups.firstIndex(of: group) {
                 secondaryMuscleGroups.remove(at: index)
@@ -74,14 +102,19 @@ struct ExerciseForm: View {
     let canArchive: Bool
     let onChange: (Draft) -> Void
     let onArchive: () -> Void
+    /// Fills in the details from the name (New exercise only); nil turns it off.
+    var suggest: ((String) async -> ExerciseSuggestion?)?
 
     @State private var draft: Draft
+    /// The suggestion last applied, so a later one can replace it but not the user's choice.
+    @State private var suggestion: ExerciseSuggestion?
     @FocusState private var nameFocused: Bool
 
-    init(draft: Draft, canArchive: Bool, onChange: @escaping (Draft) -> Void, onArchive: @escaping () -> Void) {
+    init(draft: Draft, canArchive: Bool, onChange: @escaping (Draft) -> Void, onArchive: @escaping () -> Void, suggest: ((String) async -> ExerciseSuggestion?)? = nil) {
         self.canArchive = canArchive
         self.onChange = onChange
         self.onArchive = onArchive
+        self.suggest = suggest
         _draft = State(initialValue: draft)
     }
 
@@ -125,7 +158,11 @@ struct ExerciseForm: View {
                 }
                 .formRow()
             } footer: {
-                Text("Pick the muscle it works most, then any others it also works: dips are Chest, also Triceps and Shoulders.")
+                if let suggestion, draft.acceptsSuggestion(after: suggestion), !draft.acceptsSuggestion(after: nil) {
+                    Text(suggestion.note)
+                } else {
+                    Text("Pick the muscle it works most, then any others it also works: dips are Chest, also Triceps and Shoulders.")
+                }
             }
 
             Section {
@@ -179,6 +216,21 @@ struct ExerciseForm: View {
         .background(Color.background)
         .onChange(of: draft) { _, draft in onChange(draft) }
         .onAppear { nameFocused = draft.name.isEmpty }
+        .task(id: draft.trimmedName) { await fillIn(for: draft.trimmedName) }
+    }
+
+    /// 1.2 s after the name stops changing, the suggestion for it, if the details are still
+    /// open to one and the name hasn't moved on meanwhile.
+    private func fillIn(for name: String) async {
+        guard let suggest, !name.isEmpty else { return }
+        try? await Task.sleep(for: .milliseconds(1_200))
+        guard !Task.isCancelled, draft.acceptsSuggestion(after: suggestion),
+              let found = await suggest(name),
+              !Task.isCancelled, draft.trimmedName == name, draft.acceptsSuggestion(after: suggestion) else { return }
+        withAnimation {
+            draft.apply(found)
+            suggestion = found
+        }
     }
 }
 

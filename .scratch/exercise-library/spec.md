@@ -1,6 +1,6 @@
 # Exercise library
 
-Status: ready-for-agent
+Status: done (2026-09-27)
 
 Decided with John on 2026-09-27. The list itself is `list.md` (148 exercises, reviewed). This
 supersedes the "List" half of `.scratch/ideas/exercise-library.md`. Tutorials and videos stay

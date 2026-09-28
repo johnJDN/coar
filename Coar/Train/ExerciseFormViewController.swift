@@ -45,11 +45,17 @@ final class ExerciseFormViewController: UIHostingController<ExerciseForm> {
         }
         initial = draft
         super.init(rootView: ExerciseForm(draft: draft, canArchive: canArchive, onChange: { _ in }, onArchive: {}))
+        var suggest: ((String) async -> ExerciseSuggestion?)?
+        if case .create = mode {
+            let suggester = ExerciseSuggester(client: dependencies.openRouter)
+            suggest = { await suggester.suggest(for: $0) }
+        }
         rootView = ExerciseForm(
             draft: draft,
             canArchive: canArchive,
             onChange: { [weak self] in self?.draftChanged($0) },
-            onArchive: { [weak self] in self?.archive() }
+            onArchive: { [weak self] in self?.archive() },
+            suggest: suggest
         )
         switch mode {
         case .create: title = "New Exercise"
