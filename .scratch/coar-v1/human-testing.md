@@ -415,3 +415,5 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Save as food on an estimated line, back: "· Saving to Foods" in green. Add: the food is at the top of Foods with that portion as its serving; the timeline Entry is linked. For "150g chicken breast", the saved serving is "100 g".
 - [ ] A line matched to your saved food has no Save as food; changing its quantity keeps "Your food"; changing its name or macros makes it "Typed".
 - [ ] Judgement calls (ticket 05): typed numbers aren't checked against the 5,000 kcal limit; one typed macro is enough (the rest count as 0); a gram-counted line saves a "100 g" serving.
+- [ ] Type a chain or packaged food ("Quest cookie dough bar", "big mac and medium fries", "starbucks grande oat milk latte"): "Checking…" a little longer, then "Looked up", with the published numbers (the page's note names the source). A home-made food ("homemade chili") stays "Estimated".
+- [ ] Judgement calls (ticket 06): if the lookup fails, you get the everyday estimate labelled "Estimated", with no error shown; sources aren't linked.

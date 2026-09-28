@@ -9,14 +9,48 @@ Spec: stories 17–18, "Estimating" step 4.
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The text model's schema and prompt define `needsLookup` (true only for named chains, brands, packaged products)
-- [ ] Sonar request:
+- [x] The text model's schema and prompt define `needsLookup` (true only for named chains, brands, packaged products)
+- [x] Sonar request:
   - the prompt asks for the estimate JSON (no `response_format`: Sonar doesn't support it on OpenRouter);
   - cost logged
-- [ ] Lenient parse: strip code fences and take the first `{…}` object; a failure keeps the estimate
-- [ ] Sanity rules apply to the looked-up numbers as well
-- [ ] The line shows "Checking…" through both requests; a stale reply from either is dropped
-- [ ] Tests (pure): lenient parse (fenced, prose around it, no JSON), lookup fallback, routing only when `needsLookup`
-- [ ] Check by hand: "Chipotle chicken burrito bowl with white rice, black beans, fajita veggies, salsa" and "Quest cookie dough bar" come back "Looked up" with plausible published numbers
+- [x] Lenient parse: strip code fences and take the first `{…}` object; a failure keeps the estimate
+- [x] Sanity rules apply to the looked-up numbers as well
+- [x] The line shows "Checking…" through both requests; a stale reply from either is dropped
+- [x] Tests (pure): lenient parse (fenced, prose around it, no JSON), lookup fallback, routing only when `needsLookup`
+- [x] Check by hand: "Chipotle chicken burrito bowl with white rice, black beans, fajita veggies, salsa" and "Quest cookie dough bar" come back "Looked up" with plausible published numbers
+
+## Comments
+
+- 2026-09-27 (agent): Implemented.
+  - **Models and prompt.** `FoodModels.lookup` = `perplexity/sonar`. `FoodLookupPrompt`
+    shows the reply as a filled-in JSON template, since Sonar can't be held to a schema on
+    OpenRouter. The first wording listed the keys in prose, and Sonar invented key names
+    ("calories (kcal)").
+  - **Reading the reply.** `FoodLookupPrompt.object(in:)` takes the first balanced `{…}`
+    (strings and escapes respected, so braces inside the assumption don't cut it short) out
+    of any prose or code fence. It drops a `match` key, because Sonar sometimes fills it
+    with a string.
+  - **Routing.** In `OpenRouterFoodEstimator`, a resolved catalogue match wins. Otherwise
+    `needs_lookup` sends the line to Sonar (25 s timeout), and the result is "Looked up".
+    A failed request, a reply with no JSON, or impossible numbers keeps the text model's
+    estimate ("Estimated"), with the reason logged. Both requests happen under one
+    "Checking…".
+  - **Tests:** `FoodLookupTests` (6): JSON inside prose and fences with braces in strings,
+    no object, an everyday food never looked up, a chain food looked up and labelled, a
+    failed, unreadable or impossible lookup keeping the estimate, and a saved food not
+    looked up. The transport is stubbed per model. Suite green at 309.
+  - **Real models, from the Mac.**
+    - Flash-Lite flags "Quest cookie dough bar", "big mac and medium fries" and "starbucks
+      grande oat milk latte", and not "homemade chili" or "banana".
+    - Sonar returned the published numbers: Quest bar 190 kcal / 21 g protein; Big Mac +
+      medium fries 900 kcal, itemised in the assumption; Starbucks grande oat latte 190
+      kcal.
+    - Each lookup took about 1.7 s and cost about $0.0053.
+  - **Not checked in the simulator:** there's no key there, and the fake estimator doesn't
+    route. John sees it on the phone.
+  - Left as deliberate:
+    - the lookup's own `needs_lookup` is ignored (never looked up twice);
+    - Sonar's citations aren't shown;
+    - a lookup can't match a saved food, since its reply is only ever an estimate.
