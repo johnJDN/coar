@@ -3,7 +3,8 @@ import os
 
 /// The Exercise catalogue, pushed from the Train root's Exercises chip: active Exercises by
 /// name (tap to open the Exercise's detail page, where Edit lives), then an Archived section
-/// (Restore, or the trash button to delete permanently). `+` opens the Exercise sheet. Reads through the façade on every
+/// (Restore, or the trash button to delete permanently). `+` opens the library, with New
+/// exercise at its top. Reads through the façade on every
 /// appearance and after every write.
 final class ExercisesViewController: UIViewController {
 
@@ -38,8 +39,8 @@ final class ExercisesViewController: UIViewController {
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .never
 
-        let add = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentForm(.create(name: "")) })
-        add.accessibilityLabel = "New exercise"
+        let add = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentLibrary() })
+        add.accessibilityLabel = "Add exercises"
         navigationItem.rightBarButtonItem = add
 
         configureCollectionView()
@@ -155,8 +156,9 @@ final class ExercisesViewController: UIViewController {
 
     // MARK: - Actions
 
-    private func presentForm(_ mode: ExerciseFormViewController.Mode) {
-        present(ExerciseFormViewController.sheet(dependencies: dependencies, mode: mode) { [weak self] _ in self?.render() }, animated: true)
+    /// + opens the library with New exercise at its top, and stays open for several adds.
+    private func presentLibrary() {
+        present(ExercisePickerViewController.catalogueSheet(dependencies: dependencies) { [weak self] in self?.render() }, animated: true)
     }
 
     /// The Plans that lose a row are named; Workouts keep their sets, the chart does not.

@@ -422,3 +422,13 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] A photo of something that isn't food: "No food or nutrition label found in the photo."
 - [ ] Close the sheet while a photo is still reading, reopen: that line says the photo wasn't kept.
 - [ ] Judgement calls (ticket 07): no note with a photo; photo lines are named after the food; a photo of your saved food can match it ("Your food").
+
+## Added after v1: Exercise library (2026-09-27)
+
+Spec and tickets: `.scratch/exercise-library/`.
+
+- [ ] Train → Exercises → +: "Add Exercises" with New exercise, then "Library · Chest", Back, … Tap + on each of your exercises (Incline dumbbell press, Pull-up, …): each disappears from the list. Done: they're all in Exercises with their muscle groups and equipment.
+- [ ] Rename one (Incline dumbbell press → "Incline DB press 30°"): the library doesn't offer it again under its old name only if you still have that name; nothing else changes.
+- [ ] A plan → Add exercise: your exercises first, then the library; tapping a library exercise adds it to the plan and to Exercises in one go.
+- [ ] Type "back" or "curl" in the filter: the library narrows to back exercises / curls.
+- [ ] Judgement calls (01): library exercises start with no rest default; an exercise you archived isn't offered again (restore it instead); renaming a copy means the library will offer the original name again (it's a different name now).
