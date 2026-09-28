@@ -7,6 +7,9 @@ import os
 /// `Estimate.ReplyError` when the reply is not a food.
 protocol FoodEstimator {
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate
+    /// Every food in a photo, or the one food a nutrition label is for (ticket 07); none when
+    /// the photo shows neither. `jpeg` is sent and never kept.
+    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate]
 }
 
 /// The models, one constant each, so swapping one is a one-line change (ADR 0007).
@@ -16,6 +19,8 @@ enum FoodModels {
     /// Restaurant and brand foods: searches the web for the published numbers. No strict
     /// JSON on OpenRouter, so its reply is read leniently (`FoodLookupPrompt.object(in:)`).
     static let lookup = "perplexity/sonar"
+    /// Photos of meals and nutrition labels: sees images, with strict JSON.
+    static let photo = "google/gemini-3.8-flash"
 }
 
 /// What the text model is told, and the JSON it must reply with. Every field is required
@@ -78,6 +83,53 @@ enum FoodEstimatePrompt {
             ]],
         ],
     ]
+}
+
+/// What the photo model is told, and the JSON it must reply with: a list of items, each the
+/// shape of a typed line's reply plus whether it came from the food or from a label.
+enum FoodPhotoPrompt {
+
+    static let system = """
+    You read a photo of food someone ate, or of a nutrition label, for a food log.
+
+    For a photo of a meal or snack: list each separate food you can see as its own item (the chicken, the rice, the broccoli), with source "photo". Estimate each portion from what is visible (plate size, pieces, depth) and give macros for the whole visible portion. Include sauces, dressings and cooking fat you can see in the food they are on.
+
+    For a photo of a nutrition label: give one item with source "label", read exactly from the label. name: the product, if the packaging shows it, else what the label is for ("Basmati rice"). quantity 1 and unit: the label's serving, with its size ("serving (100 g)", "bar (60 g)"). grams: the serving's weight if printed. calories, protein, fat and carbs: per serving, as printed (convert kJ only if no kcal is given).
+
+    Rules for every item:
+    - name: short and capitalised, without the amount ("Roast chicken", "Steamed broccoli").
+    - quantity and unit: the portion as a person would count it; the unit is singular ("piece", "cup", "g", "slice").
+    - grams: the whole portion's weight in grams if you can reasonably tell, else null.
+    - calories in kcal; protein, fat and carbs in grams; for the whole portion.
+    - assumption: one short sentence on what you assumed about the portion or preparation, or "".
+    - match: null, unless a list of the person's saved foods follows.
+    If there is no food or label in the photo, return no items.
+    """
+
+    /// The catalogue section, added after the rules when the user has saved foods.
+    static func library(_ listing: String) -> String {
+        """
+
+        The person's saved foods and meals, by handle. If an item clearly is one of them, set its match: food is the handle, serving is the handle of the serving that fits (null for a meal, or when unsure), and quantity is how many of that serving (or of the meal). Otherwise match is null. Fill in the item's own fields either way.
+        \(listing)
+        """
+    }
+
+    static let schema: [String: Any] = {
+        var item = FoodEstimatePrompt.schema
+        var properties = item["properties"] as? [String: Any] ?? [:]
+        properties["is_food"] = nil
+        properties["needs_lookup"] = nil
+        properties["source"] = ["type": "string", "enum": ["photo", "label"]]
+        item["properties"] = properties
+        item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"]
+        return [
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["items"],
+            "properties": ["items": ["type": "array", "items": item]],
+        ]
+    }()
 }
 
 /// What the lookup model is told. It can't be held to a schema, so the reply's shape is shown
@@ -159,6 +211,19 @@ final class OpenRouterFoodEstimator: FoodEstimator {
         return await lookUp(line) ?? estimate
     }
 
+    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+        let reply = try await client.complete(
+            model: FoodModels.photo,
+            system: FoodPhotoPrompt.system + (library.promptListing.map(FoodPhotoPrompt.library) ?? ""),
+            user: [.jpeg(jpeg)],
+            schema: (name: "photo", json: FoodPhotoPrompt.schema),
+            timeout: 40
+        )
+        return try Estimate.photoItems(reply: Data(reply.utf8)).map { estimate, match in
+            match.flatMap { library.resolve(food: $0.food, serving: $0.serving, quantity: $0.quantity) } ?? estimate
+        }
+    }
+
     private func lookUp(_ line: String) async -> Estimate? {
         do {
             let reply = try await client.complete(model: FoodModels.lookup, system: FoodLookupPrompt.system, user: [.text(line)], schema: nil, timeout: 25)
@@ -200,6 +265,19 @@ final class DebugFoodEstimator: FoodEstimator {
         func save(_ key: String) throws { self.key = key }
         func delete() throws { key = nil }
     }
+
+    /// Two plate items after two seconds; a third photo in a row fails, to see the retry.
+    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+        try await Task.sleep(for: .seconds(2))
+        photos += 1
+        if photos % 3 == 0 { throw OpenRouterError.failed("OpenRouter took too long to reply") }
+        return [
+            Estimate(name: "Roast chicken", quantity: 1, unit: "piece", grams: 180, macros: Macros(calories: 360, protein: 42, fat: 19, carbs: 0), source: .photo, assumption: "A made-up estimate for the simulator."),
+            Estimate(name: "Steamed broccoli", quantity: 1, unit: "cup", grams: 90, macros: Macros(calories: 30, protein: 2.5, fat: 0.3, carbs: 6), source: .photo, assumption: ""),
+        ]
+    }
+
+    private var photos = 0
 
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         try await Task.sleep(for: .seconds(1))

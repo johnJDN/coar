@@ -7,6 +7,13 @@ final class FakeFoodEstimator: FoodEstimator {
     var replies: [String: Result<Estimate, Error>] = [:]
     private(set) var sent: [String] = []
     private(set) var libraries: [FoodLibrary] = []
+    var photoReply: Result<[Estimate], Error> = .success([])
+    private(set) var photosSent: [Data] = []
+
+    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+        photosSent.append(jpeg)
+        return try photoReply.get()
+    }
 
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         sent.append(line)

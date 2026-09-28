@@ -93,6 +93,41 @@ extension Estimate {
         let quantity: Double
     }
 
+    /// The items in a photo reply (`FoodPhotoPrompt.schema`), each with the model's pick from
+    /// the catalogue when it named one. An empty list is a photo with no food in it.
+    static func photoItems(reply: Data) throws -> [(estimate: Estimate, match: ModelMatch?)] {
+        struct Reply: Decodable {
+            struct Item: Decodable {
+                let source: String
+                let name: String
+                let quantity: Double
+                let unit: String
+                let grams: Double?
+                let calories: Double
+                let protein: Double
+                let fat: Double
+                let carbs: Double
+                let assumption: String?
+                let match: ModelMatch?
+            }
+            let items: [Item]
+        }
+        guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw ReplyError.unreadable }
+        return reply.items.map { item in
+            let unit = item.unit.trimmingCharacters(in: .whitespaces)
+            let estimate = Estimate(
+                name: item.name.trimmingCharacters(in: .whitespaces),
+                quantity: item.quantity > 0 ? item.quantity : 1,
+                unit: unit.isEmpty ? "serving" : unit,
+                grams: item.grams.flatMap { $0 > 0 ? $0 : nil },
+                macros: Macros(calories: item.calories, protein: item.protein, fat: item.fat, carbs: item.carbs),
+                source: item.source == "label" ? .label : .photo,
+                assumption: item.assumption?.trimmingCharacters(in: .whitespaces) ?? ""
+            )
+            return (estimate, item.match)
+        }
+    }
+
     /// The Estimate in a model's JSON reply (the shape `FoodEstimatePrompt.schema` asks for).
     init(reply: Data, source: Source) throws {
         self = try Self.parse(reply: reply, source: source).estimate

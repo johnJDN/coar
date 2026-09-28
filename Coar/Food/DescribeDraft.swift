@@ -21,6 +21,8 @@ struct DescribeLine: Identifiable, Equatable, Codable {
     var state: State
     /// Add also saves it to Foods (ticket 05).
     var saveAsFood = false
+    /// A photo being read (ticket 07): a placeholder that becomes one line per food in it.
+    var isPhoto = false
 
     init(id: UUID = UUID(), text: String = "", state: State = .typing) {
         self.id = id
@@ -29,7 +31,7 @@ struct DescribeLine: Identifiable, Equatable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, text, state, saveAsFood
+        case id, text, state, saveAsFood, isPhoto
     }
 
     /// Reads drafts saved before a field existed: a missing one takes its default.
@@ -39,6 +41,7 @@ struct DescribeLine: Identifiable, Equatable, Codable {
         text = try container.decode(String.self, forKey: .text)
         state = try container.decode(State.self, forKey: .state)
         saveAsFood = try container.decodeIfPresent(Bool.self, forKey: .saveAsFood) ?? false
+        isPhoto = try container.decodeIfPresent(Bool.self, forKey: .isPhoto) ?? false
     }
 
     /// The text as it is sent, and as a reply is matched against.
@@ -155,12 +158,51 @@ struct DescribeDraft: Equatable, Codable {
         }
     }
 
-    /// After a relaunch: a line that was checking lost its request with the app, so it is
-    /// sent again.
+    /// After a relaunch or a reopened sheet: a line that was checking lost its request, so it
+    /// is sent again. A photo that wasn't read can't be: photos are never kept.
     mutating func resume() {
-        for index in lines.indices where lines[index].state == .checking {
-            lines[index].state = .typing
+        for index in lines.indices {
+            if lines[index].isPhoto, lines[index].estimate == nil {
+                lines[index].state = .failed(Self.photoGone)
+            } else if lines[index].state == .checking {
+                lines[index].state = .typing
+            }
         }
+    }
+
+    static let photoPlaceholder = "Photo"
+    static let photoGone = "Photos aren't kept, so this one can't be read again. Take it again."
+
+    // MARK: Photos
+
+    /// A placeholder line for a photo being read, before the empty line at the end if there
+    /// is one; its id.
+    mutating func addPhoto() -> DescribeLine.ID {
+        var line = DescribeLine(text: Self.photoPlaceholder, state: .typing)
+        line.isPhoto = true
+        let position = lines.last?.trimmedText.isEmpty == true ? lines.endIndex - 1 : lines.endIndex
+        lines.insert(line, at: position)
+        return line.id
+    }
+
+    /// The photo's foods replace its placeholder, one filled line each (impossible numbers
+    /// fail that line alone). A photo with no food fails the placeholder; a failed request
+    /// lands as a typed line's would. Returns whether anything changed.
+    @discardableResult
+    mutating func finishPhoto(_ id: DescribeLine.ID, result: Result<[Estimate], Error>) -> Bool {
+        guard let index = index(id), lines[index].isPhoto, lines[index].state == .checking else { return false }
+        switch result {
+        case .success(let estimates) where estimates.isEmpty:
+            lines[index].state = .failed("No food or nutrition label found in the photo.")
+        case .success(let estimates):
+            let found = estimates.map { estimate in
+                DescribeLine(text: estimate.name, state: estimate.impossibility.map { .failed($0) } ?? .filled(estimate))
+            }
+            lines.replaceSubrange(index...index, with: found)
+        case .failure(let error):
+            lines[index].state = Self.state(after: error)
+        }
+        return true
     }
 
     /// Lines waiting for a connection, to send once there is one.

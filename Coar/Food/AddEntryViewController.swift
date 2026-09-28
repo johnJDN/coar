@@ -36,6 +36,7 @@ final class AddEntryViewController: UIViewController {
     private let describe: DescribeViewController
     private let addItem = UIBarButtonItem()
     private let moreItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"))
+    private let cameraItem = UIBarButtonItem(image: UIImage(systemName: "camera"))
     private let filterField = UISearchTextField()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
@@ -73,6 +74,14 @@ final class AddEntryViewController: UIViewController {
         addItem.primaryAction = UIAction(title: "Add") { [weak self] _ in self?.addDescribed() }
         addItem.style = .prominent
         moreItem.accessibilityLabel = "More"
+        cameraItem.accessibilityLabel = "Photo of food or a label"
+        let take = UIAction(title: "Take Photo", image: UIImage(systemName: "camera"), attributes: DescribeViewController.canTakePhoto ? [] : [.disabled]) { [weak self] _ in
+            self?.describe.takePhoto()
+        }
+        let choose = UIAction(title: "Choose Photo", image: UIImage(systemName: "photo.on.rectangle")) { [weak self] _ in
+            self?.describe.choosePhoto()
+        }
+        cameraItem.menu = UIMenu(title: "Photo of food or a nutrition label", children: [take, choose])
         describe.onChange = { [weak self] in self?.updateAddItem() }
 
         tabs.onSelect = { [weak self] index in
@@ -132,7 +141,7 @@ final class AddEntryViewController: UIViewController {
         describe.view.isHidden = !describing
         collectionView.isHidden = describing
         filterField.isHidden = describing
-        navigationItem.rightBarButtonItems = describing ? [addItem, moreItem] : []
+        navigationItem.rightBarButtonItems = describing ? [addItem, moreItem, cameraItem] : []
         updateAddItem()
         if !describing { render() }
     }

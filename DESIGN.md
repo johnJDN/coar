@@ -248,7 +248,10 @@ Charts never show a legend when color already maps to a label on screen.
   default, is one food per line, Reminders-style; each line fills in its macros under it
   ("name · portion · Estimated"), or says it is checking, waiting for a connection, or failed
   (coral, tap to try again); a key problem is one `WarningCard` above the lines; the nav bar's
-  prominent Add logs the filled lines, with their total in a row beneath.
+  prominent Add logs the filled lines, with their total in a row beneath. A camera button
+  beside `…` (Take Photo / Choose Photo) adds a "Photo" line that becomes one line per food
+  it shows ("From photo"), or one per label serving ("From label"). Tapping under a line
+  pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food.
 - **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans
   → Recent workouts; a row of three `PillChip`s under the grid pushes Exercises, Body
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no

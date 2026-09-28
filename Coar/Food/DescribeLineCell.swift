@@ -85,9 +85,9 @@ final class DescribeLineCell: UICollectionViewListCell {
     static func caption(for line: DescribeLine) -> NSAttributedString? {
         switch line.state {
         case .typing:
-            return nil
+            return line.isPhoto ? plain("Waiting to be read.", color: UIColor.textTertiary) : nil
         case .checking:
-            return plain("Checking…", color: UIColor.textTertiary)
+            return plain(line.isPhoto ? "Reading photo…" : "Checking…", color: UIColor.textTertiary)
         case .waiting:
             return withSymbol("wifi.slash", "Waiting for connection.", color: UIColor.textSecondary)
         case .failed(let reason):

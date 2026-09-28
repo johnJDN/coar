@@ -417,3 +417,8 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Judgement calls (ticket 05): typed numbers aren't checked against the 5,000 kcal limit; one typed macro is enough (the rest count as 0); a gram-counted line saves a "100 g" serving.
 - [ ] Type a chain or packaged food ("Quest cookie dough bar", "big mac and medium fries", "starbucks grande oat milk latte"): "Checking…" a little longer, then "Looked up", with the published numbers (the page's note names the source). A home-made food ("homemade chili") stays "Estimated".
 - [ ] Judgement calls (ticket 06): if the lookup fails, you get the everyday estimate labelled "Estimated", with no error shown; sources aren't linked.
+- [ ] Describe → camera → Take Photo of a real meal: a "Photo · Reading photo…" line, then one line per food ("From photo") with portions you'd agree with. Adjust any on its page, then Add.
+- [ ] Camera → Take Photo of a nutrition label: one line "From label" with the label's serving ("1 × serving (40 g)") and its exact numbers. Set Quantity 2 on its page: everything doubles. Save as food, Add: it's in Foods with the label's serving.
+- [ ] A photo of something that isn't food: "No food or nutrition label found in the photo."
+- [ ] Close the sheet while a photo is still reading, reopen: that line says the photo wasn't kept.
+- [ ] Judgement calls (ticket 07): no note with a photo; photo lines are named after the food; a photo of your saved food can match it ("Your food").

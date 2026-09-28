@@ -106,6 +106,11 @@ final class CachingFoodEstimator: FoodEstimator {
         cache = url.flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode(EstimateCache.self, from: $0) } ?? EstimateCache(capacity: capacity)
     }
 
+    /// Photos are never cached: each one is new.
+    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+        try await wrapped.estimate(photo: jpeg, library: library)
+    }
+
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
         if let cached = lock.withLock({ cache.estimate(for: line) }) {
             return cached

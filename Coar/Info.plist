@@ -5,7 +5,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>Coar uses the camera to take Progress Photos.</string>
+	<string>Coar uses the camera to take Progress Photos, and photos of your food or its nutrition label to fill in the macros.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Coar reads your sleep and steps from Health to show them on Home.</string>
 	<key>NSHealthUpdateUsageDescription</key>

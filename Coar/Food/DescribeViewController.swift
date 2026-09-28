@@ -1,4 +1,5 @@
 import Network
+import PhotosUI
 import SwiftUI
 import UIKit
 import os
@@ -40,6 +41,9 @@ final class DescribeViewController: UIViewController {
     private let pathMonitor = NWPathMonitor()
     private var problem: OpenRouterError?
     private var timers: [DescribeLine.ID: Task<Void, Never>] = [:]
+    /// Photos being read, by their placeholder line: kept in memory until read, so a failed
+    /// one can be tried again, and never written anywhere.
+    private var photos: [DescribeLine.ID: Data] = [:]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
@@ -214,6 +218,7 @@ final class DescribeViewController: UIViewController {
 
     private func edited(_ id: DescribeLine.ID, text: String) {
         let before = draft.line(id)?.state
+        photos[id] = nil
         guard draft.edit(id, text: text) else { return }
         timers[id]?.cancel()
         if draft.line(id)?.state != before {
@@ -230,7 +235,13 @@ final class DescribeViewController: UIViewController {
     private func send(_ id: DescribeLine.ID) {
         timers[id]?.cancel()
         timers[id] = nil
-        guard let text = draft.line(id)?.trimmedText, !text.isEmpty else { return }
+        if let jpeg = photos[id] {
+            sendPhoto(id, jpeg: jpeg)
+            return
+        }
+        guard let line = draft.line(id), !line.isPhoto else { return }
+        let text = line.trimmedText
+        guard !text.isEmpty else { return }
         let library = currentLibrary()
         if let match = library.exactMatch(text), draft.begin(id) != nil {
             received(id, sentText: text, result: .success(match))
@@ -248,6 +259,76 @@ final class DescribeViewController: UIViewController {
             }
             self?.received(id, sentText: text, result: result)
         }
+    }
+
+    // MARK: - Photos
+
+    /// Whether this device can take a photo (the simulator can't).
+    static var canTakePhoto: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
+
+    func takePhoto() {
+        view.endEditing(true)
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+
+    func choosePhoto() {
+        view.endEditing(true)
+        var configuration = PHPickerConfiguration()
+        configuration.filter = .images
+        configuration.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+
+    /// A placeholder line reads "Photo" while the photo model looks at it.
+    private func add(_ image: UIImage) {
+        guard let jpeg = FoodPhoto.jpeg(from: image) else {
+            Self.logger.error("Couldn't encode the photo")
+            return
+        }
+        let id = draft.addPhoto()
+        photos[id] = jpeg
+        render()
+        onChange()
+        sendPhoto(id, jpeg: jpeg)
+    }
+
+    private func sendPhoto(_ id: DescribeLine.ID, jpeg: Data) {
+        guard problem == nil, draft.begin(id) != nil else { return }
+        reconfigure(id)
+        let estimator = dependencies.foodEstimator
+        let library = currentLibrary()
+        Task { [weak self] in
+            let result: Result<[Estimate], Error>
+            do {
+                result = .success(try await estimator.estimate(photo: jpeg, library: library))
+            } catch {
+                result = .failure(error)
+            }
+            self?.receivedPhoto(id, result: result)
+        }
+    }
+
+    private func receivedPhoto(_ id: DescribeLine.ID, result: Result<[Estimate], Error>) {
+        guard draft.finishPhoto(id, result: result) else { return }
+        switch result {
+        case .success:
+            photos[id] = nil
+        case .failure(let error):
+            let error = OpenRouterError.from(error)
+            if [.noKey, .keyRejected, .limitReached].contains(error) {
+                problem = error
+            }
+            Self.logger.error("Photo failed: \(error.message, privacy: .public)")
+        }
+        render()
+        onChange()
     }
 
     /// The catalogue as it is now; empty (so nothing matches) if it can't be read.
@@ -454,6 +535,37 @@ extension DescribeViewController: UICollectionViewDelegate {
             openLine(line)
         case .typing, .checking:
             (collectionView.cellForItem(at: indexPath) as? DescribeLineCell)?.focus()
+        }
+    }
+}
+
+extension DescribeViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        picker.dismiss(animated: true)
+        if let image = info[.originalImage] as? UIImage {
+            add(image)
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+extension DescribeViewController: PHPickerViewControllerDelegate {
+
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+        provider.loadObject(ofClass: UIImage.self) { [weak self] object, error in
+            DispatchQueue.main.async {
+                guard let image = object as? UIImage else {
+                    Self.logger.error("Couldn't load the chosen photo: \(String(describing: error), privacy: .public)")
+                    return
+                }
+                self?.add(image)
+            }
         }
     }
 }
