@@ -96,6 +96,23 @@ extension Store {
         return EntryRecord(entry)!
     }
 
+    /// Logs a food that is not in the catalogue: an Entry standing on its own name, Serving
+    /// name, quantity, and macros for the whole quantity (CONTEXT.md "Entry"), with no Food
+    /// Item or Meal behind it. What the Describe tab logs.
+    @discardableResult
+    func logEntry(
+        name: String,
+        servingName: String,
+        quantity: Double,
+        macros: Macros,
+        at instant: Date,
+        in calendar: Calendar = .current
+    ) throws -> EntryRecord {
+        let entry = makeEntry(name: name, servingName: servingName, quantity: quantity, macros: macros, at: instant, in: calendar)
+        try save()
+        return EntryRecord(entry)!
+    }
+
     /// A new Entry with its snapshot filled in (ADR 0003) and its Day fixed (ADR 0005); the
     /// caller sets the reference and saves. For the `Store+<Domain>` extensions only.
     func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, at instant: Date, in calendar: Calendar) -> Entry {

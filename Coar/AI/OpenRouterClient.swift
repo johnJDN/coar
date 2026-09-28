@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// What went wrong talking to OpenRouter, in the terms a screen shows (DESIGN.md: errors are
 /// stated, never swallowed).
@@ -140,6 +141,56 @@ final class OpenRouterClient {
         }
     }
 
+    /// One part of a user message: text, or a photo sent inline.
+    enum Part {
+        case text(String)
+        case jpeg(Data)
+    }
+
+    /// One chat completion's reply text. With a `schema`, the reply is strict JSON matching it,
+    /// and only providers that honour the schema are used. Temperature 0: the same line should
+    /// get the same numbers. Logs the model, time, and cost of every request, never its content.
+    func complete(model: String, system: String, user: [Part], schema: (name: String, json: [String: Any])?, timeout: TimeInterval) async throws -> String {
+        var body: [String: Any] = [
+            "model": model,
+            "temperature": 0,
+            "usage": ["include": true],
+            "messages": [
+                ["role": "system", "content": system],
+                ["role": "user", "content": user.map(\.json)],
+            ],
+        ]
+        if let schema {
+            body["response_format"] = ["type": "json_schema", "json_schema": ["name": schema.name, "strict": true, "schema": schema.json]]
+            body["provider"] = ["require_parameters": true]
+        }
+        var request = try authorised(URLRequest(url: baseURL.appending(path: "chat/completions")))
+        request.httpMethod = "POST"
+        request.timeoutInterval = timeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let started = Date()
+        let data = try await send(request)
+        struct Reply: Decodable {
+            struct Choice: Decodable {
+                struct Message: Decodable { let content: String? }
+                let message: Message
+            }
+            struct Usage: Decodable { let cost: Double? }
+            let choices: [Choice]
+            let usage: Usage?
+        }
+        guard let reply = try? JSONDecoder().decode(Reply.self, from: data), let content = reply.choices.first?.message.content else {
+            throw OpenRouterError.failed("OpenRouter sent a reply Coar couldn't read")
+        }
+        let seconds = Date().timeIntervalSince(started)
+        Self.logger.info("\(model, privacy: .public): \(seconds, format: .fixed(precision: 1), privacy: .public) s, $\(reply.usage?.cost ?? 0, format: .fixed(precision: 5), privacy: .public)")
+        return content
+    }
+
+    private static let logger = Logger(category: "AI")
+
     /// The request with the key's bearer header; throws `.noKey` when there is none.
     func authorised(_ request: URLRequest, key: String? = nil) throws -> URLRequest {
         guard let key = key ?? keys.read(), !key.isEmpty else { throw OpenRouterError.noKey }
@@ -161,6 +212,17 @@ final class OpenRouterClient {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         if let error = OpenRouterError.from(status: status, body: data) { throw error }
         return data
+    }
+}
+
+private extension OpenRouterClient.Part {
+    var json: [String: Any] {
+        switch self {
+        case .text(let text):
+            return ["type": "text", "text": text]
+        case .jpeg(let data):
+            return ["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\(data.base64EncodedString())"]]
+        }
     }
 }
 

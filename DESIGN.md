@@ -243,8 +243,12 @@ Charts never show a legend when color already maps to a label on screen.
   habits get a week-met dot per column). Detail page has a calendar
   for retroactive edits. Each tab's archived habits in a section at its bottom. Home lists
   check-in habits first, then tracked.
-- **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Foods /
-  Meals segments (Search is added only when a food database exists).
+- **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Describe /
+  Foods / Meals segments (Search is added only when a food database exists). Describe, the
+  default, is one food per line, Reminders-style; each line fills in its macros under it
+  ("name · portion · Estimated"), or says it is checking, waiting for a connection, or failed
+  (coral, tap to try again); a key problem is one `WarningCard` above the lines; the nav bar's
+  prominent Add logs the filled lines, with their total in a row beneath.
 - **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans
   → Recent workouts; a row of three `PillChip`s under the grid pushes Exercises, Body
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no

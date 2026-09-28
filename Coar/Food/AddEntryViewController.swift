@@ -1,8 +1,9 @@
 import UIKit
 import os
 
-/// The "+" sheet (DESIGN.md §11): `SegmentedTabs` Foods / Meals, a filter field, and the
-/// user's catalogue as `ListRow`s. Tapping a Food Item goes on to pick a Serving and
+/// The "+" sheet (DESIGN.md §11): `SegmentedTabs` Describe / Foods / Meals. Describe, first
+/// and the default, is `DescribeViewController`: type what was eaten and Add logs it. Foods
+/// and Meals have a filter field and the user's catalogue as `ListRow`s. Tapping a Food Item goes on to pick a Serving and
 /// quantity, tapping a Meal to set its multiplier; a row's trailing "+" logs the default
 /// Serving, or the Meal, once at the sheet's time. Both lists run most recently used first.
 /// "New food" / "New meal" open the editors; "Archived foods" / "Archived meals" open a page
@@ -12,7 +13,7 @@ final class AddEntryViewController: UIViewController {
     private static let logger = Logger(category: "Food")
 
     private enum Segment: Int {
-        case foods, meals
+        case describe, foods, meals
     }
 
     private enum Section: Hashable {
@@ -31,11 +32,14 @@ final class AddEntryViewController: UIViewController {
     private let dependencies: AppDependencies
     private let instant: Date
     private let onLogged: () -> Void
-    private let tabs = SegmentedTabsView(titles: ["Foods", "Meals"])
+    private let tabs = SegmentedTabsView(titles: ["Describe", "Foods", "Meals"])
+    private let describe: DescribeViewController
+    private let addItem = UIBarButtonItem()
     private let filterField = UISearchTextField()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
-    private var segment = Segment.foods
+    private var segment = Segment.describe
+    private var hasFocusedDescribe = false
     private var foodItems: [FoodItemRecord.ID: FoodItemRecord] = [:]
     private var meals: [MealRecord.ID: MealRecord] = [:]
     private var archivedCount = 0
@@ -44,6 +48,7 @@ final class AddEntryViewController: UIViewController {
         self.dependencies = dependencies
         self.instant = instant
         self.onLogged = onLogged
+        describe = DescribeViewController(dependencies: dependencies, at: instant, onLogged: onLogged)
         super.init(nibName: nil, bundle: nil)
         title = "Add Entry"
     }
@@ -64,9 +69,12 @@ final class AddEntryViewController: UIViewController {
             self?.dismiss(animated: true)
         })
 
+        addItem.primaryAction = UIAction(title: "Add") { [weak self] _ in self?.addDescribed() }
+        addItem.style = .prominent
+        describe.onChange = { [weak self] in self?.updateAddItem() }
+
         tabs.onSelect = { [weak self] index in
-            self?.segment = Segment(rawValue: index) ?? .foods
-            self?.render()
+            self?.show(Segment(rawValue: index) ?? .describe)
         }
         filterField.placeholder = "Filter"
         filterField.backgroundColor = UIColor.fill
@@ -81,7 +89,15 @@ final class AddEntryViewController: UIViewController {
         view.addSubview(top)
 
         configureCollectionView()
+        addChild(describe)
+        describe.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(describe.view)
+        describe.didMove(toParent: self)
         NSLayoutConstraint.activate([
+            describe.view.topAnchor.constraint(equalTo: top.bottomAnchor),
+            describe.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            describe.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            describe.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             top.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Metrics.spaceTight),
             top.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge),
             top.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
@@ -94,7 +110,41 @@ final class AddEntryViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        render()
+        show(segment)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Describe opens ready to type, once; coming back from a pushed page leaves focus be.
+        guard segment == .describe, !hasFocusedDescribe else { return }
+        hasFocusedDescribe = true
+        describe.focusFirstEmptyLine()
+    }
+
+    // MARK: - Describe
+
+    private func show(_ segment: Segment) {
+        if segment != self.segment { view.endEditing(true) }
+        self.segment = segment
+        let describing = segment == .describe
+        describe.view.isHidden = !describing
+        collectionView.isHidden = describing
+        filterField.isHidden = describing
+        navigationItem.rightBarButtonItem = describing ? addItem : nil
+        updateAddItem()
+        if !describing { render() }
+    }
+
+    private func updateAddItem() {
+        addItem.isEnabled = describe.filledCount > 0
+    }
+
+    /// Logs the filled lines; the sheet closes unless typed lines are left behind (still
+    /// checking, waiting, or failed), which stay to be dealt with.
+    private func addDescribed() {
+        if !describe.addFilled() {
+            dismiss(animated: true)
+        }
     }
 
     // MARK: - Collection view
@@ -192,6 +242,8 @@ final class AddEntryViewController: UIViewController {
     private func render(reconfigure: Bool = true) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         switch segment {
+        case .describe:
+            return
         case .foods:
             let active: [FoodItemRecord]
             do {

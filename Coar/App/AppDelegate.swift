@@ -9,6 +9,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// database.
     let dependencies: AppDependencies = {
         let health = HealthKitAccess()
+        let openRouter = OpenRouterClient(keys: keyStore())
         return AppDependencies(
             store: isTestHost ? Store.inMemory() : AppDelegate.liveStore(),
             preferences: Preferences(),
@@ -16,9 +17,26 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             healthReader: health,
             bodyWeightWriter: health,
             restTimer: RestTimer(),
-            openRouter: OpenRouterClient(keys: KeychainKeyStore())
+            openRouter: openRouter,
+            foodEstimator: foodEstimator(openRouter)
         )
     }()
+
+    /// The Keychain, or a stand-in key while a debug build uses canned estimates.
+    private static func keyStore() -> APIKeyStore {
+        #if DEBUG
+        if DebugFoodEstimator.isRequested { return DebugFoodEstimator.KeyStore() }
+        #endif
+        return KeychainKeyStore()
+    }
+
+    /// Estimates through OpenRouter, or canned ones a debug build was launched with.
+    private static func foodEstimator(_ client: OpenRouterClient) -> FoodEstimator {
+        #if DEBUG
+        if DebugFoodEstimator.isRequested { return DebugFoodEstimator() }
+        #endif
+        return OpenRouterFoodEstimator(client: client)
+    }
 
     /// Heals the duplicates two devices can make (ticket 15): once at launch, then after
     /// every remote-change import. Not in the unit-test host, whose store never syncs.

@@ -388,3 +388,13 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Paste something that isn't a key (a word) → Save key: a coral "OpenRouter rejected the key…" row, the field is empty again, and nothing is kept.
 - [ ] Remove key: back to the paste field. Paste your key again afterwards so the Food tests below work.
 - [ ] Judgement calls (ticket 01): a key that can't be checked for lack of a connection, or whose limit is spent, is still kept (only a rejected key isn't); the key has its own Save because it's checked first, unlike the Targets.
+- [ ] Food → `+`: the sheet opens on **Describe** (before Foods and Meals) with the keyboard up and "2 eggs, toast with butter…" as the hint.
+- [ ] Type "2 eggs", wait two seconds: "Checking…", then a macro line and "Eggs · 2 × large egg · Estimated" under it. Return: a new line opens below and the first is sent at once.
+- [ ] Type "toast with butter", then "large oat milk latte": each fills in; the row under the lines reads "3 foods to add" with the total. Edit "2 eggs" to "3 eggs": its numbers clear and come back for 3.
+- [ ] Backspace on an empty line removes it and jumps to the one above.
+- [ ] Type "asdf": a coral "Not a food Coar knows…" row. Tap the row under the text: it tries again.
+- [ ] Add (top right, green once anything is filled): the filled lines become Entries at the sheet's time, and the sheet closes. With a failed line left, the sheet stays open showing just that line.
+- [ ] Airplane Mode, type "banana": "Waiting for connection. Tap to try again." Turn it off and tap: it fills in.
+- [ ] Remove your key in Settings, open `+`: a coral "Add your OpenRouter key" card over the lines; Open Settings, paste the key, Done: the card goes and the typed lines fill in.
+- [ ] The macros look plausible for everyday foods you know (this is the cheapest model; we test others after the feature is built).
+- [ ] Judgement calls (ticket 02): Add sits in the nav bar like the other log pages (the spec said a "Log 3 · 740 kcal" button), with the count and total in a row under the lines; one line is one Entry named what the model calls it ("Toast with butter"), its unit the Serving name; a line whose calories don't match its macros is flagged but still added; closing the sheet loses unlogged lines until ticket 03.

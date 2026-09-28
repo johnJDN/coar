@@ -29,7 +29,7 @@ enum Macro: CaseIterable {
 }
 
 /// The four Macro values together, as a Target holds them.
-struct Macros: Hashable {
+struct Macros: Hashable, Codable {
     var calories: Double
     var protein: Double
     var fat: Double

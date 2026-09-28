@@ -39,7 +39,8 @@ final class SettingsTargetsTests: XCTestCase {
             healthReader: FakeHealthReader(),
             bodyWeightWriter: FakeBodyWeightWriter(),
             restTimer: RestTimer(),
-            openRouter: OpenRouterClient(keys: FakeAPIKeyStore())
+            openRouter: OpenRouterClient(keys: FakeAPIKeyStore()),
+            foodEstimator: FakeFoodEstimator()
         )
         let settings = SettingsViewController(dependencies: dependencies)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 1400))

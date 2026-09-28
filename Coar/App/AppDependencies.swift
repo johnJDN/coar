@@ -14,4 +14,6 @@ struct AppDependencies {
     let restTimer: RestTimer
     /// AI requests and the key they use (ADR 0007).
     let openRouter: OpenRouterClient
+    /// Fills in the Describe tab's lines (`.scratch/ai-food-logging/`).
+    let foodEstimator: FoodEstimator
 }

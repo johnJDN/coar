@@ -69,9 +69,17 @@ A named group of Food Items in fixed quantities, logged as one thing.
 _Avoid_: Recipe, dish, combo
 
 **Entry**:
-A record that a Food Item or Meal was eaten at a particular time, in some quantity.
-Distinct from a Check-in, which belongs to habits.
+A record that something was eaten at a particular time, in some quantity: a Food Item, a
+Meal, or a food described on its own with its own name, portion, and macros. It keeps its own
+copy either way; a Food Item or Meal behind it is only for logging it again. Distinct from a
+Check-in, which belongs to habits.
 _Avoid_: Log entry, food log, meal log, serving
+
+**Estimate**:
+The name, portion, and macros a model gives for a food the user described or photographed,
+before it is logged. Logging it makes an Entry, which keeps nothing of where the numbers came
+from.
+_Avoid_: Guess, AI entry, prediction, scan
 
 **Target**:
 The daily macro amounts the user is aiming for, effective from a date.
