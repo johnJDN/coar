@@ -76,6 +76,14 @@ final class ExercisePickerViewController: UIViewController {
         filterField.addAction(UIAction { [weak self] _ in self?.filterField.resignFirstResponder() }, for: .editingDidEndOnExit)
         filterField.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(filterField)
+        #if DEBUG
+        // `-ExerciseFilter copenhagen_plank` starts the filter typed ("_" for a space), for a
+        // simulator with no keyboard. Never used by tests.
+        let arguments = ProcessInfo.processInfo.arguments
+        if let flag = arguments.firstIndex(of: "-ExerciseFilter"), flag + 1 < arguments.count {
+            filterField.text = arguments[flag + 1].replacingOccurrences(of: "_", with: " ")
+        }
+        #endif
 
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             var configuration = UICollectionLayoutListConfiguration(appearance: .insetGrouped)

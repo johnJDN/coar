@@ -384,6 +384,21 @@ simulator as the second device); every judgement call was kept unless its Result
 
 Spec and tickets: `.scratch/ai-food-logging/`.
 
+**Checked by the agent in the simulator with John's key and the real models (2026-09-28):**
+- the key saved in Settings shows "•••• b907" and "$0.11 of $2 this week";
+- in one run:
+  - "2 eggs" → Your food, 140 kcal;
+  - "toast with butter" → Estimated, 175;
+  - "big mac and medium fries" → Looked up, 900;
+  - "starbucks grande oat milk latte" → Looked up, 190;
+  - "homemade chili" → Estimated, 320;
+  - "asdf" → Not a food;
+- Add logged the five and kept "asdf";
+- Choose Photo on a roast-chicken plate → "Roast chicken with gravy" 385, "Steamed broccoli" 35 and "Herb stuffing" 220, all "From photo".
+
+**Still John's:** typing on the phone (the simulator gives no keyboard), Take Photo with the
+camera, Airplane Mode, and whether the numbers look right for his own meals.
+
 - [ ] Settings → AI: paste your OpenRouter key → Save key: "Checking the key…" then "OpenRouter key •••• (last four)" and "Spent $0 of $2 this week". Close and reopen Settings: the spending is read again.
 - [ ] Paste something that isn't a key (a word) → Save key: a coral "OpenRouter rejected the key…" row, the field is empty again, and nothing is kept.
 - [ ] Remove key: back to the paste field. Paste your key again afterwards so the Food tests below work.
@@ -426,6 +441,15 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 ## Added after v1: Exercise library (2026-09-27)
 
 Spec and tickets: `.scratch/exercise-library/`.
+
+**Checked by the agent in the simulator (2026-09-27/28):**
+- adding from Exercises → + and from a plan's picker;
+- owned exercises not offered;
+- a library name locked on Edit;
+- AI fill-in with the real key: "Copenhagen plank" → Other + Glutes, Core · Bodyweight, with
+  "Filled in by AI from the name. Check it."
+
+**Still John's:** setting up his own 14, and typing a name on the phone.
 
 - [ ] Train → Exercises → +: "Add Exercises" with New exercise, then "Library · Chest", Back, … Tap + on each of your exercises (Incline dumbbell press, Pull-up, …): each disappears from the list. Done: they're all in Exercises with their muscle groups and equipment.
 - [ ] Edit an exercise added from the library (or Bench press): the name is fixed text with a library icon and "From the library, so its name stays as it is"; muscle groups, equipment, and rest still change. An exercise you made with New exercise (a name not in the library) can still be renamed.
