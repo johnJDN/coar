@@ -30,12 +30,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         return KeychainKeyStore()
     }
 
-    /// Estimates through OpenRouter, or canned ones a debug build was launched with.
+    /// Estimates through OpenRouter, remembering each line's answer, or canned ones a debug
+    /// build was launched with.
     private static func foodEstimator(_ client: OpenRouterClient) -> FoodEstimator {
         #if DEBUG
         if DebugFoodEstimator.isRequested { return DebugFoodEstimator() }
         #endif
-        return OpenRouterFoodEstimator(client: client)
+        return CachingFoodEstimator(wrapping: OpenRouterFoodEstimator(client: client))
     }
 
     /// Heals the duplicates two devices can make (ticket 15): once at launch, then after

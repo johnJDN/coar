@@ -1,3 +1,4 @@
+import Network
 import SwiftUI
 import UIKit
 import os
@@ -8,6 +9,8 @@ import os
 /// own (CONTEXT.md "Entry") at the sheet's time. Lines still checking or failed stay behind.
 /// A missing, rejected, or spent key is one `WarningCard` above the lines, not a per-line
 /// error. The draft owns every change; this controller owns the timing and the requests.
+/// The draft is kept on this iPhone after every change, so closing the sheet or quitting
+/// loses nothing, and lines waiting for a connection go again as soon as there is one.
 final class DescribeViewController: UIViewController {
 
     private static let logger = Logger(category: "Food")
@@ -30,17 +33,27 @@ final class DescribeViewController: UIViewController {
     /// Called whenever what Add would do changes, so the sheet can enable it.
     var onChange: () -> Void = {}
 
-    private var draft = DescribeDraft()
+    private let draftFile: DescribeDraftFile
+    private var draft: DescribeDraft {
+        didSet { draftFile.save(draft) }
+    }
+    private let pathMonitor = NWPathMonitor()
     private var problem: OpenRouterError?
     private var timers: [DescribeLine.ID: Task<Void, Never>] = [:]
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
-    init(dependencies: AppDependencies, at instant: Date, onLogged: @escaping () -> Void) {
+    init(dependencies: AppDependencies, at instant: Date, draftFile: DescribeDraftFile = .standard, onLogged: @escaping () -> Void) {
         self.dependencies = dependencies
         self.instant = instant
+        self.draftFile = draftFile
         self.onLogged = onLogged
+        draft = draftFile.load()
         super.init(nibName: nil, bundle: nil)
+    }
+
+    deinit {
+        pathMonitor.cancel()
     }
 
     @available(*, unavailable)
@@ -56,6 +69,20 @@ final class DescribeViewController: UIViewController {
         checkKey()
         render(animated: false)
         draft.unsent.forEach(send)
+        watchForConnection()
+    }
+
+    /// Sends every waiting line when a network path appears. Nothing retries while there is
+    /// none, so no request loop runs offline.
+    private func watchForConnection() {
+        pathMonitor.pathUpdateHandler = { [weak self] path in
+            guard path.status == .satisfied else { return }
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.draft.waiting.forEach(self.send)
+            }
+        }
+        pathMonitor.start(queue: DispatchQueue(label: "com.johnnguyen.coar.describe-path"))
     }
 
     #if DEBUG
@@ -65,6 +92,7 @@ final class DescribeViewController: UIViewController {
     private func seedLinesForDebugging() {
         let arguments = ProcessInfo.processInfo.arguments
         guard let flag = arguments.firstIndex(of: "-DescribeLines"), flag + 1 < arguments.count else { return }
+        draft = DescribeDraft()
         var previous: DescribeLine.ID?
         for text in arguments[flag + 1].split(separator: "|") {
             let id = previous.map { draft.insertLine(after: $0) } ?? draft.lines[0].id
@@ -116,6 +144,22 @@ final class DescribeViewController: UIViewController {
         render()
         onChange()
         return draft.lines.contains { !$0.trimmedText.isEmpty }
+    }
+
+    /// Nothing typed, so Clear has nothing to do.
+    var isEmpty: Bool {
+        draft.isEmpty
+    }
+
+    /// Drops every line, typed or filled: a draft, so no confirm, and typing it again is cheap.
+    func clear() {
+        timers.values.forEach { $0.cancel() }
+        timers = [:]
+        view.endEditing(true)
+        draft = DescribeDraft()
+        render()
+        onChange()
+        focusFirstEmptyLine()
     }
 
     // MARK: - Key

@@ -140,6 +140,24 @@ struct DescribeDraft: Equatable, Codable {
         }
     }
 
+    /// After a relaunch: a line that was checking lost its request with the app, so it is
+    /// sent again.
+    mutating func resume() {
+        for index in lines.indices where lines[index].state == .checking {
+            lines[index].state = .typing
+        }
+    }
+
+    /// Lines waiting for a connection, to send once there is one.
+    var waiting: [DescribeLine.ID] {
+        lines.filter { $0.state == .waiting }.map(\.id)
+    }
+
+    /// Nothing typed: Clear has nothing to do.
+    var isEmpty: Bool {
+        lines.allSatisfy { $0.trimmedText.isEmpty }
+    }
+
     // MARK: Logging
 
     /// The lines Log would log, in order.

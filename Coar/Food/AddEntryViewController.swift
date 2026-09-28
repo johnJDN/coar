@@ -35,6 +35,7 @@ final class AddEntryViewController: UIViewController {
     private let tabs = SegmentedTabsView(titles: ["Describe", "Foods", "Meals"])
     private let describe: DescribeViewController
     private let addItem = UIBarButtonItem()
+    private let moreItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"))
     private let filterField = UISearchTextField()
     private var collectionView: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
@@ -71,6 +72,7 @@ final class AddEntryViewController: UIViewController {
 
         addItem.primaryAction = UIAction(title: "Add") { [weak self] _ in self?.addDescribed() }
         addItem.style = .prominent
+        moreItem.accessibilityLabel = "More"
         describe.onChange = { [weak self] in self?.updateAddItem() }
 
         tabs.onSelect = { [weak self] index in
@@ -130,13 +132,17 @@ final class AddEntryViewController: UIViewController {
         describe.view.isHidden = !describing
         collectionView.isHidden = describing
         filterField.isHidden = describing
-        navigationItem.rightBarButtonItem = describing ? addItem : nil
+        navigationItem.rightBarButtonItems = describing ? [addItem, moreItem] : []
         updateAddItem()
         if !describing { render() }
     }
 
     private func updateAddItem() {
         addItem.isEnabled = describe.filledCount > 0
+        let clear = UIAction(title: "Clear", image: UIImage(systemName: "trash"), attributes: describe.isEmpty ? [.disabled] : [.destructive]) { [weak self] _ in
+            self?.describe.clear()
+        }
+        moreItem.menu = UIMenu(children: [clear])
     }
 
     /// Logs the filled lines; the sheet closes unless typed lines are left behind (still

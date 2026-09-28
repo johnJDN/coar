@@ -398,3 +398,8 @@ Spec and tickets: `.scratch/ai-food-logging/`.
 - [ ] Remove your key in Settings, open `+`: a coral "Add your OpenRouter key" card over the lines; Open Settings, paste the key, Done: the card goes and the typed lines fill in.
 - [ ] The macros look plausible for everyday foods you know (this is the cheapest model; we test others after the feature is built).
 - [ ] Judgement calls (ticket 02): Add sits in the nav bar like the other log pages (the spec said a "Log 3 · 740 kcal" button), with the count and total in a row under the lines; one line is one Entry named what the model calls it ("Toast with butter"), its unit the Serving name; a line whose calories don't match its macros is flagged but still added; closing the sheet loses unlogged lines until ticket 03.
+- [ ] Type two lines, close the sheet with ✕ (don't Add), reopen `+`: both lines are still there, filled. Force-quit Coar and reopen: still there.
+- [ ] `…` → Clear: every line goes; Clear is greyed out while nothing is typed.
+- [ ] Type "2 eggs" (fills in), Clear, type "2 Eggs" again: it fills in at once with no "Checking…" wait worth noticing (answered from the phone, free).
+- [ ] Airplane Mode, type "apple", close the sheet, turn Airplane Mode off, reopen `+`: it fills in by itself. (Also: leave the sheet open while turning it off: it fills in without a tap.)
+- [ ] Judgement calls (ticket 03): the kept lines aren't timed; Add logs them at the time the sheet was opened for; Clear doesn't ask first.
