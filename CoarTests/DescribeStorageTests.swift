@@ -100,4 +100,25 @@ final class DescribeStorageTests: XCTestCase {
         _ = try? await estimator.estimate("down", library: .empty)
         XCTAssertEqual(fake.sent, ["huge", "huge", "down", "down"])
     }
+
+    func test_aLookupWithNoMacros_cachedBeforeTheFix_isAskedAgain_andNeverKept() async throws {
+        var stuck = toast
+        stuck.macros = Macros(calories: 0, protein: 0, fat: 0, carbs: 0)
+        stuck.source = .lookedUp
+        var old = EstimateCache()
+        old.store(stuck, for: "kind protein bar strawberry cocoa")
+        let url = temporaryURL()
+        try JSONEncoder().encode(old).write(to: url)
+        let fake = FakeFoodEstimator()
+        fake.replies["kind protein bar strawberry cocoa"] = .success(toast)
+        fake.replies["diet coke"] = .success(stuck)
+        let estimator = CachingFoodEstimator(wrapping: fake, url: url)
+
+        let fixed = try await estimator.estimate("kind protein bar strawberry cocoa", library: .empty)
+        _ = try await estimator.estimate("diet coke", library: .empty)
+        _ = try await estimator.estimate("diet coke", library: .empty)
+
+        XCTAssertEqual(fixed, toast)
+        XCTAssertEqual(fake.sent, ["kind protein bar strawberry cocoa", "diet coke", "diet coke"])
+    }
 }

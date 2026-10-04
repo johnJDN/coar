@@ -89,7 +89,9 @@ struct EstimateCache: Codable, Equatable {
 
 /// Answers from the cache when it can and asks the wrapped estimator otherwise, keeping every
 /// loggable answer. Failures and impossible numbers are never kept, so they are asked again;
-/// nor are matches to the user's catalogue, which can change or be archived.
+/// nor are matches to the user's catalogue, which can change or be archived; nor lookups with
+/// no protein, fat, or carbs, which before 2026-10-03 could be a lookup that found nothing
+/// (a cached one is skipped too, so a line stuck at 0 kcal is asked again).
 /// Safe to call from any task: the cache is behind a lock, and written to Caches (which the
 /// system may empty; it is only a cache) after each new answer.
 final class CachingFoodEstimator: FoodEstimator {
@@ -112,11 +114,11 @@ final class CachingFoodEstimator: FoodEstimator {
     }
 
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {
-        if let cached = lock.withLock({ cache.estimate(for: line) }) {
+        if let cached = lock.withLock({ cache.estimate(for: line) }), !cached.isLookupWithoutMacros {
             return cached
         }
         let estimate = try await wrapped.estimate(line, library: library)
-        guard estimate.impossibility == nil, estimate.match == nil else { return estimate }
+        guard estimate.impossibility == nil, estimate.match == nil, !estimate.isLookupWithoutMacros else { return estimate }
         let snapshot = lock.withLock {
             cache.store(estimate, for: line)
             return cache

@@ -67,6 +67,12 @@ extension Estimate {
         return nil
     }
 
+    /// Looked up with protein, fat, and carbs all 0: a diet drink, or a lookup that found
+    /// nothing and sent its template's 0s back. Never cached, so it is always asked again.
+    var isLookupWithoutMacros: Bool {
+        source == .lookedUp && macros.protein == 0 && macros.fat == 0 && macros.carbs == 0
+    }
+
     /// The calories disagree with what the three macros add up to (4 kcal per gram of protein
     /// and carbs, 9 per gram of fat) by more than 40 kcal and 20%: worth a look, not a block.
     var caloriesDisagree: Bool {
