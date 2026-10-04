@@ -1,0 +1,2511 @@
+{
+ "results": [
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "kind protein max raspberry cocoa crisp bar",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0020169000000000003,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"KIND Protein MAX Raspberry Cocoa Crisp\",\n  \"source_url\": \"http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\n  \"name\": \"KIND Protein MAX Raspberry Cocoa Crisp bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 62,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 13,\n  \"carbs\": 24,\n  \"assumption\": \"Nutritional values are sourced from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for 1 bar (62g).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "KIND Protein MAX Raspberry Cocoa Crisp",
+    "source_url": "http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62,
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24,
+    "assumption": "Nutritional values are sourced from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for 1 bar (62g)."
+   },
+   "provider": "Google",
+   "citations": [
+    "http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://kindsnacksgrain.shop/collections/protein-max",
+    "https://www.ralphs.com/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.metromarket.net/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.meijer.com/shopping/product/2-2-ounces/60265267449.html"
+   ],
+   "tokens": [
+    1823,
+    188
+   ],
+   "answer": {
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "quest cookie dough bar",
+   "seconds": 2.4,
+   "error": null,
+   "cost": 0.0023927,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Chip Cookie Dough Protein Bars\",\n  \"source_url\": \"https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar\",\n  \"name\": \"Quest Nutrition Chocolate Chip Cookie Dough Protein Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 60,\n  \"calories\": 190,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition numbers come from [questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar) for one standard 60g bar, with protein, fat, and carbs omitted as they were not explicitly listed in the snippet.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Chip Cookie Dough Protein Bars",
+    "source_url": "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar",
+    "name": "Quest Nutrition Chocolate Chip Cookie Dough Protein Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 60,
+    "calories": 190,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition numbers come from [questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar) for one standard 60g bar, with protein, fat, and carbs omitted as they were not explicitly listed in the snippet."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar",
+    "https://www.questnutrition.com/products/dipped-chocolate-chip-cookie-dough-protein-bar?_pos=2&_sid=1ec3e2733&_ss=r&bvstate=pg%3A7%2Fct%3Ar",
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=876ca4445&_ss=r&bvstate=pg%3A11%2Fct%3Ar",
+    "https://www.questnutrition.com/products/dipped-chocolate-chip-cookie-dough-protein-bar?bvstate=pg%3A4%2Fct%3Ar&variation=A",
+    "https://www.chemistwarehouse.co.nz/buy/80060/quest-protein-bar-chocolate-chip-cookie-dough-60g"
+   ],
+   "tokens": [
+    2334,
+    277
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "rxbar chocolate sea salt",
+   "seconds": 2.1,
+   "error": null,
+   "cost": 0.0022132000000000002,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Sea Salt\",\n  \"source_url\": \"https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html\",\n  \"name\": \"RXBAR Chocolate Sea Salt Protein Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 52,\n  \"calories\": 200,\n  \"protein\": 12,\n  \"fat\": 8,\n  \"carbs\": 23,\n  \"assumption\": \"Nutrition facts are sourced from [shop.rxbar.com](https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html) for a single standard 52g bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Sea Salt",
+    "source_url": "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "name": "RXBAR Chocolate Sea Salt Protein Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 52,
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23,
+    "assumption": "Nutrition facts are sourced from [shop.rxbar.com](https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html) for a single standard 52g bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://shop.rxbar.com/media/pdf/2/2021RXBARProductCatalogue.pdf",
+    "https://rxbarshop.com/p/chocolate-sea-salt",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-peanut-butter-chocolate-minis.html",
+    "https://smartlabel.kelloggs.com/Product/Index/10857777004307"
+   ],
+   "tokens": [
+    2394,
+    198
+   ],
+   "answer": {
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "core power elite chocolate",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0020893,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Core Power Elite Chocolate Protein Shake\",\n  \"source_url\": \"https://fairlife.com/core-power/elite-chocolate-protein-shake\",\n  \"name\": \"Core Power Elite Chocolate Protein Shake\",\n  \"quantity\": 1,\n  \"unit\": \"bottle\",\n  \"grams\": 414,\n  \"calories\": 230,\n  \"protein\": 42,\n  \"fat\": 3.5,\n  \"carbs\": 9,\n  \"assumption\": \"Nutrition values are taken from the official [fairlife.com](https://fairlife.com/core-power/elite-chocolate-protein-shake) website for one 14 oz (414 ml) bottle.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Core Power Elite Chocolate Protein Shake",
+    "source_url": "https://fairlife.com/core-power/elite-chocolate-protein-shake",
+    "name": "Core Power Elite Chocolate Protein Shake",
+    "quantity": 1,
+    "unit": "bottle",
+    "grams": 414,
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9,
+    "assumption": "Nutrition values are taken from the official [fairlife.com](https://fairlife.com/core-power/elite-chocolate-protein-shake) website for one 14 oz (414 ml) bottle."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.safeway.com/shop/product-details.971096061.html",
+    "https://www.walgreens.com/store/c/core-power-milk-shake-chocolate/ID=300402738-product",
+    "https://www.jerrysfoods.com/store/jerrys-food/products/3338934-core-power-elite-chocolate-high-protein-milk-shake-14-oza",
+    "https://stopandshop.com/groceries/product/core-power-elite-chocolate-42g-high-protein-shake-14-oz-btl/218191",
+    "https://fairlife.com/core-power/elite-chocolate-protein-shake"
+   ],
+   "tokens": [
+    2056,
+    189
+   ],
+   "answer": {
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "premier protein chocolate shake",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0020495,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Protein Shake Variety Pack\",\n  \"source_url\": \"https://www.premierprotein.com/products/protein-shake-variety-pack\",\n  \"name\": \"Premier Protein Chocolate Shake\",\n  \"quantity\": 1,\n  \"unit\": \"shake\",\n  \"grams\": null,\n  \"calories\": 160,\n  \"protein\": 30,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition values are sourced from the official [premierprotein.com](https://www.premierprotein.com/products/protein-shake-variety-pack) website for the standard 30g protein chocolate shake.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Protein Shake Variety Pack",
+    "source_url": "https://www.premierprotein.com/products/protein-shake-variety-pack",
+    "name": "Premier Protein Chocolate Shake",
+    "quantity": 1,
+    "unit": "shake",
+    "grams": null,
+    "calories": 160,
+    "protein": 30,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition values are sourced from the official [premierprotein.com](https://www.premierprotein.com/products/protein-shake-variety-pack) website for the standard 30g protein chocolate shake."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.premierprotein.com/products/indulgence",
+    "https://www.premierprotein.com/products/chocolate-almondmilk-protein-shake",
+    "https://www.premierprotein.com/products/decadent-dark-chocolate-indulgence-protein-shake",
+    "http://gerbes.com/p/premier-protein-30g-chocolate-peanut-butter-protein-shake/0064384371660",
+    "https://www.premierprotein.com/products/protein-shake-variety-pack"
+   ],
+   "tokens": [
+    2040,
+    175
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "clif bar chocolate chip",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0021825,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Chip\",\n  \"source_url\": \"https://eu.clifbar.com/en/products/clif-bar-chocolate-chip\",\n  \"name\": \"CLIF Bar Chocolate Chip Energy Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 68,\n  \"calories\": 258,\n  \"protein\": 10,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition per 68g bar obtained from [eu.clifbar.com](https://eu.clifbar.com/en/products/clif-bar-chocolate-chip).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Chip",
+    "source_url": "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "name": "CLIF Bar Chocolate Chip Energy Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 68,
+    "calories": 258,
+    "protein": 10,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition per 68g bar obtained from [eu.clifbar.com](https://eu.clifbar.com/en/products/clif-bar-chocolate-chip)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip",
+    "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "https://www.clifbar.com/products/clif-nut-butter-bar-chocolate-chip-peanut-butter",
+    "http://clifbar.com/products/clif-kid-zbar-protein-chocolate-chip",
+    "https://www.clifbar.com/collections/clif-bar-alternative-flavors"
+   ],
+   "tokens": [
+    2450,
+    179
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "chobani plain nonfat greek yogurt cup",
+   "seconds": 2.3,
+   "error": null,
+   "cost": 0.0022583,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chobani\u00ae Plain Nonfat Greek Yogurt Cup, 5.3 oz\",\n  \"source_url\": \"https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001\",\n  \"name\": \"Chobani Plain Nonfat Greek Yogurt Cup\",\n  \"quantity\": 1,\n  \"unit\": \"cup\",\n  \"grams\": 150,\n  \"calories\": 80,\n  \"protein\": 14,\n  \"fat\": 0,\n  \"carbs\": 6,\n  \"assumption\": \"Nutrition values are sourced from [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001) for one 5.3 oz (150g) container.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chobani\u00ae Plain Nonfat Greek Yogurt Cup, 5.3 oz",
+    "source_url": "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "name": "Chobani Plain Nonfat Greek Yogurt Cup",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": 150,
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6,
+    "assumption": "Nutrition values are sourced from [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001) for one 5.3 oz (150g) container."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.chobani.com/products/yogurt/greek/nonfat-plain-cup",
+    "https://origin-ncm.chobani.com/products/yogurt/greek/nonfat-plain-large-size-tub",
+    "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "https://www.smithsfoodanddrug.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "https://www.kingsoopers.com/p/chobani-non-fat-plain-greek-yogurt/0089470001001"
+   ],
+   "tokens": [
+    2186,
+    241
+   ],
+   "answer": {
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "diet coke can",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0021628999999999997,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Diet Coke\u00ae\",\n  \"source_url\": \"https://www.coca-cola.com/us/en/brands/diet-coke/products\",\n  \"name\": \"Coca-Cola Diet Coke\",\n  \"quantity\": 1,\n  \"unit\": \"can\",\n  \"grams\": null,\n  \"calories\": 0,\n  \"protein\": 0,\n  \"fat\": 0,\n  \"carbs\": 0,\n  \"assumption\": \"Nutrition values are based on the official [coca-cola.com](https://www.coca-cola.com/us/en/brands/diet-coke/products) information for one 12 fl oz can of Diet Coke.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Diet Coke\u00ae",
+    "source_url": "https://www.coca-cola.com/us/en/brands/diet-coke/products",
+    "name": "Coca-Cola Diet Coke",
+    "quantity": 1,
+    "unit": "can",
+    "grams": null,
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0,
+    "assumption": "Nutrition values are based on the official [coca-cola.com](https://www.coca-cola.com/us/en/brands/diet-coke/products) information for one 12 fl oz can of Diet Coke."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.coca-cola.com/in/en/brands/coca-cola/products-diet-coke",
+    "https://www.coca-cola.com/us/en/brands/diet-coke/products",
+    "https://www.coca-cola.com/gb/en/brands/diet-coke",
+    "https://en.wikipedia.org/wiki/Diet_Coke",
+    "https://investors.coca-colacompany.com/news-events/press-releases/detail/651/diet-coke-launches-diet-coke-frost-first-frozen-product-offering-in-brands-history"
+   ],
+   "tokens": [
+    2318,
+    187
+   ],
+   "answer": {
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "big mac",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.002319,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Big Mac\u00ae\",\n  \"source_url\": \"https://www.mcdonalds.com/us/en-us/product/big-mac.html\",\n  \"name\": \"McDonald's Big Mac\",\n  \"quantity\": 1,\n  \"unit\": \"burger\",\n  \"grams\": null,\n  \"calories\": 580,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutritional values are sourced from the official [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html) US nutrition information for one standard Big Mac.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Big Mac\u00ae",
+    "source_url": "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "name": "McDonald's Big Mac",
+    "quantity": 1,
+    "unit": "burger",
+    "grams": null,
+    "calories": 580,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutritional values are sourced from the official [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html) US nutrition information for one standard Big Mac."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "https://www.mcdonalds.com/us/en-us/meal/big-mac-meal.html",
+    "https://www.mcdonalds.com/au/en-au/menu/beef/big-mac.html",
+    "https://www.mcdonalds.com/gb/en-gb/product/big-mac.html",
+    "https://www.mcdonalds.com/ae/en-ae/product/big-mac.html"
+   ],
+   "tokens": [
+    2830,
+    188
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "chick fil a chicken sandwich",
+   "seconds": 21.1,
+   "error": null,
+   "cost": 0.0022749,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chick-fil-A \u00ae Chicken Sandwich\",\n  \"source_url\": \"https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich\",\n  \"name\": \"Chick-fil-A Chicken Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 420,\n  \"protein\": 29,\n  \"fat\": 18,\n  \"carbs\": 41,\n  \"assumption\": \"Nutrition information obtained from the official [chick-fil-a.com](https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich) website for one standard Chick-fil-A Chicken Sandwich.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chick-fil-A \u00ae Chicken Sandwich",
+    "source_url": "https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich",
+    "name": "Chick-fil-A Chicken Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 420,
+    "protein": 29,
+    "fat": 18,
+    "carbs": 41,
+    "assumption": "Nutrition information obtained from the official [chick-fil-a.com](https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich) website for one standard Chick-fil-A Chicken Sandwich."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees/spicy-chicken-sandwich",
+    "https://www.chick-fil-a.com/es/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees/grilled-chicken-sandwich"
+   ],
+   "tokens": [
+    2508,
+    209
+   ],
+   "answer": {
+    "calories": 420,
+    "protein": 29,
+    "fat": 18,
+    "carbs": 41
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "grande latte 2%",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0022876,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Caff\u00e8 Latte\",\n  \"source_url\": \"https://www.starbucks.com/menu/product/407/hot\",\n  \"name\": \"Starbucks Caff\u00e8 Latte Grande with 2% Milk\",\n  \"quantity\": 1,\n  \"unit\": \"grande\",\n  \"grams\": null,\n  \"calories\": 190,\n  \"protein\": 13,\n  \"fat\": 7,\n  \"carbs\": 19,\n  \"assumption\": \"Nutrition values obtained from the official Starbucks menu for a grande Caff\u00e8 Latte made with 2% milk [starbucks.com](https://www.starbucks.com/menu/product/407/hot).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Caff\u00e8 Latte",
+    "source_url": "https://www.starbucks.com/menu/product/407/hot",
+    "name": "Starbucks Caff\u00e8 Latte Grande with 2% Milk",
+    "quantity": 1,
+    "unit": "grande",
+    "grams": null,
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19,
+    "assumption": "Nutrition values obtained from the official Starbucks menu for a grande Caff\u00e8 Latte made with 2% milk [starbucks.com](https://www.starbucks.com/menu/product/407/hot)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.starbucks.com/menu/product/407/hot",
+    "https://kjoules.app/en/restaurants/starbucks",
+    "https://www.mcdonalds.com/ca/en-ca/product/latte-with-2-milk-medium.html",
+    "https://fastfoodnutrition.org/starbucks/iced-cinnamon-dolce-latte-with-2-milk/grande",
+    "https://fastfoodnutrition.org/starbucks/eggnog-latte-with-2-milk/grande"
+   ],
+   "tokens": [
+    2742,
+    186
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "crunchwrap supreme",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0019753,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Crunchwrap Supreme\u00ae\",\n  \"source_url\": \"https://www.tacobell.com/food/specialties/crunchwrap-supreme\",\n  \"name\": \"Taco Bell Crunchwrap Supreme\",\n  \"quantity\": 1,\n  \"unit\": \"item\",\n  \"grams\": 275,\n  \"calories\": 530,\n  \"protein\": 16,\n  \"fat\": 21,\n  \"carbs\": 70,\n  \"assumption\": \"Nutrition information is based on the official Taco Bell Crunchwrap Supreme website listing [tacobell.com].\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Crunchwrap Supreme\u00ae",
+    "source_url": "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "name": "Taco Bell Crunchwrap Supreme",
+    "quantity": 1,
+    "unit": "item",
+    "grams": 275,
+    "calories": 530,
+    "protein": 16,
+    "fat": 21,
+    "carbs": 70,
+    "assumption": "Nutrition information is based on the official Taco Bell Crunchwrap Supreme website listing [tacobell.com]."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.nytimes.com/2025/06/20/dining/taco-bell-crunchwrap-supreme.html",
+    "https://www.washingtonpost.com/food/2025/04/01/taco-bell-crunchwrap-homemade",
+    "https://www.qsrmagazine.com/news/taco-bells-crunchwrap-supreme-back-popular-demand",
+    "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "http://shoprite.com/product/taco-bell-crunchwrap-supreme-cravings-kit-226-oz-id-00021000083510"
+   ],
+   "tokens": [
+    1901,
+    162
+   ],
+   "answer": {
+    "calories": 530,
+    "protein": 16,
+    "fat": 21,
+    "carbs": 70
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "panera bacon turkey bravo",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0021038000000000003,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Bacon Turkey Bravo Sandwich\",\n  \"source_url\": \"https://panerabreadmenue.com/panera-bacon-turkey-bravo\",\n  \"name\": \"Panera Bacon Turkey Bravo Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 860,\n  \"protein\": 47,\n  \"fat\": 39,\n  \"carbs\": 80,\n  \"assumption\": \"Nutrition info retrieved from [panerabreadmenue.com](https://panerabreadmenue.com/panera-bacon-turkey-bravo) for a whole Bacon Turkey Bravo sandwich.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Bacon Turkey Bravo Sandwich",
+    "source_url": "https://panerabreadmenue.com/panera-bacon-turkey-bravo",
+    "name": "Panera Bacon Turkey Bravo Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 860,
+    "protein": 47,
+    "fat": 39,
+    "carbs": 80,
+    "assumption": "Nutrition info retrieved from [panerabreadmenue.com](https://panerabreadmenue.com/panera-bacon-turkey-bravo) for a whole Bacon Turkey Bravo sandwich."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://panerabreadmenue.com/panera-bacon-turkey-bravo",
+    "https://www.panerabread.com/en-us/app/product/8a16f7942d9a4179148a82e9528f806c.html",
+    "https://postmates.com/store/panera-bread-128-water-street/iG3df_2tVCenqfxxsRiCsg/944f417e-c485-5ea1-bc1b-ba25a321a4ae/0379a62a-1156-4ddb-a09a-7e1dc45d5dfb/3c3e8cfe-7f52-54fd-bb76-2aa3c8f823f2",
+    "https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html",
+    "https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html"
+   ],
+   "tokens": [
+    2121,
+    187
+   ],
+   "answer": {
+    "calories": 860,
+    "protein": 47,
+    "fat": 39,
+    "carbs": 80
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "kind protein strawberry cocoa bar",
+   "seconds": 1.9,
+   "error": null,
+   "cost": 0.0020881,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"kind protein strawberry cocoa bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Could not find official nutrition information for a Kind Protein Strawberry Cocoa Bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "kind protein strawberry cocoa bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Could not find official nutrition information for a Kind Protein Strawberry Cocoa Bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.myprotein.com/p/sports-nutrition/layered-protein-bar/13177680",
+    "https://shop.rxbar.com/shop/strawberry.html?bvstate=pg%3A2%2Fct%3Ar",
+    "https://barebells.com/product/sunny-strawberry",
+    "https://www.nosh.com/pr/2026/07/17/aloha-launches-limitededition-strawberry-protein-bar",
+    "https://schnucks.com/products/518331/special-k-strawberry-protein-bars-6-count"
+   ],
+   "tokens": [
+    2652,
+    117
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "quest dark chocolate raspberry bar",
+   "seconds": 1.9,
+   "error": null,
+   "cost": 0.0018499,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"Quest Dark Chocolate Raspberry Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"No official nutrition information was found for a Quest Dark Chocolate Raspberry Bar as this specific product variant does not exist or lacks published data.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Quest Dark Chocolate Raspberry Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "No official nutrition information was found for a Quest Dark Chocolate Raspberry Bar as this specific product variant does not exist or lacks published data."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://blog.questnutrition.com/tag/new-flavor",
+    "https://www.neuhauschocolates.com/en_US/shop/dark-chocolate-bar---raspberry/5026126.html",
+    "https://blog.questnutrition.com/tag/quest-tart",
+    "https://www.ghirardelli.com/premium-dark-chocolate-bar-raspberry-bar-62208",
+    "https://www.ghirardelli.com/raspberry-dark-chocolate-squares-bar-41867cs"
+   ],
+   "tokens": [
+    1758,
+    129
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "kind protein max raspberry cocoa crisp bar",
+   "seconds": 3.2,
+   "error": null,
+   "cost": 0.0061785,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"KIND Protein MAX Raspberry Cocoa Crisp\",\n  \"source_url\": \"https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp?srsltid=AU7gw4UsBp7NjVTQ_hTg4_JITcAXI5_xlkfSs2bBdMhQzlrIRJbM8hTT\",\n  \"name\": \"KIND Protein MAX Raspberry Cocoa Crisp Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 14,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition values are sourced from the official [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp?srsltid=AU7gw4UsBp7NjVTQ_hTg4_JITcAXI5_xlkfSs2bBdMhQzlrIRJbM8hTT) website for one bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "KIND Protein MAX Raspberry Cocoa Crisp",
+    "source_url": "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp?srsltid=AU7gw4UsBp7NjVTQ_hTg4_JITcAXI5_xlkfSs2bBdMhQzlrIRJbM8hTT",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": 240,
+    "protein": 20,
+    "fat": 14,
+    "carbs": null,
+    "assumption": "Nutrition values are sourced from the official [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp?srsltid=AU7gw4UsBp7NjVTQ_hTg4_JITcAXI5_xlkfSs2bBdMhQzlrIRJbM8hTT) website for one bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.amazon.com/clp/B0FS7XFGXX",
+    "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp?srsltid=AU7gw4UsBp7NjVTQ_hTg4_JITcAXI5_xlkfSs2bBdMhQzlrIRJbM8hTT",
+    "https://www.publix.com/pd/kind-protein-max-raspberry-cocoa-crisp-bars/RIO-PCI-633395",
+    "https://www.target.com/p/kind-max-raspberry-chocolate-protein-bars-20g-protein-8-75oz-4ct/-/A-94935749",
+    "http://tiendamia.com.ec/p/amz/b0dbjg4llz/kind-protein-max-bars-sweet-salty-caramel-peanut-crisp"
+   ],
+   "tokens": [
+    1620,
+    277
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "quest cookie dough bar",
+   "seconds": 2.3,
+   "error": null,
+   "cost": 0.0060802,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Chip Cookie Dough Protein Bars\",\n  \"source_url\": \"https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar\",\n  \"name\": \"Quest Chocolate Chip Cookie Dough Protein Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 60,\n  \"calories\": 200,\n  \"protein\": 21,\n  \"fat\": 9,\n  \"carbs\": 22,\n  \"assumption\": \"Nutrition values are sourced from official [questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar) for one 60g bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Chip Cookie Dough Protein Bars",
+    "source_url": "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar",
+    "name": "Quest Chocolate Chip Cookie Dough Protein Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 60,
+    "calories": 200,
+    "protein": 21,
+    "fat": 9,
+    "carbs": 22,
+    "assumption": "Nutrition values are sourced from official [questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar) for one 60g bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar",
+    "https://www.amazon.com/clp/B00DLDH1N2",
+    "https://www.tiktok.com/@aussiefitness/video/6940538013449506050",
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar",
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=8&_sid=98b1fc488&_ss=r&bvstate=pg%3A6%2Fct%3Ar"
+   ],
+   "tokens": [
+    2034,
+    188
+   ],
+   "answer": {
+    "calories": 200,
+    "protein": 21,
+    "fat": 9,
+    "carbs": 22
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "rxbar chocolate sea salt",
+   "seconds": 2.1,
+   "error": null,
+   "cost": 0.0061305000000000005,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"RXBAR Chocolate Sea Salt\",\n  \"source_url\": \"https://smartlabel.kelloggs.com/Product/Index/10857777004307\",\n  \"name\": \"RXBAR Chocolate Sea Salt\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 52,\n  \"calories\": 200,\n  \"protein\": 12,\n  \"fat\": 8,\n  \"carbs\": 23,\n  \"assumption\": \"Nutrition values are sourced from [smartlabel.kelloggs.com](https://smartlabel.kelloggs.com/Product/Index/10857777004307) for one 52 g bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "RXBAR Chocolate Sea Salt",
+    "source_url": "https://smartlabel.kelloggs.com/Product/Index/10857777004307",
+    "name": "RXBAR Chocolate Sea Salt",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 52,
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23,
+    "assumption": "Nutrition values are sourced from [smartlabel.kelloggs.com](https://smartlabel.kelloggs.com/Product/Index/10857777004307) for one 52 g bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "https://www.amazon.com/clp/B0143NQVQ6",
+    "https://smartlabel.kelloggs.com/Product/Index/10857777004307",
+    "https://www.rxbar.ca/en_CA/products/protein-bars/rxbar-chocolate-sea-salt.html",
+    "https://shop.rxbar.com/media/pdf/2/2021RXBARProductCatalogue.pdf"
+   ],
+   "tokens": [
+    2060,
+    205
+   ],
+   "answer": {
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "core power elite chocolate",
+   "seconds": 2.3,
+   "error": null,
+   "cost": 0.0060038,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Core Power Chocolate Protein Shake \u2013 42g of Protein\",\n  \"source_url\": \"http://fairlife.com/core-power/chocolate-protein-shake-42g\",\n  \"name\": \"Fairlife Core Power Elite Chocolate Protein Shake\",\n  \"quantity\": 1,\n  \"unit\": \"bottle\",\n  \"grams\": 414,\n  \"calories\": 230,\n  \"protein\": 42,\n  \"fat\": 3.5,\n  \"carbs\": 9,\n  \"assumption\": \"Nutrition values are sourced from [fairlife.com](http://fairlife.com/core-power/chocolate-protein-shake-42g) for one 14 oz (414 ml) bottle.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Core Power Chocolate Protein Shake \u2013 42g of Protein",
+    "source_url": "http://fairlife.com/core-power/chocolate-protein-shake-42g",
+    "name": "Fairlife Core Power Elite Chocolate Protein Shake",
+    "quantity": 1,
+    "unit": "bottle",
+    "grams": 414,
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9,
+    "assumption": "Nutrition values are sourced from [fairlife.com](http://fairlife.com/core-power/chocolate-protein-shake-42g) for one 14 oz (414 ml) bottle."
+   },
+   "provider": "Google",
+   "citations": [
+    "http://fairlife.com/core-power/chocolate-protein-shake-42g",
+    "https://www.amazon.com/clp/B01DDIRDZA",
+    "https://www.samsclub.com/ip/fairlife-core-power-elite-protein-shake-chocolate-14-oz-10-pk/13872100692",
+    "https://www.jerrysfoods.com/store/jerrys-food/products/3338934-core-power-elite-chocolate-high-protein-milk-shake-14-oza",
+    "https://www.safeway.com/shop/pd/core-power-elite-milk-shake-high-protein-chocolate-12-14-fl-oz/960163793"
+   ],
+   "tokens": [
+    1696,
+    198
+   ],
+   "answer": {
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "premier protein chocolate shake",
+   "seconds": 2.3,
+   "error": null,
+   "cost": 0.0059345000000000005,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Protein Shake\",\n  \"source_url\": \"https://www.premierprotein.com/products/chocolate-protein-shake\",\n  \"name\": \"Premier Protein Chocolate Shake\",\n  \"quantity\": 1,\n  \"unit\": \"shake\",\n  \"grams\": null,\n  \"calories\": 160,\n  \"protein\": 30,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition information is sourced from [premierprotein.com](https://www.premierprotein.com/products/chocolate-protein-shake) for one standard 11 fl oz chocolate protein shake.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Protein Shake",
+    "source_url": "https://www.premierprotein.com/products/chocolate-protein-shake",
+    "name": "Premier Protein Chocolate Shake",
+    "quantity": 1,
+    "unit": "shake",
+    "grams": null,
+    "calories": 160,
+    "protein": 30,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition information is sourced from [premierprotein.com](https://www.premierprotein.com/products/chocolate-protein-shake) for one standard 11 fl oz chocolate protein shake."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.premierprotein.com/products/chocolate-protein-shake",
+    "https://www.amazon.com/clp/B07MJL8NXR",
+    "https://sameday.costco.com/store/costco/products/120764797-premier-protein-chocolate-11-fl-oz",
+    "https://www.premierprotein.com/products/indulgence",
+    "https://www.premierprotein.com/products/chocolate-almondmilk-protein-shake"
+   ],
+   "tokens": [
+    1715,
+    168
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "clif bar chocolate chip",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.006192700000000001,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"CLIF BAR Chocolate Chip\",\n  \"source_url\": \"https://eu.clifbar.com/en/products/clif-bar-chocolate-chip\",\n  \"name\": \"Clif Bar Chocolate Chip\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 68,\n  \"calories\": 258,\n  \"protein\": null,\n  \"fat\": 6.1,\n  \"carbs\": null,\n  \"assumption\": \"Numbers are sourced from [clifbar.com](https://eu.clifbar.com/en/products/clif-bar-chocolate-chip) for one 68g bar, with protein and carbs omitted as they were not provided in the source table.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "CLIF BAR Chocolate Chip",
+    "source_url": "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "name": "Clif Bar Chocolate Chip",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 68,
+    "calories": 258,
+    "protein": null,
+    "fat": 6.1,
+    "carbs": null,
+    "assumption": "Numbers are sourced from [clifbar.com](https://eu.clifbar.com/en/products/clif-bar-chocolate-chip) for one 68g bar, with protein and carbs omitted as they were not provided in the source table."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip",
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip-minis",
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip-36ct-bundle",
+    "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "https://therealfooddietitians.com/homemade-chocolate-chip-clif-bars/"
+   ],
+   "tokens": [
+    2334,
+    197
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "chobani plain nonfat greek yogurt cup",
+   "seconds": 2.4,
+   "error": null,
+   "cost": 0.0061534,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chobani\u00ae Non-Fat Plain Greek Yogurt 5.3oz\",\n  \"source_url\": \"https://www.amazon.com/Chobani-Non-Fat-Greek-Yogurt-Plain/dp/B005PO5HTU\",\n  \"name\": \"Chobani Non-Fat Plain Greek Yogurt\",\n  \"quantity\": 1,\n  \"unit\": \"cup\",\n  \"grams\": 150,\n  \"calories\": 90,\n  \"protein\": 14,\n  \"fat\": 0,\n  \"carbs\": 6,\n  \"assumption\": \"Nutrition values are sourced from official Chobani plain non-fat greek yogurt 5.3 oz cup listing found via [amazon.com](https://www.amazon.com/Chobani-Non-Fat-Greek-Yogurt-Plain/dp/B005PO5HTU) and [giantfood.com](https://giantfood.com/groceries/product/chobani-non-fat-plain-greek-yogurt-cups-4-ct-21-2-oz-pkg/223718).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chobani\u00ae Non-Fat Plain Greek Yogurt 5.3oz",
+    "source_url": "https://www.amazon.com/Chobani-Non-Fat-Greek-Yogurt-Plain/dp/B005PO5HTU",
+    "name": "Chobani Non-Fat Plain Greek Yogurt",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": 150,
+    "calories": 90,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6,
+    "assumption": "Nutrition values are sourced from official Chobani plain non-fat greek yogurt 5.3 oz cup listing found via [amazon.com](https://www.amazon.com/Chobani-Non-Fat-Greek-Yogurt-Plain/dp/B005PO5HTU) and [giantfood.com](https://giantfood.com/groceries/product/chobani-non-fat-plain-greek-yogurt-cups-4-ct-21-2-oz-pkg/223718)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.walmart.com/ip/Chobani-Non-Fat-Greek-Yogurt-Plain-32-Oz-Tub/21291511",
+    "https://www.amazon.com/Chobani-Non-Fat-Greek-Yogurt-Plain/dp/B005PO5HTU",
+    "https://www.qfc.com/q/chobani+greek+yogurt",
+    "https://giantfood.com/groceries/product/chobani-non-fat-plain-greek-yogurt-cups-4-ct-21-2-oz-pkg/223718",
+    "https://www.smithsfoodanddrug.com/p/chobani-vanilla-nonfat-greek-yogurt-cups/0081829001279"
+   ],
+   "tokens": [
+    1453,
+    287
+   ],
+   "answer": {
+    "calories": 90,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "diet coke can",
+   "seconds": 2.9,
+   "error": null,
+   "cost": 0.0060098,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Diet Coke\u00ae\",\n  \"source_url\": \"https://www.coca-cola.com/us/en/brands/diet-coke\",\n  \"name\": \"Coca-Cola Diet Coke\",\n  \"quantity\": 1,\n  \"unit\": \"can\",\n  \"grams\": 355.0,\n  \"calories\": 0.0,\n  \"protein\": 0.0,\n  \"fat\": 0.0,\n  \"carbs\": 0.0,\n  \"assumption\": \"Numbers are based on official nutrition data from [coca-cola.com](https://www.coca-cola.com/us/en/brands/diet-coke) for a standard 12 fl oz can containing 0 calories.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Diet Coke\u00ae",
+    "source_url": "https://www.coca-cola.com/us/en/brands/diet-coke",
+    "name": "Coca-Cola Diet Coke",
+    "quantity": 1,
+    "unit": "can",
+    "grams": 355.0,
+    "calories": 0.0,
+    "protein": 0.0,
+    "fat": 0.0,
+    "carbs": 0.0,
+    "assumption": "Numbers are based on official nutrition data from [coca-cola.com](https://www.coca-cola.com/us/en/brands/diet-coke) for a standard 12 fl oz can containing 0 calories."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.amazon.com/clp/B000T9WLUY",
+    "https://www.coca-cola.com/us/en/brands/diet-coke",
+    "https://www.coca-colastore.com/diet-coke-can-ss-tumbler-16-oz?srsltid=AU7gw4WMdFpyDpG2OZVUyc42cAiwvaZ4wgYJ6nAOtGUmXLlD0qKaUtRv",
+    "https://www.coca-cola.com/bd/en/brands/coca-cola/products-diet-coke",
+    "https://www.coca-cola.com/gb/en/brands/diet-coke"
+   ],
+   "tokens": [
+    1716,
+    198
+   ],
+   "answer": {
+    "calories": 0.0,
+    "protein": 0.0,
+    "fat": 0.0,
+    "carbs": 0.0
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "big mac",
+   "seconds": 2.1,
+   "error": null,
+   "cost": 0.0061174,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Big Mac\u00ae\",\n  \"source_url\": \"https://www.mcdonalds.com/us/en-us/product/big-mac.html\",\n  \"name\": \"McDonald's Big Mac\",\n  \"quantity\": 1,\n  \"unit\": \"burger\",\n  \"grams\": 211,\n  \"calories\": 590,\n  \"protein\": 25,\n  \"fat\": 34,\n  \"carbs\": 46,\n  \"assumption\": \"Numbers are taken from [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html) for one standard US Big Mac.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Big Mac\u00ae",
+    "source_url": "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "name": "McDonald's Big Mac",
+    "quantity": 1,
+    "unit": "burger",
+    "grams": 211,
+    "calories": 590,
+    "protein": 25,
+    "fat": 34,
+    "carbs": 46,
+    "assumption": "Numbers are taken from [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html) for one standard US Big Mac."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "https://en.wikipedia.org/wiki/Big_Mac",
+    "https://www.delish.com/cooking/recipe-ideas/a60952007/copycat-big-mac-recipe/",
+    "https://www.mcdonalds.com/gb/en-gb/product/big-mac.html",
+    "https://www.mcdonalds.com/au/en-au/menu/beef/big-mac.html"
+   ],
+   "tokens": [
+    2133,
+    191
+   ],
+   "answer": {
+    "calories": 590,
+    "protein": 25,
+    "fat": 34,
+    "carbs": 46
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "chick fil a chicken sandwich",
+   "seconds": 2.3,
+   "error": null,
+   "cost": 0.0062549,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chick-fil-A\u00ae Chicken Sandwich\",\n  \"source_url\": \"https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich\",\n  \"name\": \"Chick-fil-A Chicken Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 420,\n  \"protein\": 29,\n  \"fat\": 16,\n  \"carbs\": 41,\n  \"assumption\": \"Nutrition values are sourced from the official [chick-fil-a.com](https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich) website for one standard Chick-fil-A Chicken Sandwich.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chick-fil-A\u00ae Chicken Sandwich",
+    "source_url": "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "name": "Chick-fil-A Chicken Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 420,
+    "protein": 29,
+    "fat": 16,
+    "carbs": 41,
+    "assumption": "Nutrition values are sourced from the official [chick-fil-a.com](https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich) website for one standard Chick-fil-A Chicken Sandwich."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu",
+    "https://www.chick-fil-a.com/menu/entrees",
+    "https://www.chick-fil-a.ca/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://tastesbetterfromscratch.com/chick-fil-a-crispy-chicken-sandwhich-copycat/"
+   ],
+   "tokens": [
+    2433,
+    210
+   ],
+   "answer": {
+    "calories": 420,
+    "protein": 29,
+    "fat": 16,
+    "carbs": 41
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "grande latte 2%",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0061626,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Caff\u00e8 Latte\",\n  \"source_url\": \"https://www.starbucks.com/menu/product/407/hot\",\n  \"name\": \"Starbucks Caff\u00e8 Latte with 2% Milk, Grande\",\n  \"quantity\": 1,\n  \"unit\": \"cup\",\n  \"grams\": null,\n  \"calories\": 190,\n  \"protein\": 12,\n  \"fat\": 7,\n  \"carbs\": 19,\n  \"assumption\": \"Numbers are taken from the official Starbucks menu for a Grande hot Caff\u00e8 Latte made with 2% milk [starbucks.com].\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Caff\u00e8 Latte",
+    "source_url": "https://www.starbucks.com/menu/product/407/hot",
+    "name": "Starbucks Caff\u00e8 Latte with 2% Milk, Grande",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": null,
+    "calories": 190,
+    "protein": 12,
+    "fat": 7,
+    "carbs": 19,
+    "assumption": "Numbers are taken from the official Starbucks menu for a Grande hot Caff\u00e8 Latte made with 2% milk [starbucks.com]."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.eatthismuch.com/calories/caffe-latte-with-2-milk-grande-1798805",
+    "https://www.starbuckschilledcoffee.com/uk/products/chilled-classics/grande-caffe-latte/",
+    "https://www.reddit.com/r/todayilearned/comments/alpg1u/til_a_starbucks_hot_venti_latte_and_grande_latte/",
+    "https://www.starbucks.com/menu/product/407/hot",
+    "https://fastfoodnutrition.org/starbucks/iced-cinnamon-dolce-latte-with-2-milk/grande"
+   ],
+   "tokens": [
+    2467,
+    169
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 12,
+    "fat": 7,
+    "carbs": 19
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "crunchwrap supreme",
+   "seconds": 2.0,
+   "error": null,
+   "cost": 0.0059640000000000006,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Crunchwrap Supreme\u00ae\",\n  \"source_url\": \"https://www.tacobell.com/food/specialties/crunchwrap-supreme\",\n  \"name\": \"Taco Bell Crunchwrap Supreme\",\n  \"quantity\": 1,\n  \"unit\": \"item\",\n  \"grams\": 255,\n  \"calories\": 540,\n  \"protein\": 16,\n  \"fat\": 21,\n  \"carbs\": 71,\n  \"assumption\": \"Nutrition values obtained from the official [tacobell.com](https://www.tacobell.com/food/specialties/crunchwrap-supreme) menu for one Crunchwrap Supreme.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Crunchwrap Supreme\u00ae",
+    "source_url": "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "name": "Taco Bell Crunchwrap Supreme",
+    "quantity": 1,
+    "unit": "item",
+    "grams": 255,
+    "calories": 540,
+    "protein": 16,
+    "fat": 21,
+    "carbs": 71,
+    "assumption": "Nutrition values obtained from the official [tacobell.com](https://www.tacobell.com/food/specialties/crunchwrap-supreme) menu for one Crunchwrap Supreme."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "https://pinchofyum.com/crunchwrap",
+    "https://www.delish.com/cooking/recipe-ideas/a52078/crunchwrap-supreme-recipe/",
+    "https://www.qsrmagazine.com/news/taco-bells-crunchwrap-supreme-back-popular-demand",
+    "https://www.nytimes.com/2025/06/20/dining/taco-bell-crunchwrap-supreme.html"
+   ],
+   "tokens": [
+    1705,
+    181
+   ],
+   "answer": {
+    "calories": 540,
+    "protein": 16,
+    "fat": 21,
+    "carbs": 71
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "panera bacon turkey bravo",
+   "seconds": 2.4,
+   "error": null,
+   "cost": 0.0059079,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Bacon Turkey Bravo\u00ae\",\n  \"source_url\": \"https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html\",\n  \"name\": \"Panera Bacon Turkey Bravo Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 850,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition data is sourced from [panerabread.com](https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html) for a whole sandwich, with only calories available from the official data set retrieved.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Bacon Turkey Bravo\u00ae",
+    "source_url": "https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html",
+    "name": "Panera Bacon Turkey Bravo Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 850,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition data is sourced from [panerabread.com](https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html) for a whole sandwich, with only calories available from the official data set retrieved."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html",
+    "https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html",
+    "https://www.girlversusdough.com/homemade-turkey-bacon-bravo-sandwich/",
+    "https://www.tasteofhome.com/recipes/copycat-panera-bacon-turkey-bravo/",
+    "https://catering.panerabread.com/menu/category/sandwiches"
+   ],
+   "tokens": [
+    1343,
+    202
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "kind protein strawberry cocoa bar",
+   "seconds": 2.1,
+   "error": null,
+   "cost": 0.005971,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"KIND protein strawberry cocoa bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"No exact nutrition data was found for a KIND protein strawberry cocoa bar; other flavors like KIND Strawberry Sunflower Seed exist on [kindsnacks.com](https://www.kindsnacks.com/products/nut-bar/strawberry-sunflower-seed-seeds?srsltid=AU7gw4VCVs7PYFN6zHd0kyuX1o6OglHSn0oQyVBOXUgbWasNnlSqJnzt) but this specific protein variety is not matched.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "KIND protein strawberry cocoa bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "No exact nutrition data was found for a KIND protein strawberry cocoa bar; other flavors like KIND Strawberry Sunflower Seed exist on [kindsnacks.com](https://www.kindsnacks.com/products/nut-bar/strawberry-sunflower-seed-seeds?srsltid=AU7gw4VCVs7PYFN6zHd0kyuX1o6OglHSn0oQyVBOXUgbWasNnlSqJnzt) but this specific protein variety is not matched."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.kindsnacks.com/products/nut-bar/strawberry-sunflower-seed-seeds?srsltid=AU7gw4VCVs7PYFN6zHd0kyuX1o6OglHSn0oQyVBOXUgbWasNnlSqJnzt",
+    "https://www.amazon.com/clp/B0CXJLP95F",
+    "http://metromarket.net/p/kind-strawberry-sunflower-bars/0060265243354",
+    "https://www.smithsfoodanddrug.com/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.walmart.com/ip/KIND-Pressed-by-KIND-Fruit-Bars-Dark-Chocolate-Strawberry-No-Sugar-Added-Gluten-Free-1-34oz-12-Count/110472570"
+   ],
+   "tokens": [
+    1495,
+    209
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "quest dark chocolate raspberry bar",
+   "seconds": 2.1,
+   "error": null,
+   "cost": 0.0060106,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"Quest Dark Chocolate Raspberry Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Quest Nutrition makes a White Chocolate Raspberry bar, but a specific Dark Chocolate Raspberry bar was not found in their official product lineup.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Quest Dark Chocolate Raspberry Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Quest Nutrition makes a White Chocolate Raspberry bar, but a specific Dark Chocolate Raspberry bar was not found in their official product lineup."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.questnutrition.com/products/white-chocolate-raspberry-protein-bar",
+    "https://www.amazon.com/clp/B00DZR75G2",
+    "https://shop.cashwise.com/store/cash-wise-foods/products/18249389-quest-quest-protein-bar-white-chocolate-raspberry-4-oz",
+    "https://www.lakechamplainchocolates.com/dark-chocolate-raspberry-bar",
+    "https://blog.questnutrition.com/tag/new-flavor"
+   ],
+   "tokens": [
+    2302,
+    128
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "kind protein max raspberry cocoa crisp bar",
+   "seconds": 1.7,
+   "error": null,
+   "cost": 0.006139,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"KIND Protein MAX Raspberry Cocoa Crisp\",\n  \"source_url\": \"https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\n  \"name\": \"KIND Protein MAX Raspberry Cocoa Crisp bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 62,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 13,\n  \"carbs\": 24,\n  \"assumption\": \"Nutrition information is sourced directly from [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for one 62g bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "KIND Protein MAX Raspberry Cocoa Crisp",
+    "source_url": "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62,
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24,
+    "assumption": "Nutrition information is sourced directly from [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for one 62g bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://www.cvs.com/shop/kind-protein-max-raspberry-cocoa-crisp-bar-12-ct-26-2-oz-prodid-794010",
+    "https://www.publix.com/pd/kind-protein-max-raspberry-cocoa-crisp-bars/RIO-PCI-633395",
+    "https://www.cvs.com/shop/brand-shop/k/kind",
+    "https://www.freshdirect.com/supergro/snacks/gro_snack_bars/sc/gro_snack_nubars/p/gro_pid_4021939"
+   ],
+   "tokens": [
+    2205,
+    191
+   ],
+   "answer": {
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "quest cookie dough bar",
+   "seconds": 1.8,
+   "error": null,
+   "cost": 0.0064168,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Quest Chocolate Chip Cookie Dough Protein Bars\",\n  \"source_url\": \"https://www.kroger.com/p/quest-chocolate-chip-cookie-dough-protein-bars/0088884900385\",\n  \"name\": \"Quest Chocolate Chip Cookie Dough Protein Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 60,\n  \"calories\": 190,\n  \"protein\": 21,\n  \"fat\": 9,\n  \"carbs\": 22,\n  \"assumption\": \"Nutritional values are per 60g bar based on official Kroger product information for a Quest Chocolate Chip Cookie Dough Protein Bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Quest Chocolate Chip Cookie Dough Protein Bars",
+    "source_url": "https://www.kroger.com/p/quest-chocolate-chip-cookie-dough-protein-bars/0088884900385",
+    "name": "Quest Chocolate Chip Cookie Dough Protein Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 60,
+    "calories": 190,
+    "protein": 21,
+    "fat": 9,
+    "carbs": 22,
+    "assumption": "Nutritional values are per 60g bar based on official Kroger product information for a Quest Chocolate Chip Cookie Dough Protein Bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.kroger.com/p/quest-chocolate-chip-cookie-dough-protein-bars/0088884900385",
+    "https://www.amazon.com/clp/B00DLDH1N2",
+    "https://www.target.com/p/quest-nutrition-protein-bar-chocolate-chip-cookie-dough-4ct/-/A-52047991",
+    "https://www.target.com/p/quest-nutrition-protein-bar-chocolate-chip-cookie-dough/-/A-90265944",
+    "https://www.target.com/p/quest-nutrition-protein-bar-chocolate-chip-cookie-dough-12ct/-/A-53111647"
+   ],
+   "tokens": [
+    3156,
+    188
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 21,
+    "fat": 9,
+    "carbs": 22
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "rxbar chocolate sea salt",
+   "seconds": 1.7,
+   "error": null,
+   "cost": 0.0065216,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"RXBAR Protein Bars, Chocolate Sea Salt\",\n  \"source_url\": \"https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html\",\n  \"name\": \"RXBAR Chocolate Sea Salt Protein Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 52,\n  \"calories\": 200,\n  \"protein\": 12,\n  \"fat\": 8,\n  \"carbs\": 23,\n  \"assumption\": \"Nutritional values are taken from the official [shop.rxbar.com](https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html) listing for 1 whole bar (52 g).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "RXBAR Protein Bars, Chocolate Sea Salt",
+    "source_url": "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "name": "RXBAR Chocolate Sea Salt Protein Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 52,
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23,
+    "assumption": "Nutritional values are taken from the official [shop.rxbar.com](https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html) listing for 1 whole bar (52 g)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-peanut-butter-bundle.html",
+    "https://www.amazon.com/RXBAR-Protein-Gluten-Snacks-Chocolate/dp/B0BJXW16DL",
+    "https://www.amazon.com/Chocolate-Salt-Protein-1-83-Count/dp/B017KR6A6I",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-peanut-butter-chocolate-minis.html"
+   ],
+   "tokens": [
+    3347,
+    207
+   ],
+   "answer": {
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "core power elite chocolate",
+   "seconds": 1.9,
+   "error": null,
+   "cost": 0.0066122,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Core Power Elite Chocolate 42G Protein Shake - 14 fl oz Bottle\",\n  \"source_url\": \"https://www.target.com/p/core-power-elite-chocolate-42g-protein-shake-14-fl-oz-bottle/-/A-78824046\",\n  \"name\": \"Fairlife Core Power Elite Chocolate Protein Shake\",\n  \"quantity\": 1,\n  \"unit\": \"bottle\",\n  \"grams\": 414,\n  \"calories\": 230,\n  \"protein\": 42,\n  \"fat\": 3.5,\n  \"carbs\": 9,\n  \"assumption\": \"Nutrition numbers come from published information on [target.com](https://www.target.com/p/core-power-elite-chocolate-42g-protein-shake-14-fl-oz-bottle/-/A-78824046) for one 14 fl oz bottle.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Core Power Elite Chocolate 42G Protein Shake - 14 fl oz Bottle",
+    "source_url": "https://www.target.com/p/core-power-elite-chocolate-42g-protein-shake-14-fl-oz-bottle/-/A-78824046",
+    "name": "Fairlife Core Power Elite Chocolate Protein Shake",
+    "quantity": 1,
+    "unit": "bottle",
+    "grams": 414,
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9,
+    "assumption": "Nutrition numbers come from published information on [target.com](https://www.target.com/p/core-power-elite-chocolate-42g-protein-shake-14-fl-oz-bottle/-/A-78824046) for one 14 fl oz bottle."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.amazon.com/clp/B01DDIRDZA",
+    "https://www.target.com/p/core-power-elite-chocolate-42g-protein-shake-14-fl-oz-bottle/-/A-78824046",
+    "https://www.kroger.com/p/core-power-elite-chocolate-high-protein-shake/0081162002063",
+    "https://www.bjs.com/product/core-power-elite-chocolate-42g-protein-8-ct14-oz/3000000000003649269/",
+    "https://giantfood.com/groceries/product/core-power-elite-chocolate-42g-high-protein-shake-14-oz-btl/218191"
+   ],
+   "tokens": [
+    3299,
+    249
+   ],
+   "answer": {
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "premier protein chocolate shake",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.006494,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chocolate Protein Shake\",\n  \"source_url\": \"https://www.premierprotein.com/products/chocolate-protein-shake\",\n  \"name\": \"Premier Protein Chocolate Shake\",\n  \"quantity\": 1,\n  \"unit\": \"shake\",\n  \"grams\": 330,\n  \"calories\": 160,\n  \"protein\": 30,\n  \"fat\": 3,\n  \"carbs\": 4,\n  \"assumption\": \"Nutrition values are based on the official Premier Protein website for one 11.5 fl oz (330g) chocolate protein shake.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Protein Shake",
+    "source_url": "https://www.premierprotein.com/products/chocolate-protein-shake",
+    "name": "Premier Protein Chocolate Shake",
+    "quantity": 1,
+    "unit": "shake",
+    "grams": 330,
+    "calories": 160,
+    "protein": 30,
+    "fat": 3,
+    "carbs": 4,
+    "assumption": "Nutrition values are based on the official Premier Protein website for one 11.5 fl oz (330g) chocolate protein shake."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.premierprotein.com/products/chocolate-protein-shake",
+    "https://www.target.com/p/premier-protein-100-whey-protein-powder-chocolate-milkshake-17-serve/-/A-53106191",
+    "https://www.amazon.com/Premier-Protein-Shake-Chocolate-11-5/dp/B07MJL8NXR",
+    "https://www.target.com/p/premier-protein-30g-protein-shake-chocolate/-/A-87935391",
+    "https://www.target.com/p/premier-protein-almond-milk-shake-chocolate-11-fl-oz-4pk/-/A-94269864"
+   ],
+   "tokens": [
+    3630,
+    162
+   ],
+   "answer": {
+    "calories": 160,
+    "protein": 30,
+    "fat": 3,
+    "carbs": 4
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "clif bar chocolate chip",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.0062506,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"Clif Bar Chocolate Chip\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition details for the exact Clif Bar Chocolate Chip were not fully retrieved from the manufacturer's pages in the search results.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Clif Bar Chocolate Chip",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition details for the exact Clif Bar Chocolate Chip were not fully retrieved from the manufacturer's pages in the search results."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip",
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip-36ct-bundle",
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip-energy-bites",
+    "https://www.clifbar.com/collections/clif",
+    "https://www.clifbar.com/products/clif-kid-zbar-chocolate-chip"
+   ],
+   "tokens": [
+    3102,
+    128
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "chobani plain nonfat greek yogurt cup",
+   "seconds": 1.9,
+   "error": null,
+   "cost": 0.0063218,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chobani\u00ae Non-Fat Plain Greek Yogurt\",\n  \"source_url\": \"https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001\",\n  \"name\": \"Chobani Plain Nonfat Greek Yogurt\",\n  \"quantity\": 1,\n  \"unit\": \"cup\",\n  \"grams\": 150,\n  \"calories\": 80,\n  \"protein\": 14,\n  \"fat\": 0,\n  \"carbs\": 6,\n  \"assumption\": \"Nutrition information is obtained from [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001) for one 5.3 oz (150g) container.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chobani\u00ae Non-Fat Plain Greek Yogurt",
+    "source_url": "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "name": "Chobani Plain Nonfat Greek Yogurt",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": 150,
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6,
+    "assumption": "Nutrition information is obtained from [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001) for one 5.3 oz (150g) container."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.chobani.com/products/yogurt/greek/nonfat-plain-cup",
+    "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "https://www.hannaford.com/groceries/product/chobani-non-fat-plain-greek-yogurt-cup-5-3-oz-cup/151522",
+    "https://www.kroger.com/p/chobani-non-fat-plain-greek-yogurt/0089470001001",
+    "https://www.kroger.com/q/chobani+creation"
+   ],
+   "tokens": [
+    2456,
+    234
+   ],
+   "answer": {
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "diet coke can",
+   "seconds": 1.8,
+   "error": null,
+   "cost": 0.0061357,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Diet Coke\u00ae Soda Cans, 12 pk / 12 fl oz\",\n  \"source_url\": \"https://www.kroger.com/p/diet-coke-soda-cans/0004900002891\",\n  \"name\": \"Coca-Cola Diet Coke\",\n  \"quantity\": 1,\n  \"unit\": \"can\",\n  \"grams\": 355,\n  \"calories\": 0,\n  \"protein\": 0,\n  \"fat\": 0,\n  \"carbs\": 0,\n  \"assumption\": \"Nutrition facts sourced from [kroger.com](https://www.kroger.com/p/diet-coke-soda-cans/0004900002891) for one standard 12 fl oz can.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Diet Coke\u00ae Soda Cans, 12 pk / 12 fl oz",
+    "source_url": "https://www.kroger.com/p/diet-coke-soda-cans/0004900002891",
+    "name": "Coca-Cola Diet Coke",
+    "quantity": 1,
+    "unit": "can",
+    "grams": 355,
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0,
+    "assumption": "Nutrition facts sourced from [kroger.com](https://www.kroger.com/p/diet-coke-soda-cans/0004900002891) for one standard 12 fl oz can."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.kroger.com/p/diet-coke-soda-cans/0004900002891",
+    "https://www.target.com/p/diet-coke-12pk-12-fl-oz-cans/-/A-12953514",
+    "https://www.target.com/p/diet-coke-24pk-12-fl-oz-cans/-/A-13219266",
+    "https://giantfood.com/groceries/product/diet-coke-cola-soda-12-pk-12-oz-cans/6839",
+    "https://shop.lowesfoods.com/products/diet-coke-6-pack-7-5-oz-cans/154859"
+   ],
+   "tokens": [
+    1969,
+    218
+   ],
+   "answer": {
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "big mac",
+   "seconds": 1.8,
+   "error": null,
+   "cost": 0.0059441,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Big Mac\",\n  \"source_url\": \"https://www.mcdonalds.com/us/en-us/product/big-mac.html\",\n  \"name\": \"McDonald's Big Mac\",\n  \"quantity\": 1,\n  \"unit\": \"burger\",\n  \"grams\": null,\n  \"calories\": 580,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Numbers are taken from the official McDonald's US website for one Big Mac burger. Source: [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Big Mac",
+    "source_url": "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "name": "McDonald's Big Mac",
+    "quantity": 1,
+    "unit": "burger",
+    "grams": null,
+    "calories": 580,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Numbers are taken from the official McDonald's US website for one Big Mac burger. Source: [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "https://www.delish.com/cooking/recipe-ideas/a60952007/copycat-big-mac-recipe/",
+    "https://en.wikipedia.org/wiki/Big_Mac",
+    "https://mcdonalds.pl/nasze-menu/burgery/bigmac/",
+    "https://www.mcdonalds.com/nl/nl-nl/product/big-mac.html"
+   ],
+   "tokens": [
+    1572,
+    189
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "chick fil a chicken sandwich",
+   "seconds": 1.8,
+   "error": null,
+   "cost": 0.0063526,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Chick-fil-A\u00ae Chicken Sandwich\",\n  \"source_url\": \"https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich\",\n  \"name\": \"Chick-fil-A Chicken Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 420,\n  \"protein\": 29,\n  \"fat\": 16,\n  \"carbs\": 41,\n  \"assumption\": \"Nutrition values obtained from the official [chick-fil-a.com](https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich) menu for one standard Chick-fil-A Chicken Sandwich.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chick-fil-A\u00ae Chicken Sandwich",
+    "source_url": "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "name": "Chick-fil-A Chicken Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 420,
+    "protein": 29,
+    "fat": 16,
+    "carbs": 41,
+    "assumption": "Nutrition values obtained from the official [chick-fil-a.com](https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich) menu for one standard Chick-fil-A Chicken Sandwich."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/stories/original-chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees",
+    "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-grilled-chicken-club-sandwich"
+   ],
+   "tokens": [
+    2767,
+    209
+   ],
+   "answer": {
+    "calories": 420,
+    "protein": 29,
+    "fat": 16,
+    "carbs": 41
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "grande latte 2%",
+   "seconds": 1.8,
+   "error": null,
+   "cost": 0.0061976,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Starbucks Caff\u00e8 Latte with 2% Milk, Grande\",\n  \"source_url\": \"https://www.getmistapp.com/starbucks-calorie-calculator/grande-caffe-latte\",\n  \"name\": \"Starbucks Grande Caff\u00e8 Latte with 2% milk\",\n  \"quantity\": 1,\n  \"unit\": \"cup\",\n  \"grams\": null,\n  \"calories\": 190,\n  \"protein\": 13,\n  \"fat\": 7,\n  \"carbs\": 19,\n  \"assumption\": \"Nutrition values are sourced from [getmistapp.com](https://www.getmistapp.com/starbucks-calorie-calculator/grande-caffe-latte) for a standard Starbucks Grande Caff\u00e8 Latte made with 2% milk.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Starbucks Caff\u00e8 Latte with 2% Milk, Grande",
+    "source_url": "https://www.getmistapp.com/starbucks-calorie-calculator/grande-caffe-latte",
+    "name": "Starbucks Grande Caff\u00e8 Latte with 2% milk",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": null,
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19,
+    "assumption": "Nutrition values are sourced from [getmistapp.com](https://www.getmistapp.com/starbucks-calorie-calculator/grande-caffe-latte) for a standard Starbucks Grande Caff\u00e8 Latte made with 2% milk."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.getfitapp.hu/dieta-etrend/kaloriatartalom/caffe-latte-kave-starbucks-kcal",
+    "https://www.chefsresource.com/faq/how-much-milk-in-starbucks-grande-latte/",
+    "https://nutriscan.app/fr/calories-nutrition/caffe-latte",
+    "https://www.eatthismuch.com/calories/caffe-latte-with-2-milk-grande-1798805",
+    "https://www.getmistapp.com/starbucks-calorie-calculator/grande-caffe-latte"
+   ],
+   "tokens": [
+    2267,
+    207
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "crunchwrap supreme",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.006544100000000001,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Crunchwrap Supreme\u00ae\",\n  \"source_url\": \"https://www.tacobell.com/food/specialties/crunchwrap-supreme\",\n  \"name\": \"Taco Bell Crunchwrap Supreme\",\n  \"quantity\": 1,\n  \"unit\": \"item\",\n  \"grams\": null,\n  \"calories\": 530,\n  \"protein\": 15,\n  \"fat\": 20,\n  \"carbs\": 73,\n  \"assumption\": \"Nutrition values are sourced from [tacobell.com](https://www.tacobell.com/food/specialties/crunchwrap-supreme) for one standard Crunchwrap Supreme.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Crunchwrap Supreme\u00ae",
+    "source_url": "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "name": "Taco Bell Crunchwrap Supreme",
+    "quantity": 1,
+    "unit": "item",
+    "grams": null,
+    "calories": 530,
+    "protein": 15,
+    "fat": 20,
+    "carbs": 73,
+    "assumption": "Nutrition values are sourced from [tacobell.com](https://www.tacobell.com/food/specialties/crunchwrap-supreme) for one standard Crunchwrap Supreme."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+    "https://www.delish.com/cooking/recipe-ideas/a52078/crunchwrap-supreme-recipe/",
+    "https://www.simplyrecipes.com/copycat-crunchwrap-supreme-recipe-6280368",
+    "https://en.wikipedia.org/wiki/Crunchwrap_Supreme",
+    "https://www.tacobell.co.uk/products/crunchwrap-supreme/"
+   ],
+   "tokens": [
+    3672,
+    177
+   ],
+   "answer": {
+    "calories": 530,
+    "protein": 15,
+    "fat": 20,
+    "carbs": 73
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "panera bacon turkey bravo",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.0059354,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Bacon Turkey Bravo\u00ae\",\n  \"source_url\": \"https://catering.panerabread.com/menu/category/sandwiches/assortment/271\",\n  \"name\": \"Panera Bread Bacon Turkey Bravo Sandwich\",\n  \"quantity\": 1,\n  \"unit\": \"sandwich\",\n  \"grams\": null,\n  \"calories\": 850,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition data comes from [catering.panerabread.com](https://catering.panerabread.com/menu/category/sandwiches/assortment/271) for a standard Bacon Turkey Bravo sandwich, with only calories available from the specific source snippet.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Bacon Turkey Bravo\u00ae",
+    "source_url": "https://catering.panerabread.com/menu/category/sandwiches/assortment/271",
+    "name": "Panera Bread Bacon Turkey Bravo Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 850,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition data comes from [catering.panerabread.com](https://catering.panerabread.com/menu/category/sandwiches/assortment/271) for a standard Bacon Turkey Bravo sandwich, with only calories available from the specific source snippet."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html",
+    "https://www.tastingtable.com/1865212/best-sandwich-panera-bread-bacon-turkey-bravo/",
+    "https://www.panerabread.com/en-us/app/product/69af691113de384af3f63661015f9285.html",
+    "https://catering.panerabread.com/menu/category/sandwiches/assortment/271",
+    "https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html"
+   ],
+   "tokens": [
+    1468,
+    198
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "kind protein strawberry cocoa bar",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.0057571,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"kind protein strawberry cocoa bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Could not find exact published nutrition for a KIND protein strawberry cocoa bar; search results only show Dark Chocolate Cocoa and Raspberry Cocoa Crisp [kroger.com].\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "kind protein strawberry cocoa bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Could not find exact published nutrition for a KIND protein strawberry cocoa bar; search results only show Dark Chocolate Cocoa and Raspberry Cocoa Crisp [kroger.com]."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.staples.com/buy/cocoa-protein-bars-0awz00a",
+    "https://www.kroger.com/q/kind+bar+protein",
+    "https://www.staples.com/buy/breakfast-kind-bars-0afz03a?headless=true",
+    "https://www.harristeeter.com/q/kind+kid+bar",
+    "https://www.target.com/s/portable+protein+snack"
+   ],
+   "tokens": [
+    1407,
+    134
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "quest dark chocolate raspberry bar",
+   "seconds": 1.6,
+   "error": null,
+   "cost": 0.0058601,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": false,\n  \"product\": \"\",\n  \"source_url\": \"\",\n  \"name\": \"Quest Dark Chocolate Raspberry Bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": null,\n  \"calories\": null,\n  \"protein\": null,\n  \"fat\": null,\n  \"carbs\": null,\n  \"assumption\": \"Could not find published nutrition for a Quest Dark Chocolate Raspberry bar, as Quest manufactures a White Chocolate Raspberry bar instead.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Quest Dark Chocolate Raspberry Bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Could not find published nutrition for a Quest Dark Chocolate Raspberry bar, as Quest manufactures a White Chocolate Raspberry bar instead."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.rakuten.com/products/quest-protein-bars-low-sugar-high/00888849013401_upc",
+    "https://www.target.com/s/raspberry+bars",
+    "https://www.smithsfoodanddrug.com/q/raspberry+bar",
+    "https://www.target.com/s/quest+protein+raspberry",
+    "https://www.target.com/s/chocolate+raspberry+bar"
+   ],
+   "tokens": [
+    1817,
+    126
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "kind protein max raspberry cocoa crisp bar",
+   "seconds": 7.1,
+   "error": null,
+   "cost": 0.0013938,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Raspberry Cocoa Crisp\",\"source_url\":\"https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\"name\":\"KIND Protein MAX Raspberry Cocoa Crisp bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":62.4,\"calories\":null,\"protein\":20,\"fat\":14,\"carbs\":null,\"assumption\":\"Protein is listed on KIND\u2019s product page; weight (2.2 oz) and fat are listed by Ralphs; calories and carbs were not found in the sources.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Raspberry Cocoa Crisp",
+    "source_url": "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62.4,
+    "calories": null,
+    "protein": 20,
+    "fat": 14,
+    "carbs": null,
+    "assumption": "Protein is listed on KIND\u2019s product page; weight (2.2 oz) and fat are listed by Ralphs; calories and carbs were not found in the sources."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://kindsnacksgrain.shop/collections/protein-max",
+    "https://www.ralphs.com/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.metromarket.net/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.meijer.com/shopping/product/2-2-ounces/60265267449.html"
+   ],
+   "tokens": [
+    1471,
+    420
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "quest cookie dough bar",
+   "seconds": 5.3,
+   "error": null,
+   "cost": 0.00141555,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Chocolate Chip Cookie Dough Protein Bar\",\"source_url\":\"https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar\",\"name\":\"Quest Chocolate Chip Cookie Dough protein bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":60,\"calories\":190,\"protein\":21,\"fat\":8,\"carbs\":22,\"assumption\":\"Numbers are for one 60 g bar, from Quest\u2019s published nutrition information ([questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar)).\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Chip Cookie Dough Protein Bar",
+    "source_url": "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar",
+    "name": "Quest Chocolate Chip Cookie Dough protein bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 60,
+    "calories": 190,
+    "protein": 21,
+    "fat": 8,
+    "carbs": 22,
+    "assumption": "Numbers are for one 60 g bar, from Quest\u2019s published nutrition information ([questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar))."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=1ec3e2733&_ss=r&bvstate=pg%3A2%2Fct%3Ar",
+    "https://www.questnutrition.com/products/dipped-chocolate-chip-cookie-dough-protein-bar?_pos=2&_sid=1ec3e2733&_ss=r&bvstate=pg%3A7%2Fct%3Ar",
+    "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar?_pos=1&_sid=876ca4445&_ss=r&bvstate=pg%3A11%2Fct%3Ar",
+    "https://www.questnutrition.com/products/dipped-chocolate-chip-cookie-dough-protein-bar?bvstate=pg%3A4%2Fct%3Ar&variation=A",
+    "https://www.chemistwarehouse.co.nz/buy/80060/quest-protein-bar-chocolate-chip-cookie-dough-60g"
+   ],
+   "tokens": [
+    1921,
+    351
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 21,
+    "fat": 8,
+    "carbs": 22
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "rxbar chocolate sea salt",
+   "seconds": 3.7,
+   "error": null,
+   "cost": 0.001325175,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"RXBAR Protein Bars, Chocolate Sea Salt\",\"source_url\":\"https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html\",\"name\":\"RXBAR Chocolate Sea Salt bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":52,\"calories\":200,\"protein\":12,\"fat\":8,\"carbs\":23,\"assumption\":\"Nutrition is from RXBAR\u2019s official product page for one 52 g bar.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "RXBAR Protein Bars, Chocolate Sea Salt",
+    "source_url": "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "name": "RXBAR Chocolate Sea Salt bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 52,
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23,
+    "assumption": "Nutrition is from RXBAR\u2019s official product page for one 52 g bar."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://shop.rxbar.com/media/pdf/2/2021RXBARProductCatalogue.pdf",
+    "https://rxbarshop.com/p/chocolate-sea-salt",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+    "https://shop.rxbar.com/shop/chocolate-sea-salt-peanut-butter-chocolate-minis.html",
+    "https://smartlabel.kelloggs.com/Product/Index/10857777004307"
+   ],
+   "tokens": [
+    1990,
+    153
+   ],
+   "answer": {
+    "calories": 200,
+    "protein": 12,
+    "fat": 8,
+    "carbs": 23
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "core power elite chocolate",
+   "seconds": 4.5,
+   "error": null,
+   "cost": 0.00130805,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Core Power Elite Chocolate\",\"source_url\":\"https://fairlife.com/core-power/elite-chocolate-protein-shake\",\"name\":\"Core Power Elite Chocolate protein shake\",\"quantity\":1,\"unit\":\"bottle\",\"grams\":null,\"calories\":230,\"protein\":42,\"fat\":3.5,\"carbs\":9,\"assumption\":\"Numbers are from the official [fairlife.com](https://fairlife.com/core-power/elite-chocolate-protein-shake) nutrition facts for one 14 oz bottle.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Core Power Elite Chocolate",
+    "source_url": "https://fairlife.com/core-power/elite-chocolate-protein-shake",
+    "name": "Core Power Elite Chocolate protein shake",
+    "quantity": 1,
+    "unit": "bottle",
+    "grams": null,
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9,
+    "assumption": "Numbers are from the official [fairlife.com](https://fairlife.com/core-power/elite-chocolate-protein-shake) nutrition facts for one 14 oz bottle."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.safeway.com/shop/product-details.971096061.html",
+    "https://www.walgreens.com/store/c/core-power-milk-shake-chocolate/ID=300402738-product",
+    "https://www.jerrysfoods.com/store/jerrys-food/products/3338934-core-power-elite-chocolate-high-protein-milk-shake-14-oza",
+    "https://stopandshop.com/groceries/product/core-power-elite-chocolate-42g-high-protein-shake-14-oz-btl/218191",
+    "https://fairlife.com/core-power/elite-chocolate-protein-shake"
+   ],
+   "tokens": [
+    1713,
+    188
+   ],
+   "answer": {
+    "calories": 230,
+    "protein": 42,
+    "fat": 3.5,
+    "carbs": 9
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "premier protein chocolate shake",
+   "seconds": 8.4,
+   "error": null,
+   "cost": 0.001491175,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Chocolate\",\"source_url\":\"https://www.premierprotein.com/products/protein-shake-variety-pack\",\"name\":\"Premier Protein Chocolate shake\",\"quantity\":1,\"unit\":\"shake\",\"grams\":null,\"calories\":160,\"protein\":30,\"fat\":null,\"carbs\":null,\"assumption\":\"Based on Premier Protein\u2019s official variety-pack listing, which gives 160 calories and 30 g protein per shake; fat and carbs were not provided in the source.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate",
+    "source_url": "https://www.premierprotein.com/products/protein-shake-variety-pack",
+    "name": "Premier Protein Chocolate shake",
+    "quantity": 1,
+    "unit": "shake",
+    "grams": null,
+    "calories": 160,
+    "protein": 30,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Based on Premier Protein\u2019s official variety-pack listing, which gives 160 calories and 30 g protein per shake; fat and carbs were not provided in the source."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.premierprotein.com/products/indulgence",
+    "https://www.premierprotein.com/products/chocolate-almondmilk-protein-shake",
+    "https://www.premierprotein.com/products/decadent-dark-chocolate-indulgence-protein-shake",
+    "http://gerbes.com/p/premier-protein-30g-chocolate-peanut-butter-protein-shake/0064384371660",
+    "https://www.premierprotein.com/products/protein-shake-variety-pack"
+   ],
+   "tokens": [
+    1774,
+    539
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "clif bar chocolate chip",
+   "seconds": 7.2,
+   "error": null,
+   "cost": 0.00145455,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Chocolate Chip\",\"source_url\":\"https://eu.clifbar.com/en/products/clif-bar-chocolate-chip\",\"name\":\"CLIF BAR Chocolate Chip\",\"quantity\":1,\"unit\":\"bar\",\"grams\":68,\"calories\":258,\"protein\":10,\"fat\":null,\"carbs\":null,\"assumption\":\"Nutrition is published by CLIF for one 68 g bar; fat and carbohydrates were not available in the cited nutrition details.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chocolate Chip",
+    "source_url": "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "name": "CLIF BAR Chocolate Chip",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 68,
+    "calories": 258,
+    "protein": 10,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition is published by CLIF for one 68 g bar; fat and carbohydrates were not available in the cited nutrition details."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.clifbar.com/products/clif-bar-chocolate-chip",
+    "https://eu.clifbar.com/en/products/clif-bar-chocolate-chip",
+    "https://www.clifbar.com/products/clif-nut-butter-bar-chocolate-chip-peanut-butter",
+    "http://clifbar.com/products/clif-kid-zbar-chocolate-chip",
+    "https://www.clifbar.com/collections/clif-bar"
+   ],
+   "tokens": [
+    2097,
+    385
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "chobani plain nonfat greek yogurt cup",
+   "seconds": 6.6,
+   "error": null,
+   "cost": 0.00141855,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Chobani\u00ae Plain Nonfat Greek Yogurt Cup, 5.3 oz\",\"source_url\":\"https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001\",\"name\":\"Chobani plain nonfat Greek yogurt\",\"quantity\":1,\"unit\":\"cup\",\"grams\":150,\"calories\":80,\"protein\":14,\"fat\":0,\"carbs\":6,\"assumption\":\"Nutrition is for one 150 g cup, according to [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001).\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chobani\u00ae Plain Nonfat Greek Yogurt Cup, 5.3 oz",
+    "source_url": "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "name": "Chobani plain nonfat Greek yogurt",
+    "quantity": 1,
+    "unit": "cup",
+    "grams": 150,
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6,
+    "assumption": "Nutrition is for one 150 g cup, according to [kroger.com](https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001)."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.chobani.com/products/yogurt/greek/nonfat-plain-cup",
+    "https://origin-ncm.chobani.com/products/yogurt/greek/nonfat-plain-large-size-tub",
+    "https://www.kroger.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "https://www.smithsfoodanddrug.com/p/chobani-plain-nonfat-greek-yogurt-cup/0089470001001",
+    "https://www.kingsoopers.com/p/chobani-non-fat-plain-greek-yogurt/0089470001001"
+   ],
+   "tokens": [
+    1897,
+    363
+   ],
+   "answer": {
+    "calories": 80,
+    "protein": 14,
+    "fat": 0,
+    "carbs": 6
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "diet coke can",
+   "seconds": 6.1,
+   "error": null,
+   "cost": 0.001523425,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Diet Coke\",\"source_url\":\"https://www.coca-cola.com/gb/en/brands/diet-coke\",\"name\":\"Diet Coke\",\"quantity\":1,\"unit\":\"can\",\"grams\":null,\"calories\":0,\"protein\":0,\"fat\":0,\"carbs\":0,\"assumption\":\"Used Coca-Cola\u2019s published nutrition for Diet Coke; assumed one standard 12 fl oz can. [coca-cola.com](https://www.coca-cola.com/gb/en/brands/diet-coke)\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Diet Coke",
+    "source_url": "https://www.coca-cola.com/gb/en/brands/diet-coke",
+    "name": "Diet Coke",
+    "quantity": 1,
+    "unit": "can",
+    "grams": null,
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0,
+    "assumption": "Used Coca-Cola\u2019s published nutrition for Diet Coke; assumed one standard 12 fl oz can. [coca-cola.com](https://www.coca-cola.com/gb/en/brands/diet-coke)"
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.coca-cola.com/in/en/brands/coca-cola/products-diet-coke",
+    "https://www.coca-cola.com/us/en/brands/diet-coke/products",
+    "https://www.coca-cola.com/gb/en/brands/diet-coke",
+    "https://en.wikipedia.org/wiki/Diet_Coke",
+    "https://investors.coca-colacompany.com/news-events/press-releases/detail/651/diet-coke-launches-diet-coke-frost-first-frozen-product-offering-in-brands-history"
+   ],
+   "tokens": [
+    2020,
+    542
+   ],
+   "answer": {
+    "calories": 0,
+    "protein": 0,
+    "fat": 0,
+    "carbs": 0
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "big mac",
+   "seconds": 4.2,
+   "error": null,
+   "cost": 0.001406675,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Big Mac\u00ae\",\"source_url\":\"https://www.mcdonalds.com/us/en-us/product/big-mac.html\",\"name\":\"McDonald's Big Mac\",\"quantity\":1,\"unit\":\"burger\",\"grams\":null,\"calories\":580,\"protein\":null,\"fat\":null,\"carbs\":null,\"assumption\":\"Nutrition is from McDonald\u2019s US official product page; assumed one standard Big Mac.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Big Mac\u00ae",
+    "source_url": "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "name": "McDonald's Big Mac",
+    "quantity": 1,
+    "unit": "burger",
+    "grams": null,
+    "calories": 580,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Nutrition is from McDonald\u2019s US official product page; assumed one standard Big Mac."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+    "https://www.mcdonalds.com/us/en-us/meal/big-mac-meal.html",
+    "https://www.mcdonalds.com/au/en-au/menu/beef/big-mac.html",
+    "https://www.mcdonalds.com/gb/en-gb/product/big-mac.html",
+    "https://www.mcdonalds.com/ae/en-ae/product/big-mac.html"
+   ],
+   "tokens": [
+    2426,
+    207
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "chick fil a chicken sandwich",
+   "seconds": 3.5,
+   "error": null,
+   "cost": 0.001403675,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Chick-fil-A\u00ae Chicken Sandwich\",\"source_url\":\"https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich\",\"name\":\"Chick-fil-A Chicken Sandwich\",\"quantity\":1,\"unit\":\"sandwich\",\"grams\":null,\"calories\":420,\"protein\":29,\"fat\":18,\"carbs\":41,\"assumption\":\"Numbers are for one whole sandwich, from Chick-fil-A\u2019s published nutrition information [chick-fil-a.com](https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich).\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Chick-fil-A\u00ae Chicken Sandwich",
+    "source_url": "https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich",
+    "name": "Chick-fil-A Chicken Sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 420,
+    "protein": 29,
+    "fat": 18,
+    "carbs": 41,
+    "assumption": "Numbers are for one whole sandwich, from Chick-fil-A\u2019s published nutrition information [chick-fil-a.com](https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich)."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/catering/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees/spicy-chicken-sandwich",
+    "https://www.chick-fil-a.com/es/menu/entrees/chick-fil-a-chicken-sandwich",
+    "https://www.chick-fil-a.com/menu/entrees/grilled-chicken-sandwich"
+   ],
+   "tokens": [
+    2250,
+    245
+   ],
+   "answer": {
+    "calories": 420,
+    "protein": 29,
+    "fat": 18,
+    "carbs": 41
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "grande latte 2%",
+   "seconds": 5.9,
+   "error": null,
+   "cost": 0.001518925,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Caff\u00e8 Latte (grande, 2% milk)\",\"source_url\":\"https://kjoules.app/en/restaurants/starbucks\",\"name\":\"Starbucks grande Caff\u00e8 Latte, 2% milk\",\"quantity\":1,\"unit\":\"latte\",\"grams\":null,\"calories\":190,\"protein\":13,\"fat\":7,\"carbs\":19,\"assumption\":\"Assumes the standard grande with 2% milk; nutrition values are listed by [kjoules.app](https://kjoules.app/en/restaurants/starbucks), and Starbucks lists 190 calories for the Caff\u00e8 Latte at [starbucks.com](https://www.starbucks.com/menu/product/407/hot).\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Caff\u00e8 Latte (grande, 2% milk)",
+    "source_url": "https://kjoules.app/en/restaurants/starbucks",
+    "name": "Starbucks grande Caff\u00e8 Latte, 2% milk",
+    "quantity": 1,
+    "unit": "latte",
+    "grams": null,
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19,
+    "assumption": "Assumes the standard grande with 2% milk; nutrition values are listed by [kjoules.app](https://kjoules.app/en/restaurants/starbucks), and Starbucks lists 190 calories for the Caff\u00e8 Latte at [starbucks.com](https://www.starbucks.com/menu/product/407/hot)."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.starbucks.com/menu/product/407/hot",
+    "https://kjoules.app/en/restaurants/starbucks",
+    "https://www.mcdonalds.com/ca/en-ca/product/latte-with-2-milk-medium.html",
+    "https://fastfoodnutrition.org/starbucks/iced-cinnamon-dolce-latte-with-2-milk/grande",
+    "https://fastfoodnutrition.org/starbucks/eggnog-latte-with-2-milk/grande"
+   ],
+   "tokens": [
+    2348,
+    451
+   ],
+   "answer": {
+    "calories": 190,
+    "protein": 13,
+    "fat": 7,
+    "carbs": 19
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "crunchwrap supreme",
+   "seconds": 7.1,
+   "error": null,
+   "cost": 0.00141905,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":false,\"product\":\"\",\"source_url\":\"\",\"name\":\"Taco Bell Crunchwrap Supreme\",\"quantity\":1,\"unit\":\"item\",\"grams\":null,\"calories\":null,\"protein\":null,\"fat\":null,\"carbs\":null,\"assumption\":\"The official Taco Bell page identifies the product, but its displayed \u201c0 Cal\u201d appears to be a placeholder, not published nutrition.\"}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Taco Bell Crunchwrap Supreme",
+    "quantity": 1,
+    "unit": "item",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "The official Taco Bell page identifies the product, but its displayed \u201c0 Cal\u201d appears to be a placeholder, not published nutrition."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.nytimes.com/2025/06/20/dining/taco-bell-crunchwrap-supreme.html",
+    "https://www.qsrmagazine.com/news/taco-bells-crunchwrap-supreme-back-popular-demand",
+    "https://www.tacobell.com/food/specialties/crunchwrap-supreme?store=017092",
+    "http://shoprite.com/product/taco-bell-crunchwrap-supreme-cravings-kit-226-oz-id-00021000083510",
+    "https://pinchofyum.com/crunchwrap"
+   ],
+   "tokens": [
+    1789,
+    391
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "panera bacon turkey bravo",
+   "seconds": 5.8,
+   "error": null,
+   "cost": 0.0013428,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Bacon Turkey Bravo Sandwich\",\"source_url\":\"https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html\",\"name\":\"Panera Bacon Turkey Bravo sandwich\",\"quantity\":1,\"unit\":\"sandwich\",\"grams\":null,\"calories\":830,\"protein\":null,\"fat\":38,\"carbs\":null,\"assumption\":\"Values are from Panera\u2019s official nutrition listing; assumed one whole sandwich.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Bacon Turkey Bravo Sandwich",
+    "source_url": "https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html",
+    "name": "Panera Bacon Turkey Bravo sandwich",
+    "quantity": 1,
+    "unit": "sandwich",
+    "grams": null,
+    "calories": 830,
+    "protein": null,
+    "fat": 38,
+    "carbs": null,
+    "assumption": "Values are from Panera\u2019s official nutrition listing; assumed one whole sandwich."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://panerabreadmenue.com/panera-bacon-turkey-bravo",
+    "https://www.panerabread.com/en-us/app/product/8a16f7942d9a4179148a82e9528f806c.html",
+    "https://postmates.com/store/panera-bread-128-water-street/iG3df_2tVCenqfxxsRiCsg/944f417e-c485-5ea1-bc1b-ba25a321a4ae/0379a62a-1156-4ddb-a09a-7e1dc45d5dfb/3c3e8cfe-7f52-54fd-bb76-2aa3c8f823f2",
+    "https://www.panerabread.com/en-us/menu/products/bacon-turkey-bravo.html",
+    "https://www.panerabread.com/en-us/app/product/25c78b0bdb558af7949d2567d52483bb.html"
+   ],
+   "tokens": [
+    1667,
+    269
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "kind protein strawberry cocoa bar",
+   "seconds": 3.7,
+   "error": null,
+   "cost": 0.001345425,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":false,\"product\":\"\",\"source_url\":\"\",\"name\":\"KIND protein strawberry cocoa bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":null,\"calories\":null,\"protein\":null,\"fat\":null,\"carbs\":null,\"assumption\":\"I could not verify published nutrition for this exact flavor; I did not use nutrition for similar KIND bars.\"}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "KIND protein strawberry cocoa bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "I could not verify published nutrition for this exact flavor; I did not use nutrition for similar KIND bars."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.myprotein.com/p/sports-nutrition/layered-protein-bar/13177680",
+    "https://shop.rxbar.com/shop/strawberry.html?bvstate=pg%3A2%2Fct%3Ar",
+    "https://barebells.com/product/sunny-strawberry",
+    "https://www.amazon.com/dp/B0FS7XFGXX",
+    "https://www.amazon.com/KIND-Protein-Double-Chocolate-Gluten/dp/B0777W3R15"
+   ],
+   "tokens": [
+    1892,
+    218
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "quest dark chocolate raspberry bar",
+   "seconds": 6.1,
+   "error": null,
+   "cost": 0.0013463,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":false,\"product\":\"\",\"source_url\":\"\",\"name\":\"Quest Dark Chocolate Raspberry bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":null,\"calories\":null,\"protein\":null,\"fat\":null,\"carbs\":null,\"assumption\":\"No published nutrition for this exact product was found; the Quest result is for White Chocolate Raspberry, a different flavor ([blog.questnutrition.com](https://blog.questnutrition.com/tag/new-flavor)).\"}",
+   "reply": {
+    "is_food": true,
+    "found": false,
+    "product": "",
+    "source_url": "",
+    "name": "Quest Dark Chocolate Raspberry bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": null,
+    "calories": null,
+    "protein": null,
+    "fat": null,
+    "carbs": null,
+    "assumption": "No published nutrition for this exact product was found; the Quest result is for White Chocolate Raspberry, a different flavor ([blog.questnutrition.com](https://blog.questnutrition.com/tag/new-flavor))."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://blog.questnutrition.com/tag/new-flavor",
+    "https://www.neuhauschocolates.com/en_US/shop/dark-chocolate-bar---raspberry/5026126.html",
+    "https://blog.questnutrition.com/tag/quest-tart",
+    "https://www.ghirardelli.com/premium-dark-chocolate-bar-raspberry-bar-62208",
+    "https://www.ghirardelli.com/raspberry-dark-chocolate-squares-bar-41867cs"
+   ],
+   "tokens": [
+    1515,
+    314
+   ],
+   "answer": null,
+   "grade": "right (not found)"
+  }
+ ],
+ "usda": [
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "kind protein max raspberry cocoa crisp bar",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "quest cookie dough bar",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "rxbar chocolate sea salt",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "core power elite chocolate",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "premier protein chocolate shake",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "clif bar chocolate chip",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "chobani plain nonfat greek yogurt cup",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "diet coke can",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "kind protein strawberry cocoa bar",
+   "grade": "error"
+  },
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "quest dark chocolate raspberry bar",
+   "grade": "error"
+  }
+ ]
+}

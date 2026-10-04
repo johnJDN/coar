@@ -460,3 +460,23 @@ Spec and tickets: `.scratch/exercise-library/`.
 - [ ] Type a name that isn't in the library ("Copenhagen plank", "Landmine row"): after about a second, AI fills them in with "Filled in by AI from the name. Check it." ("Landmine row" → Back + Biceps…, Other: Landmine).
 - [ ] Set the muscle group yourself first, then type a name: nothing gets overwritten. Edit an existing exercise: no fill-in at all.
 - [ ] Judgement calls (02): the fill-in uses the Describe tab's model and key; with no key only library names fill in; picking Chest, the form's default, doesn't count as a choice of yours.
+
+## Added after v1: Compact Home (2026-10-03)
+
+Tickets: `.scratch/home-habits/issues/01-check-in-habits-only.md`, `02-compact-home.md`.
+Checked by the agent in the simulator (light and dark).
+
+- [ ] Home fits on one screen: macros (ring + three bars), then habits, then four small tiles (Sleep, Steps, Weight, Training).
+- [ ] The ring's number is calories left today; eat past your target and it reads "… kcal over" with the ring full.
+- [ ] The habits card has no tracked habits (Steps, Sleep, Workout, Protein, Calories) and says "N of M done" at the top right.
+- [ ] Check "Wake up no phone": the tick lands, then the row fades out and the card shrinks. "Show 1 done" appears; tap it: done habits come back with "Hide done". Uncheck one there: it moves back up with the to-do ones.
+- [ ] Finish everything: "All done for today" with "Show N done".
+- [ ] Tap each tile: Sleep and Steps open their 30-day details; Weight opens Body Weight in Train; Training opens Train. Training reads "1/3" style against your "Workout 3 days a week" habit.
+- [ ] Judgement calls: a weekly habit whose week is met counts as done; Show done resets on each launch; with only tracked habits the card reads "No check-in habits"; Last Workout is gone; a single weigh-in shows its raw value without the "Trend —" note; the ring's track is faint in dark mode.
+
+## Added after v1: Lookups that find nothing (2026-10-03)
+
+Ticket: `.scratch/ai-food-logging/issues/06-*` (comment of 2026-10-03). Checked by the agent against the real models from the Mac.
+
+- [ ] Food → + → Describe: "kind protein bar strawberry cocoa" now shows about 220 kcal "Estimated", not 0s "Looked up" (delete the stuck line and type it again: the cached 0s are skipped). "quest cookie dough bar" still says "Looked up" with Quest's numbers; "diet coke" can still be 0 kcal.
+- [ ] After the switch to Gemini + web search (2026-10-04): "kind protein bar raspberry cocoa crisp" shows 240 kcal · P 20 · F 13 · C 24, "Looked up"; tap the line: the note names the source in plain words (no brackets or links). A Big Mac or Chick-fil-A sandwich takes about 3 s and says "Looked up".

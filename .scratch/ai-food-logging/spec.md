@@ -135,11 +135,17 @@ one before it had no answer:
    - It may also include `match: {handle, serving, quantity}`. A match whose handles resolve
      wins, and its macros come from the library. A match that doesn't resolve is ignored in
      favour of the estimate.
-4. **Lookup: `perplexity/sonar`**, only when `needsLookup` is true (a restaurant chain, a brand,
-   a packaged product).
-   - Sonar can't return structured output on OpenRouter, so the prompt asks for the same JSON
-     and the reply is parsed leniently: strip code fences and take the first JSON object.
-   - If the parse or the request fails, the line keeps step 3's estimate, labelled "Estimated".
+4. **Lookup: `google/gemini-3.5-flash-lite` reading an Exa web search**, only when
+   `needsLookup` is true (a restaurant chain, a brand, a packaged product). Switched from
+   `perplexity/sonar` on 2026-10-04 after `lookup-test.md` (Sonar: 2 wrong labels and a
+   made-up flavour in 13; this: right 24 in 26, never wrong).
+   - OpenRouter's web plugin (`engine: "exa"`, 5 results, $0.007) searches first and adds the
+     pages to the prompt. Gemini's own Google search is its choice, and it never chose to.
+   - Structured output, with `found` (published nutrition for this exact product, not a
+     similar one), `product`, and `source_url`; numbers it didn't find published are null.
+   - The line keeps step 3's estimate, labelled "Estimated", if the request fails, `found` is
+     false, any number is null, the numbers are impossible, or the label reads as 0s for a
+     food the estimate gave calories (or calories with no macros).
 
 **Photos** use `google/gemini-3.8-flash`.
 - The image is shrunk to 1,024 px on its long edge and sent as JPEG at quality 0.7. It's never
@@ -151,7 +157,8 @@ one before it had no answer:
 **How requests are made**
 - Model IDs are constants in one file. Swapping one is a one-line change, not a setting.
 - Every request is a `POST https://openrouter.ai/api/v1/chat/completions` with:
-  - `response_format` set to a strict `json_schema` (except Sonar);
+  - `response_format` set to a strict `json_schema`;
+  - for the lookup, `plugins: [{id: "web", engine: "exa", max_results: 5}]`;
   - `provider.require_parameters: true`, so only providers that honour the schema serve it;
   - `temperature: 0`;
   - `usage.include: true`, so each request's cost goes to `Logger(category: "Food")`.
@@ -182,7 +189,7 @@ day, and a photo every other day:
 | Source | Cost |
 |---|---|
 | Text line | ≈ $0.0005 |
-| Lookup | ≈ $0.006 |
+| Lookup | ≈ $0.008 (Exa $0.007, the rest Gemini) |
 | Photo | ≈ $0.004 |
 | **Total** | **≈ $0.30 a month**, well inside the key's $2-a-week limit |
 
@@ -241,7 +248,7 @@ day, and a photo every other day:
   - normalising text and matching it exactly against the library (quantity, plural, archived
     items excluded);
   - parsing structured replies (valid, missing fields, unknown handle);
-  - parsing Sonar leniently (code fence, prose around the JSON);
+  - reading a lookup (found, not found, a number left out, Markdown links in the note);
   - the sanity rules and the calorie mismatch check;
   - the cache's least-recently-used drop;
   - `DescribeDraft` transitions:

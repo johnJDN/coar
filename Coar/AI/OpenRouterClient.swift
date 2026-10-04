@@ -147,10 +147,19 @@ final class OpenRouterClient {
         case jpeg(Data)
     }
 
+    /// OpenRouter's web plugin: the search engine runs before the model, and its top results
+    /// are added to the prompt (`.scratch/ai-food-logging/lookup-test.md`).
+    struct WebSearch: Equatable {
+        /// "exa", "parallel", "perplexity", or "native" (the model maker's own).
+        let engine: String
+        let maxResults: Int
+    }
+
     /// One chat completion's reply text. With a `schema`, the reply is strict JSON matching it,
-    /// and only providers that honour the schema are used. Temperature 0: the same line should
-    /// get the same numbers. Logs the model, time, and cost of every request, never its content.
-    func complete(model: String, system: String, user: [Part], schema: (name: String, json: [String: Any])?, timeout: TimeInterval) async throws -> String {
+    /// and only providers that honour the schema are used. With `webSearch`, the web is searched
+    /// first and the model reads the results. Temperature 0: the same line should get the same
+    /// numbers. Logs the model, time, and cost of every request, never its content.
+    func complete(model: String, system: String, user: [Part], schema: (name: String, json: [String: Any])?, webSearch: WebSearch? = nil, timeout: TimeInterval) async throws -> String {
         var body: [String: Any] = [
             "model": model,
             "temperature": 0,
@@ -163,6 +172,9 @@ final class OpenRouterClient {
         if let schema {
             body["response_format"] = ["type": "json_schema", "json_schema": ["name": schema.name, "strict": true, "schema": schema.json]]
             body["provider"] = ["require_parameters": true]
+        }
+        if let webSearch {
+            body["plugins"] = [["id": "web", "engine": webSearch.engine, "max_results": webSearch.maxResults]]
         }
         var request = try authorised(URLRequest(url: baseURL.appending(path: "chat/completions")))
         request.httpMethod = "POST"
@@ -177,7 +189,15 @@ final class OpenRouterClient {
                 struct Message: Decodable { let content: String? }
                 let message: Message
             }
-            struct Usage: Decodable { let cost: Double? }
+            struct Usage: Decodable {
+                struct CostDetails: Decodable { let upstream_inference_cost: Double? }
+                let cost: Double?
+                /// Billed by the provider on the user's own key (Google, for John), not OpenRouter.
+                let is_byok: Bool?
+                let cost_details: CostDetails?
+                /// What the request cost wherever it was billed.
+                var total: Double { (cost ?? 0) + (is_byok == true ? cost_details?.upstream_inference_cost ?? 0 : 0) }
+            }
             let choices: [Choice]
             let usage: Usage?
         }
@@ -185,7 +205,7 @@ final class OpenRouterClient {
             throw OpenRouterError.failed("OpenRouter sent a reply Coar couldn't read")
         }
         let seconds = Date().timeIntervalSince(started)
-        Self.logger.info("\(model, privacy: .public): \(seconds, format: .fixed(precision: 1), privacy: .public) s, $\(reply.usage?.cost ?? 0, format: .fixed(precision: 5), privacy: .public)")
+        Self.logger.info("\(model, privacy: .public): \(seconds, format: .fixed(precision: 1), privacy: .public) s, $\(reply.usage?.total ?? 0, format: .fixed(precision: 5), privacy: .public)")
         return content
     }
 

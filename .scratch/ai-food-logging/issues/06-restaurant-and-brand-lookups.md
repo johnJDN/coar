@@ -54,3 +54,23 @@ Spec: stories 17–18, "Estimating" step 4.
     - the lookup's own `needs_lookup` is ignored (never looked up twice);
     - Sonar's citations aren't shown;
     - a lookup can't match a saved food, since its reply is only ever an estimate.
+
+- 2026-10-03 (agent): Bug from John: "kind protein bar strawberry cocoa" showed 0 kcal, P 0,
+  F 0, C 0, "Looked up". The text model estimated it well (220 kcal) and asked for a lookup;
+  Sonar found no strawberry cocoa KIND bar and sent the prompt's template back with every
+  number 0, which passed the impossibility check and replaced the estimate. Sonar does the
+  same for macros it can't find ("big mac": 580 kcal, P/F/C 0). Fix: a lookup is dropped,
+  keeping the estimate, when every number is 0 for a food the estimate gave 10+ kcal (a diet
+  drink at 0 still looks up), or when it has 10+ kcal with protein, fat, and carbs all 0.
+  Tried and reverted: a template of nulls with "leave them null if not found". Sonar then
+  left numbers null for foods it did find (Big Mac, Quest), so far fewer lookups survived.
+  Not used: the calories-disagree check, which a real Quest bar fails (fiber, sugar alcohols).
+  The bad answer was also in the line cache, so retyping the line gave the 0s back. The cache
+  now skips, and never stores, a lookup with protein, fat, and carbs all 0
+  (`Estimate.isLookupWithoutMacros`); a diet drink is just asked again each time.
+- 2026-10-04 (agent): Lookup model switched from `perplexity/sonar` to
+  `google/gemini-3.5-flash-lite` reading an Exa web search, with a strict schema that adds
+  `found`, `product`, and `source_url` (`.scratch/ai-food-logging/lookup-test.md`: 11 setups
+  compared on 15 verified labels). The lenient JSON-in-prose reader is gone. Sources in the
+  note, which the model writes as Markdown links, are kept as plain text. The 0s guards stay.
+  The client logs Google's own charge for BYOK requests, which OpenRouter reports as $0.

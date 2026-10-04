@@ -1,0 +1,205 @@
+{
+ "results": [
+  {
+   "model": "gemini-3.5-flash-lite + Parallel fast",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "seconds": 2.4,
+   "error": null,
+   "cost": 0.0021438,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"KIND Protein MAX Raspberry Cocoa Crisp protein bars\",\n  \"source_url\": \"http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\n  \"name\": \"KIND Protein MAX Raspberry Cocoa Crisp bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 62,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 13,\n  \"carbs\": 24,\n  \"assumption\": \"Nutrition values obtained from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for 1 bar (62g).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "KIND Protein MAX Raspberry Cocoa Crisp protein bars",
+    "source_url": "http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62,
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24,
+    "assumption": "Nutrition values obtained from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for 1 bar (62g)."
+   },
+   "provider": "Google",
+   "citations": [
+    "http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://simplyprotein.ca/products/copy-of-cocoa-raspberry-simplyprotein%C2%AE-bar",
+    "https://world.openfoodfacts.org/product/0602652674501/raspberry-cocoa-crisp-kind-protein-max",
+    "https://www.pay-less.com/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.metromarket.net/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450"
+   ],
+   "tokens": [
+    2246,
+    188
+   ],
+   "answer": {
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Parallel basic",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "seconds": 4.4,
+   "error": null,
+   "cost": 0.0059911,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"KIND Protein MAX Raspberry Cocoa Crisp\",\n  \"source_url\": \"https://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\n  \"name\": \"KIND Protein Max Bar Raspberry Cocoa Crisp\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 62.37,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 14,\n  \"carbs\": null,\n  \"assumption\": \"Nutrition data comes from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) and [instacart.com](https://www.instacart.com/products/96036758?retailerSlug=cvs) for 1 bar (2.2 oz / 62.37g).\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "KIND Protein MAX Raspberry Cocoa Crisp",
+    "source_url": "https://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein Max Bar Raspberry Cocoa Crisp",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62.37,
+    "calories": 240,
+    "protein": 20,
+    "fat": 14,
+    "carbs": null,
+    "assumption": "Nutrition data comes from [kindsnacks.com](http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) and [instacart.com](https://www.instacart.com/products/96036758?retailerSlug=cvs) for 1 bar (2.2 oz / 62.37g)."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://kindsnacksnutmeg.shop/products/raspberry-cocoa-crisp-u4?variant=49170159403233&srsltid=AU7gw4WQNAS5IyBFvc3AlmCrGAim3msMgaxe3SVwPeGqUpBbLvqyRVV1",
+    "https://www.7now.com/7now/product/680246-0-1/kind-protein-max-raspberry-cocoa-crisp-2-2oz?srsltid=AU7gw4Wv0PKMs7Lj5m3ZZomRqytGHhM-LtkAX1b4CyuVDh6Z3_xMC-8B",
+    "https://www.instacart.com/products/96036758?retailerSlug=cvs",
+    "http://kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "http://pay-less.com/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450"
+   ],
+   "tokens": [
+    1387,
+    230
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "gemini-3.5-flash-lite + Perplexity search",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "seconds": 3.3,
+   "error": null,
+   "cost": 0.0061056,
+   "searches": null,
+   "raw": "{\n  \"is_food\": true,\n  \"found\": true,\n  \"product\": \"Raspberry Cocoa Crisp\",\n  \"source_url\": \"https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp\",\n  \"name\": \"KIND Protein MAX Raspberry Cocoa Crisp bar\",\n  \"quantity\": 1,\n  \"unit\": \"bar\",\n  \"grams\": 62,\n  \"calories\": 240,\n  \"protein\": 20,\n  \"fat\": 13,\n  \"carbs\": 24,\n  \"assumption\": \"Numbers are taken from the official [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) nutrition information for one 62g bar.\"\n}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Raspberry Cocoa Crisp",
+    "source_url": "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62,
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24,
+    "assumption": "Numbers are taken from the official [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) nutrition information for one 62g bar."
+   },
+   "provider": "Google",
+   "citations": [
+    "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://www.freshdirect.com/supergro/snacks/gro_snack_bars/sc/gro_snack_nubars/p/gro_pid_4021939",
+    "https://www.cvs.com/shop/brand-shop/k/kind",
+    "https://www.publix.com/pd/kind-protein-max-raspberry-cocoa-crisp-bars/RIO-PCI-633395",
+    "https://www.cvs.com/shop/kind-protein-max-raspberry-cocoa-crisp-bar-12-ct-26-2-oz-prodid-794010"
+   ],
+   "tokens": [
+    2102,
+    190
+   ],
+   "answer": {
+    "calories": 240,
+    "protein": 20,
+    "fat": 13,
+    "carbs": 24
+   },
+   "grade": "right"
+  },
+  {
+   "model": "gpt-6-luna + Parallel fast",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "seconds": 8.7,
+   "error": null,
+   "cost": 0.0015473,
+   "searches": null,
+   "raw": "{\"is_food\":true,\"found\":true,\"product\":\"Raspberry Cocoa Crisp\",\"source_url\":\"[kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp)\",\"name\":\"KIND Protein MAX Raspberry Cocoa Crisp bar\",\"quantity\":1,\"unit\":\"bar\",\"grams\":62,\"calories\":null,\"protein\":20,\"fat\":null,\"carbs\":null,\"assumption\":\"Assumed one bar; KIND publishes 20 g protein, and the listed bar weight is 62 g ([openfoodfacts.org](https://world.openfoodfacts.org/product/0602652674501/raspberry-cocoa-crisp-kind-protein-max)); calories, fat, and carbs were not available in the source details.\"}",
+   "reply": {
+    "is_food": true,
+    "found": true,
+    "product": "Raspberry Cocoa Crisp",
+    "source_url": "[kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp)",
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "quantity": 1,
+    "unit": "bar",
+    "grams": 62,
+    "calories": null,
+    "protein": 20,
+    "fat": null,
+    "carbs": null,
+    "assumption": "Assumed one bar; KIND publishes 20 g protein, and the listed bar weight is 62 g ([openfoodfacts.org](https://world.openfoodfacts.org/product/0602652674501/raspberry-cocoa-crisp-kind-protein-max)); calories, fat, and carbs were not available in the source details."
+   },
+   "provider": "OpenAI",
+   "citations": [
+    "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+    "https://simplyprotein.ca/products/copy-of-cocoa-raspberry-simplyprotein%C2%AE-bar",
+    "https://world.openfoodfacts.org/product/0602652674501/raspberry-cocoa-crisp-kind-protein-max",
+    "https://www.metromarket.net/p/kind-protein-max-raspberry-cocoa-crisp-high-protein-bars/0060265267450",
+    "https://www.smithsfoodanddrug.com/pb/kind/protein-nutrition-bars/2201000005"
+   ],
+   "tokens": [
+    1935,
+    611
+   ],
+   "answer": null,
+   "grade": "not found"
+  },
+  {
+   "model": "muse-spark-1.3 + Meta search",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "seconds": 137.5,
+   "error": null,
+   "cost": 0.27558915,
+   "searches": 27,
+   "raw": "Got it \u2014 I'll pull the official KIND nutrition info for that bar.\n\nFirst results point to retailers \u2014 now I'll track down KIND's own site.\n\nThe brand's page isn't loading, so I'll gather the full label from other sources.\n\nThat label was for a different flavor, so I'll keep searching for the raspberry one.\n\nI'm seeing conflicting calorie counts, so I'll verify the exact label.\n\nThat detailed breakdown didn't open, so I'll try other official angles.\n\nI found the core macros for the raspberry bar \u2014 now I'll hunt for the remaining details.\n\n{\"assumption\": \"Numbers from KIND's Raspberry Cocoa Crisp Amazon listing (240 cal, 20g protein, 14g fat per bar); carbs and grams not listed there so null, 1 bar assumed.\",\"calories\": 240.0,\"carbs\": null,\"fat\": 14.0,\"found\": true,\"grams\": null,\"is_food\": true,\"name\": \"KIND Protein MAX Raspberry Cocoa Crisp bar\",\"product\": \"KIND Protein MAX, Raspberry Cocoa Crisp, 20g Protein, 1g Sugar, Low Sugar, High Protein Snack Bars, 12 Count\",\"protein\": 20.0,\"quantity\": 1.0,\"source_url\": \"https://www.amazon.com/dp/B0FS7XFGXX/ref=as_li_ss_tl\",\"unit\": \"bar\"}",
+   "reply": {
+    "assumption": "Numbers from KIND's Raspberry Cocoa Crisp Amazon listing (240 cal, 20g protein, 14g fat per bar); carbs and grams not listed there so null, 1 bar assumed.",
+    "calories": 240.0,
+    "carbs": null,
+    "fat": 14.0,
+    "found": true,
+    "grams": null,
+    "is_food": true,
+    "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+    "product": "KIND Protein MAX, Raspberry Cocoa Crisp, 20g Protein, 1g Sugar, Low Sugar, High Protein Snack Bars, 12 Count",
+    "protein": 20.0,
+    "quantity": 1.0,
+    "source_url": "https://www.amazon.com/dp/B0FS7XFGXX/ref=as_li_ss_tl",
+    "unit": "bar"
+   },
+   "provider": "Meta",
+   "citations": [],
+   "tokens": [
+    550447,
+    4972
+   ],
+   "answer": null,
+   "grade": "not found"
+  }
+ ],
+ "usda": [
+  {
+   "error": "<HTTPError 429: 'Too Many Requests'>",
+   "line": "kind protein bar raspberry cocoa crisp",
+   "grade": "error"
+  }
+ ]
+}

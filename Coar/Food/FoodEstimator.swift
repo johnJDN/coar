@@ -16,9 +16,12 @@ protocol FoodEstimator {
 enum FoodModels {
     /// Everyday foods, typed: cheap and quick, with strict JSON.
     static let text = "google/gemini-3.5-flash-lite"
-    /// Restaurant and brand foods: searches the web for the published numbers. No strict
-    /// JSON on OpenRouter, so its reply is read leniently (`FoodLookupPrompt.object(in:)`).
-    static let lookup = "perplexity/sonar"
+    /// Restaurant and brand foods: reads Exa's top web results for the published numbers,
+    /// with strict JSON. Chosen over Sonar and five others by `lookup-test.md` (2026-10-03):
+    /// right 24 times in 26, never wrong, and both made-up flavours refused every time.
+    static let lookup = "google/gemini-3.5-flash-lite"
+    /// Exa always searches; Gemini's own Google search is its choice, and it never chose to.
+    static let lookupSearch = OpenRouterClient.WebSearch(engine: "exa", maxResults: 5)
     /// Photos of meals and nutrition labels: sees images, with strict JSON.
     static let photo = "google/gemini-3.8-flash"
 }
@@ -132,61 +135,89 @@ enum FoodPhotoPrompt {
     }()
 }
 
-/// What the lookup model is told. It can't be held to a schema, so the reply's shape is shown
-/// as a template, and read back leniently.
+/// What the lookup model is told, and the JSON it must reply with. `found` is how the model
+/// says it found nothing, or only a similar product, instead of sending numbers anyway; any
+/// number it didn't find published is null. Tested as written (`lookup-test.md`).
 enum FoodLookupPrompt {
 
     static let system = """
-    You look up the published nutrition of one restaurant or packaged food that someone ate, described in a single line of a food log. Use the brand's official nutrition information where you can find it, and give the numbers for the whole portion described.
+    You look up the published nutrition of one restaurant or packaged food that someone ate, described in a single line of a food log. Search the web for the brand's official nutrition information (the brand's or restaurant's own site first) and give the numbers for the whole portion described.
 
-    Reply with only this JSON object, filled in, and no other text:
-    {"is_food": true, "name": "Chipotle chicken burrito bowl", "quantity": 1, "unit": "bowl", "grams": null, "calories": 0, "protein": 0, "fat": 0, "carbs": 0, "needs_lookup": false, "assumption": ""}
-
+    - found: true only if you found published nutrition for this exact product (same brand, same product, same flavor or variety). If you only found a similar product, or nothing, found is false and the numbers are null.
+    - product: the exact name of the product your numbers are for, as the source names it, or "" if not found.
+    - source_url: the page the numbers come from, or "".
     - name: what the food is, short, with the brand.
     - quantity and unit: the portion as the person counts it; the unit is singular ("bowl", "bar", "g").
     - grams: the whole portion's weight if published, else null.
-    - calories in kcal; protein, fat and carbs in grams.
+    - calories in kcal; protein, fat and carbs in grams; null for any you did not find published.
     - assumption: one short sentence naming where the numbers come from and anything assumed.
     - is_food is false only if the line is not something eaten or drunk.
     """
 
-    /// The first JSON object in a reply that may wrap it in prose or a code fence, without
-    /// any "match" key (a lookup names no saved food, whatever it puts there); nil when there
-    /// is none.
-    static func object(in reply: String) -> Data? {
-        guard let start = reply.firstIndex(of: "{") else { return nil }
-        var depth = 0
-        var inString = false
-        var escaped = false
-        var end: String.Index?
-        for index in reply[start...].indices {
-            let character = reply[index]
-            if escaped {
-                escaped = false
-            } else if character == "\\" {
-                escaped = inString
-            } else if character == "\"" {
-                inString.toggle()
-            } else if !inString, character == "{" {
-                depth += 1
-            } else if !inString, character == "}" {
-                depth -= 1
-                if depth == 0 {
-                    end = index
-                    break
-                }
-            }
+    static let schema: [String: Any] = [
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["is_food", "found", "product", "source_url", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption"],
+        "properties": [
+            "is_food": ["type": "boolean"],
+            "found": ["type": "boolean"],
+            "product": ["type": "string"],
+            "source_url": ["type": "string"],
+            "name": ["type": "string"],
+            "quantity": ["type": "number"],
+            "unit": ["type": "string"],
+            "grams": ["type": ["number", "null"]],
+            "calories": ["type": ["number", "null"]],
+            "protein": ["type": ["number", "null"]],
+            "fat": ["type": ["number", "null"]],
+            "carbs": ["type": ["number", "null"]],
+            "assumption": ["type": "string"],
+        ],
+    ]
+
+    /// The published label in a lookup's reply, or nil when the model found no label for this
+    /// exact product or left any of the four numbers out. Throws `unreadable` for anything
+    /// that isn't the schema's JSON.
+    static func estimate(reply: Data) throws -> Estimate? {
+        struct Reply: Decodable {
+            let is_food: Bool
+            let found: Bool
+            let name: String
+            let quantity: Double
+            let unit: String
+            let grams: Double?
+            let calories: Double?
+            let protein: Double?
+            let fat: Double?
+            let carbs: Double?
+            let assumption: String
         }
-        guard let end,
-              var object = (try? JSONSerialization.jsonObject(with: Data(reply[start...end].utf8))) as? [String: Any] else { return nil }
-        object["match"] = nil
-        return try? JSONSerialization.data(withJSONObject: object)
+        guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw Estimate.ReplyError.unreadable }
+        guard reply.is_food, reply.found,
+              let calories = reply.calories, let protein = reply.protein, let fat = reply.fat, let carbs = reply.carbs else { return nil }
+        let unit = reply.unit.trimmingCharacters(in: .whitespaces)
+        return Estimate(
+            name: reply.name.trimmingCharacters(in: .whitespaces),
+            quantity: reply.quantity,
+            unit: unit.isEmpty ? "serving" : unit,
+            grams: reply.grams.flatMap { $0 > 0 ? $0 : nil },
+            macros: Macros(calories: calories, protein: protein, fat: fat, carbs: carbs),
+            source: .lookedUp,
+            assumption: plainText(reply.assumption).trimmingCharacters(in: .whitespaces)
+        )
+    }
+
+    /// The model writes its sources as Markdown links, "[questnutrition.com](https://…)"; the
+    /// line's note shows text, so a link keeps only its words.
+    static func plainText(_ text: String) -> String {
+        text.replacing(/\[([^\]]*)\]\([^)]*\)/) { String($0.output.1) }
     }
 }
 
 /// The estimator the app uses: the text model through OpenRouter, then, for a restaurant or
-/// brand food, the lookup model (spec "Estimating" step 4). A lookup that fails, can't be
-/// read, or comes back impossible leaves the text model's estimate standing.
+/// brand food, the lookup model reading a web search (spec "Estimating" step 4). A lookup
+/// that fails, can't be read, finds no label for this exact product, comes back impossible,
+/// or comes back empty or partial leaves the text model's estimate standing.
 final class OpenRouterFoodEstimator: FoodEstimator {
 
     private let client: OpenRouterClient
@@ -208,7 +239,7 @@ final class OpenRouterFoodEstimator: FoodEstimator {
             return resolved
         }
         guard estimate.needsLookup else { return estimate }
-        return await lookUp(line) ?? estimate
+        return await lookUp(line, replacing: estimate) ?? estimate
     }
 
     func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
@@ -224,17 +255,31 @@ final class OpenRouterFoodEstimator: FoodEstimator {
         }
     }
 
-    private func lookUp(_ line: String) async -> Estimate? {
+    private func lookUp(_ line: String, replacing estimate: Estimate) async -> Estimate? {
         do {
-            let reply = try await client.complete(model: FoodModels.lookup, system: FoodLookupPrompt.system, user: [.text(line)], schema: nil, timeout: 25)
-            guard let object = FoodLookupPrompt.object(in: reply) else {
-                Self.logger.error("Lookup reply had no JSON object")
+            let reply = try await client.complete(
+                model: FoodModels.lookup,
+                system: FoodLookupPrompt.system,
+                user: [.text(line)],
+                schema: (name: "lookup", json: FoodLookupPrompt.schema),
+                webSearch: FoodModels.lookupSearch,
+                timeout: 25
+            )
+            guard let found = try FoodLookupPrompt.estimate(reply: Data(reply.utf8)) else {
+                Self.logger.info("Lookup found no label for this exact product, keeping the estimate")
                 return nil
             }
-            var found = try Estimate(reply: object, source: .lookedUp)
-            found.needsLookup = false
             guard found.impossibility == nil else {
                 Self.logger.error("Lookup came back impossible")
+                return nil
+            }
+            // A label read as 0s for a food the estimate gave calories to (a diet drink the
+            // estimate also puts at 0 is real), or calories with no macros to make them up, is a
+            // misread, not a label: the old lookup model sent its template's 0s back this way.
+            let noMacros = [found.macros.protein, found.macros.fat, found.macros.carbs].allSatisfy { $0 == 0 }
+            let isEmpty = noMacros && found.macros.calories == 0
+            guard !isEmpty || estimate.macros.calories < 10, !noMacros || found.macros.calories < 10 else {
+                Self.logger.error("Lookup came back empty or partial: \(found.assumption, privacy: .public)")
                 return nil
             }
             return found
