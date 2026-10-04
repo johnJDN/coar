@@ -27,6 +27,9 @@ struct HabitCardModel: Hashable, Identifiable {
     let trackedText: String?
     /// Yes/no: today has a Check-in. Quantitative: the current Period has met its target.
     let isDoneToday: Bool
+    /// Weekly Habits: this week has already met its target, so nothing is left to do for it
+    /// today whatever today holds. False for daily ones.
+    let isWeekMet: Bool
     let streak: Int
     /// "day" / "days" / "week" / "weeks", matching `period`.
     let streakUnit: String
@@ -101,6 +104,7 @@ struct HabitCardModel: Hashable, Identifiable {
         case .yesNo: todayAmount > 0
         case .quantitative, .checklist, .tracked: period == .week ? metWeeks.contains(today.startOfWeek) : metDays.contains(today)
         }
+        isWeekMet = period == .week && metWeeks.contains(today.startOfWeek)
         itemCount = habit.items.count
         let active = Set(habit.items.map(\.id))
         tickedItemCount = habit.kind == .checklist ? Checklist.ticked(in: past, period: period, containing: today).intersection(active).count : 0

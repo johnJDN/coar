@@ -3,7 +3,7 @@ import UIKit
 /// The habit heatmap (DESIGN.md §8, §11): a non-interactive `UICollectionView` of 7 rows
 /// with Monday on top and `Heatmap.columns` weeks, `surfaceSunken` empty cells, the accent
 /// at rising intensity through the quantitative buckets, `accentGreen` done cells with
-/// bloom, nothing drawn after today. Weekly Habits get a `DotMatrix`-style row above the
+/// bloom, nothing drawn after today. Weekly Habits get a row of week-met dots above the
 /// grid, one dot per column, filled when that week met its target. Height follows width so
 /// the cells are square.
 final class HeatmapView: UIView {
@@ -111,7 +111,7 @@ final class HeatmapView: UIView {
     }
 }
 
-/// One week-met dot (DESIGN.md §7 `DotMatrix`): `accentGreen` with bloom when the week met
+/// One week-met dot: `accentGreen` with bloom when the week met
 /// its target, `surfaceSunken` when not.
 private final class WeekDotView: UIView {
 

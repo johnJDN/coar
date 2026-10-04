@@ -1,8 +1,9 @@
 import UIKit
 
 /// `Card` (DESIGN.md §7): a `surface` container with `radiusCard`, `spaceInner` padding, and
-/// the §6 elevation. Optional header row: icon + title + trailing `→` (navigates) or
-/// chevron (expands). Put content in `contentStack`.
+/// the §6 elevation. Optional header row: icon + title, an optional trailing detail (a
+/// caption the owner keeps), then `→` (navigates) or chevron (expands). Put content in
+/// `contentStack`. A Home tile is the compact form: `radiusInner` and tighter padding.
 final class CardView: UIView {
 
     enum Accessory {
@@ -17,14 +18,17 @@ final class CardView: UIView {
 
     private let surfaceView = UIView()
     private let highlightView = UIView()
+    private let cornerRadius: CGFloat
 
-    init(title: String? = nil, systemImage: String? = nil, iconTint: UIColor = UIColor.textPrimary, accessory: Accessory = .none) {
+    init(title: String? = nil, systemImage: String? = nil, iconTint: UIColor = UIColor.textPrimary, detail: UIView? = nil, accessory: Accessory = .none, compact: Bool = false) {
+        cornerRadius = compact ? Metrics.radiusInner : Metrics.radiusCard
+        let padding = compact ? Metrics.spaceTight + 4 : Metrics.spaceInner
         super.init(frame: .zero)
 
         layer.masksToBounds = false
 
         surfaceView.backgroundColor = UIColor.surface
-        surfaceView.layer.cornerRadius = Metrics.radiusCard
+        surfaceView.layer.cornerRadius = cornerRadius
         surfaceView.layer.cornerCurve = .continuous
         surfaceView.clipsToBounds = true
         surfaceView.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +44,7 @@ final class CardView: UIView {
         surfaceView.addSubview(contentStack)
 
         if let title {
-            contentStack.addArrangedSubview(Self.header(title: title, systemImage: systemImage, iconTint: iconTint, accessory: accessory))
+            contentStack.addArrangedSubview(Self.header(title: title, systemImage: systemImage, iconTint: iconTint, detail: detail, accessory: accessory))
         }
 
         NSLayoutConstraint.activate([
@@ -54,10 +58,10 @@ final class CardView: UIView {
             highlightView.trailingAnchor.constraint(equalTo: surfaceView.trailingAnchor),
             highlightView.heightAnchor.constraint(equalToConstant: 1),
 
-            contentStack.topAnchor.constraint(equalTo: surfaceView.topAnchor, constant: Metrics.spaceInner),
-            contentStack.leadingAnchor.constraint(equalTo: surfaceView.leadingAnchor, constant: Metrics.spaceInner),
-            contentStack.trailingAnchor.constraint(equalTo: surfaceView.trailingAnchor, constant: -Metrics.spaceInner),
-            contentStack.bottomAnchor.constraint(equalTo: surfaceView.bottomAnchor, constant: -Metrics.spaceInner),
+            contentStack.topAnchor.constraint(equalTo: surfaceView.topAnchor, constant: padding),
+            contentStack.leadingAnchor.constraint(equalTo: surfaceView.leadingAnchor, constant: padding),
+            contentStack.trailingAnchor.constraint(equalTo: surfaceView.trailingAnchor, constant: -padding),
+            contentStack.bottomAnchor.constraint(equalTo: surfaceView.bottomAnchor, constant: -padding),
         ])
 
         applyElevation()
@@ -71,14 +75,14 @@ final class CardView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: Metrics.radiusCard).cgPath
+        layer.shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius).cgPath
     }
 
     private func applyElevation() {
         Elevation.cardShadow(for: traitCollection.userInterfaceStyle).apply(to: layer)
     }
 
-    private static func header(title: String, systemImage: String?, iconTint: UIColor, accessory: Accessory) -> UIView {
+    private static func header(title: String, systemImage: String?, iconTint: UIColor, detail: UIView?, accessory: Accessory) -> UIView {
         let row = UIStackView()
         row.axis = .horizontal
         row.alignment = .center
@@ -102,6 +106,10 @@ final class CardView: UIView {
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.65
         row.addArrangedSubview(label)
+        if let detail {
+            detail.setContentHuggingPriority(.required, for: .horizontal)
+            row.addArrangedSubview(detail)
+        }
 
         let accessoryName: String? = switch accessory {
         case .none: nil

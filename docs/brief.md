@@ -21,10 +21,11 @@ HealthKit, so the architecture favours the Watch).
 ### Home
 
 - Greeting: "Hello John" (the name is hardcoded for now).
-- Top to bottom: habits checklist (full-width, inline check-in; taps go to Habits),
-  today's macros (full-width `DotMatrix`; taps go to Food), then a 2-column grid of
-  squares: Sleep | Steps (push a 30-day detail in Home's stack), Body Weight | Last
-  Workout (switch to Train and push the screen).
+- Top to bottom, on one screen: today's macros (a calorie ring with what is left, and a bar
+  each for protein, fat, carbs; taps go to Food), the habits checklist (inline check-in;
+  check-in habits still to do, with done ones behind Show done; taps go to Habits), then a
+  row of four small tiles: Sleep | Steps (push a 30-day detail in Home's stack) | Weight
+  (switch to Train and push the screen) | Training (workout days this week; switch to Train).
 - Sleep: a night belongs to the day you woke; the number is time asleep (awake and
   in-bed excluded), matching the Health app.
 
@@ -54,7 +55,7 @@ HealthKit, so the architecture favours the Watch).
 - Manual entry for now (no food database API yet; USDA / Open Food Facts / AI later).
 - Layout modelled on MacroFactor's food log: a horizontally scrollable week date strip
   (day number over weekday, today marked), a macro summary row (consumed / target with
-  a thin bar for calories, P, F, C; the `DotMatrix` is for Home), then a vertical hourly timeline with a "+" per hour
+  a thin bar for calories, P, F, C; Home has a ring and bars), then a vertical hourly timeline with a "+" per hour
   slot; entries sit on the rail at their time.
 - Macros tracked: calories, protein, fat, carbs. Nothing else.
 - **Food items** (eggs, chicken breast, …) with one or more named servings, each with

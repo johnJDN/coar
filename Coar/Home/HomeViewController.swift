@@ -2,13 +2,13 @@ import UIKit
 import os
 
 /// Home (DESIGN.md §11): today's date as the title with a greeting under it, then the
-/// habits card, the macros card, and a 2-column grid of squares, Sleep | Steps over Body
-/// Weight | Last Workout. Everything is one `HomeSnapshot` read through the façade and
-/// Apple Health on every appearance, after every check-in from here, and when the unit
-/// changes; nothing is stored. Home is a launcher: the habits card opens the Habits tab,
-/// the macros card opens Food on today, Sleep and Steps push their details here, and Body
-/// Weight and Last Workout switch to Train and push their screens. The avatar button opens
-/// Settings as a sheet.
+/// macros card, the habits card, and a row of four small tiles: Sleep, Steps, Weight, and
+/// Training. Everything is one `HomeSnapshot` read through the façade and Apple Health on
+/// every appearance, after every check-in from here, and when the unit changes; nothing is
+/// stored. Home is a launcher: the macros card opens Food on today, the habits card opens
+/// the Habits tab, Sleep and Steps push their details here, Weight switches to Train and
+/// pushes Body Weight, and Training switches to Train. The avatar button opens Settings as a
+/// sheet.
 final class HomeViewController: ScreenViewController {
 
     private static let logger = Logger(category: "Home")
@@ -16,11 +16,10 @@ final class HomeViewController: ScreenViewController {
     private let dependencies: AppDependencies
     private let habitsCard = HabitsCardControl()
     private let macrosCard = MacrosCardControl()
-    private let sleepSquare = HomeSquareControl(metric: .sleep)
-    private let stepsSquare = HomeSquareControl(metric: .steps)
-    private let bodyWeightSquare = HomeSquareControl(title: "Body Weight", systemImage: "scalemass.fill", iconTint: UIColor.accentTeal)
-    private let lastWorkoutSquare = HomeSquareControl(title: "Last Workout", systemImage: "dumbbell.fill", iconTint: UIColor.accentGreen)
-    private var snapshot = HomeSnapshot.placeholder
+    private let sleepTile = HomeTileControl(name: HealthMetric.sleep.title, systemImage: "moon.fill", accent: HealthMetric.sleep.uiAccent)
+    private let stepsTile = HomeTileControl(name: HealthMetric.steps.title, systemImage: HealthMetric.steps.systemImage, accent: HealthMetric.steps.uiAccent)
+    private let bodyWeightTile = HomeTileControl(name: "Weight", systemImage: "scalemass.fill", accent: UIColor.accentTeal)
+    private let trainingTile = HomeTileControl(name: "Workouts", systemImage: "dumbbell.fill", accent: UIColor.accentGreen)
     private var loadTask: Task<Void, Never>?
     private var unitObservation: MassUnitObservation?
     private var timeObserver: NSObjectProtocol?
@@ -52,18 +51,17 @@ final class HomeViewController: ScreenViewController {
         habitsCard.addAction(UIAction { [weak self] _ in self?.openHabits() }, for: .touchUpInside)
         macrosCard.onSetTargets = { [weak self] in self?.presentSettings() }
         macrosCard.addAction(UIAction { [weak self] _ in self?.openFood() }, for: .touchUpInside)
-        for square in [sleepSquare, stepsSquare] {
-            square.onTapEmpty = { [weak self] in self?.connectHealth() }
+        for (tile, metric) in [(sleepTile, HealthMetric.sleep), (stepsTile, .steps)] {
+            tile.addAction(UIAction { [weak self, weak tile] _ in
+                if tile?.connects == true { self?.connectHealth() } else { self?.showDetail(metric) }
+            }, for: .touchUpInside)
         }
-        sleepSquare.addAction(UIAction { [weak self] _ in self?.showDetail(.sleep) }, for: .touchUpInside)
-        stepsSquare.addAction(UIAction { [weak self] _ in self?.showDetail(.steps) }, for: .touchUpInside)
-        bodyWeightSquare.addAction(UIAction { [weak self] _ in self?.openBodyWeight() }, for: .touchUpInside)
-        lastWorkoutSquare.addAction(UIAction { [weak self] _ in self?.openLastWorkout() }, for: .touchUpInside)
+        bodyWeightTile.addAction(UIAction { [weak self] _ in self?.openBodyWeight() }, for: .touchUpInside)
+        trainingTile.addAction(UIAction { [weak self] _ in self?.openTrain() }, for: .touchUpInside)
 
-        contentStack.addArrangedSubview(habitsCard)
         contentStack.addArrangedSubview(macrosCard)
-        contentStack.addArrangedSubview(Self.gridRow(sleepSquare, stepsSquare))
-        contentStack.addArrangedSubview(Self.gridRow(bodyWeightSquare, lastWorkoutSquare))
+        contentStack.addArrangedSubview(habitsCard)
+        contentStack.addArrangedSubview(Self.tileRow([sleepTile, stepsTile, bodyWeightTile, trainingTile]))
 
         unitObservation = dependencies.preferences.observeMassUnit { [weak self] in self?.load() }
         timeObserver = NotificationCenter.default.addObserver(
@@ -84,11 +82,11 @@ final class HomeViewController: ScreenViewController {
         load()
     }
 
-    private static func gridRow(_ leading: UIView, _ trailing: UIView) -> UIStackView {
-        let row = UIStackView(arrangedSubviews: [leading, trailing])
+    private static func tileRow(_ tiles: [UIView]) -> UIStackView {
+        let row = UIStackView(arrangedSubviews: tiles)
         row.axis = .horizontal
         row.distribution = .fillEqually
-        row.spacing = Metrics.spaceCard
+        row.spacing = Metrics.spaceTight
         return row
     }
 
@@ -123,13 +121,12 @@ final class HomeViewController: ScreenViewController {
     }
 
     private func render(_ snapshot: HomeSnapshot) {
-        self.snapshot = snapshot
         habitsCard.render(snapshot.habits)
         macrosCard.render(snapshot.macros)
-        sleepSquare.render(snapshot.sleep)
-        stepsSquare.render(snapshot.steps)
-        bodyWeightSquare.render(snapshot.bodyWeight)
-        lastWorkoutSquare.render(snapshot.lastWorkout)
+        sleepTile.render(snapshot.sleep)
+        stepsTile.render(snapshot.steps)
+        bodyWeightTile.render(snapshot.bodyWeight)
+        trainingTile.render(snapshot.training)
     }
 
     // MARK: - Check-ins
@@ -177,14 +174,8 @@ final class HomeViewController: ScreenViewController {
         openInTrain(BodyWeightViewController(dependencies: dependencies))
     }
 
-    private func openLastWorkout() {
-        guard let id = snapshot.lastWorkoutID else { return }
-        do {
-            guard let workout = try dependencies.store.workout(id) else { return load() }
-            openInTrain(WorkoutScreens.screen(for: workout, dependencies: dependencies))
-        } catch {
-            Self.logger.error("Failed to read the last Workout: \(error, privacy: .public)")
-        }
+    private func openTrain() {
+        root?.select(.train)?.popToRootViewController(animated: false)
     }
 
     /// Switches to Train and pushes the screen over its root.

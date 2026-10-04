@@ -1,127 +1,144 @@
 import SwiftUI
 import UIKit
 
-/// Home's macros card (DESIGN.md §8, §11): a full-width `Card` with today's four macros
-/// against the Target in force, each a `DotMatrix` in its fixed accent under its value.
-/// Calories is the card's one hero number; protein, fat, and carbs are metric numbers in
-/// their accents. With no Target the numbers stay, the captions read `— target`, there are
-/// no dot rows, and a Set targets action opens Settings (`.scratch/data-model/issues/02`).
-/// Tapping the card opens Food on today.
+/// Home's macros card (DESIGN.md §8, §11), the first card: a `StatRing` of today's calories
+/// against the Target in force with what is left (or over) as the card's one hero number,
+/// and beside it a thin bar per gram macro in its fixed accent. With no Target the ring is a
+/// bare track around what was eaten, the bars are empty with `g` captions, and a Set targets
+/// action opens Settings (`.scratch/data-model/issues/02`). Tapping the card opens Food on
+/// today.
 final class MacrosCardControl: CardControl {
 
     var onSetTargets: (() -> Void)?
 
-    private let rows = Macro.allCases.map(MacroRowView.init)
+    private let summary: UIView & UIContentView
     /// The Set targets row, shown only while no Target is in force.
     private let actions = UIStackView()
 
     init() {
-        super.init(card: CardView(title: "Macros", systemImage: "fork.knife", accessory: .navigates), interactiveContent: true)
+        summary = Self.configuration(HomeSnapshot.placeholder.macros).makeContentView()
+        super.init(card: CardView(), interactiveContent: true)
 
-        for row in rows {
-            card.contentStack.addArrangedSubview(row)
-            card.contentStack.setCustomSpacing(Metrics.spaceInner, after: row)
-        }
+        card.contentStack.addArrangedSubview(summary)
         let setTargets = UIButton.inCardAction(title: "Set targets", systemImage: "target") { [weak self] in self?.onSetTargets?() }
         actions.axis = .horizontal
         actions.addArrangedSubview(setTargets)
         actions.addArrangedSubview(UIView())
         card.contentStack.addArrangedSubview(actions)
+        isAccessibilityElement = true
         render(HomeSnapshot.placeholder.macros)
     }
 
     func render(_ macros: HomeSnapshot.Macros) {
-        for (row, model) in zip(rows, macros.rows) {
-            row.configure(with: model, animated: window != nil)
-        }
+        summary.configuration = Self.configuration(macros)
         actions.isHidden = macros.hasTarget
+        accessibilityLabel = MacroRingSummary.accessibilityText(macros)
+        accessibilityHint = "Opens Food"
+        accessibilityCustomActions = macros.hasTarget ? [] : [UIAccessibilityCustomAction(name: "Set targets") { [weak self] _ in self?.onSetTargets?(); return true }]
+    }
+
+    private static func configuration(_ macros: HomeSnapshot.Macros) -> UIHostingConfiguration<MacroRingSummary, EmptyView> {
+        UIHostingConfiguration { MacroRingSummary(macros: macros) }.margins(.all, 0)
     }
 }
 
-/// One macro on the card: `[icon] Protein`, the value with its target caption on one
-/// baseline, then the `DotMatrix` (hidden without a Target).
-private final class MacroRowView: UIView {
+/// The card's content: the calorie ring, then protein, fat, and carbs as labelled bars.
+/// Always the same height whatever the values, so the UIKit host never needs re-measuring.
+struct MacroRingSummary: View {
 
-    private let macro: Macro
-    private let valueLabel = UILabel()
-    private let captionLabel = UILabel()
-    private let dotsView: UIView & UIContentView
-    private var dotsHeight: NSLayoutConstraint!
+    let macros: HomeSnapshot.Macros
 
-    init(macro: Macro) {
-        self.macro = macro
-        dotsView = Self.dotsConfiguration(.init(total: 0, filled: 0, columns: 1, accent: macro.accent)).makeContentView()
-        super.init(frame: .zero)
+    var body: some View {
+        HStack(spacing: Metrics.spaceInner) {
+            StatRing(progress: macros.calorieProgress, accent: Macro.calories.accent) {
+                VStack(spacing: 0) {
+                    Text(macros.calories)
+                        .font(Font.heroNumber)
+                        .monospacedDigit()
+                        .foregroundStyle(macros.calories == "—" ? Color.textTertiary : Color.textPrimary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
+                        .contentTransition(.numericText())
+                    Text(macros.caloriesCaption)
+                        .font(Font.label)
+                        .foregroundStyle(Color.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
+            }
+            .frame(width: 116, height: 116)
 
-        let icon = UIImageView(image: UIImage(systemName: macro.systemImage))
-        icon.tintColor = macro.uiAccent
-        icon.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .footnote)
-        icon.setContentHuggingPriority(.required, for: .horizontal)
-        let title = UILabel()
-        title.text = macro.title
-        title.font = UIFont.label
-        title.textColor = UIColor.textSecondary
-        title.adjustsFontForContentSizeCategory = true
-        let header = UIStackView(arrangedSubviews: [icon, title])
-        header.axis = .horizontal
-        header.alignment = .center
-        header.spacing = Metrics.spaceTight / 2
-
-        // Calories is the card's hero (DESIGN.md §10); the others are metric numbers in their accent (§5).
-        let isHero = macro == .calories
-        valueLabel.font = isHero ? UIFont.heroNumber : UIFont.metricNumber
-        valueLabel.textColor = isHero ? UIColor.textPrimary : macro.uiAccent
-        valueLabel.adjustsFontForContentSizeCategory = true
-        valueLabel.setContentHuggingPriority(.required, for: .horizontal)
-        captionLabel.font = UIFont.label
-        captionLabel.textColor = UIColor.textSecondary
-        captionLabel.adjustsFontForContentSizeCategory = true
-        let value = UIStackView(arrangedSubviews: [valueLabel, captionLabel])
-        value.axis = .horizontal
-        value.alignment = .firstBaseline
-        value.spacing = Metrics.spaceTight
-
-        let stack = UIStackView(arrangedSubviews: [header, value, dotsView])
-        stack.axis = .vertical
-        stack.spacing = Metrics.spaceTight / 2
-        stack.setCustomSpacing(Metrics.spaceTight, after: value)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
-        dotsHeight = dotsView.heightAnchor.constraint(equalToConstant: 0)
-        dotsHeight.isActive = true
-        isAccessibilityElement = true
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    /// The number cross-dissolves (DESIGN.md §9) when a change lands on screen.
-    func configure(with model: HomeSnapshot.MacroRow, animated: Bool) {
-        if animated, valueLabel.text != model.consumed {
-            UIView.transition(with: valueLabel, duration: 0.25, options: .transitionCrossDissolve) { self.valueLabel.text = model.consumed }
-        } else {
-            valueLabel.text = model.consumed
+            VStack(spacing: 12) {
+                ForEach(macros.bars, id: \.macro) { bar in
+                    MacroBarView(bar: bar)
+                }
+            }
         }
-        captionLabel.text = model.targetCaption
-        captionLabel.textColor = model.dots == nil ? UIColor.textTertiary : UIColor.textSecondary
-        if let dots = model.dots {
-            let matrix = DotMatrix.Model(total: dots.total, filled: dots.filled, columns: dots.columns, accent: macro.accent)
-            dotsView.configuration = Self.dotsConfiguration(matrix)
-            dotsHeight.constant = DotMatrix.height(of: matrix)
-        }
-        dotsView.isHidden = model.dots == nil
-        accessibilityLabel = model.dots == nil
-            ? "\(macro.title), \(model.consumed) \(macro.unit), no target"
-            : "\(macro.title), \(model.consumed) \(model.targetCaption)"
+        .animation(.spring(duration: 0.5, bounce: 0), value: macros)
+        .accessibilityHidden(true)
     }
 
-    private static func dotsConfiguration(_ model: DotMatrix.Model) -> UIHostingConfiguration<DotMatrix, EmptyView> {
-        UIHostingConfiguration { DotMatrix(model: model) }.margins(.all, 0)
+    static func accessibilityText(_ macros: HomeSnapshot.Macros) -> String {
+        let calories = "Calories, \(macros.calories) \(macros.caloriesCaption)"
+        let bars = macros.bars.map { "\($0.macro.title), \($0.consumed) \($0.progress == nil ? "\($0.macro.unit), no target" : "of \($0.target.dropFirst())")" }
+        return ([calories] + bars).joined(separator: ". ")
     }
+}
+
+/// `Protein  32/180g` over a 6pt bar in the macro's accent with bloom, on a `surfaceSunken`
+/// track; an empty track without a Target.
+private struct MacroBarView: View {
+
+    let bar: HomeSnapshot.MacroBar
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(bar.macro.title)
+                    .foregroundStyle(bar.macro.accent)
+                Spacer(minLength: Metrics.spaceTight)
+                Text(bar.consumed)
+                    .foregroundStyle(Color.textPrimary)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                Text(bar.target)
+                    .foregroundStyle(bar.progress == nil ? Color.textTertiary : Color.textSecondary)
+                    .monospacedDigit()
+            }
+            .font(Font.label)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+
+            GeometryReader { geometry in
+                Capsule()
+                    .fill(Color.surfaceSunken)
+                    .overlay(alignment: .leading) {
+                        if let progress = bar.progress, progress > 0 {
+                            Capsule()
+                                .fill(bar.macro.accent)
+                                .frame(width: max(6, geometry.size.width * progress))
+                                .shadow(color: bar.macro.accent.opacity(Elevation.bloomOpacity(for: colorScheme == .dark ? .dark : .light)), radius: 4)
+                        }
+                    }
+            }
+            .frame(height: 6)
+        }
+    }
+}
+
+#Preview {
+    MacroRingSummary(macros: HomeSnapshot.Macros(
+        calories: "1,420", caloriesCaption: "kcal left", calorieProgress: 0.32,
+        bars: [
+            .init(macro: .protein, consumed: "32", target: "/180g", progress: 0.18),
+            .init(macro: .fat, consumed: "20", target: "/60g", progress: 0.33),
+            .init(macro: .carbs, consumed: "88", target: "/210g", progress: 0.42),
+        ],
+        hasTarget: true
+    ))
+    .padding()
+    .background(Color.surface)
 }

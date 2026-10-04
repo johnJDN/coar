@@ -10,14 +10,14 @@ minimalist "one hero card per domain" density. Every screen is checked against t
   sources), text input, camera, and anything scroll-, layout-, or gesture-heavy (food
   timeline, habit heatmap, live workout logger, date strip, reordering).
 - **SwiftUI is used for leaf content only:** Swift Charts, declarative drawing components
-  (`StatRing`, `DotMatrix`, sparklines, gauges, bloom), cell/card bodies via
+  (`StatRing`, sparklines, gauges, bloom), cell/card bodies via
   `UIHostingConfiguration`, the Settings form, and any WidgetKit / watchOS target.
 - **Boundary rule:** a hosted SwiftUI view is dumb. Values in, actions out via closures.
   It never owns navigation, never fetches data, and never keeps state UIKit also reads.
 - **Tokens are exposed twice:** every colour and font token has a `UIColor`/`UIFont` form
   and a `Color`/`Font` form generated from the same source, so the halves cannot drift.
 - Hosting: `UIHostingConfiguration` for cells (self-sizing) and, via `makeContentView()`,
-  for a small leaf inside a UIKit view (a `DotMatrix` under its UIKit header); a
+  for a small leaf inside a UIKit view (Home's calorie ring and macro bars); a
   `UIHostingController` with explicit `sizingOptions` for a chart embedded in a scroll view.
 
 ## 1. Principles
@@ -33,8 +33,8 @@ minimalist "one hero card per domain" density. Every screen is checked against t
 5. **Empty is a state, not an error.** Missing data shows a muted dash (`—`, `-%`,
    `No data`) in the exact slot the value would occupy. Cards never disappear or
    collapse because data is missing.
-6. **Minimal.** One card per domain on Home: full-width for the two you act on (habits,
-   macros), a square in a grid for the ones you only read. If a card doesn't change a
+6. **Minimal.** One card per domain on Home: full-width for the two you act on (macros,
+   habits), a small tile in one row for the ones you only read. Home fits one screen. If a card doesn't change a
    decision the user makes today, it isn't on Home.
 
 ## 2. Chrome: native Liquid Glass (do not rebuild)
@@ -80,12 +80,12 @@ the starting point; tune in-simulator, but keep the *roles* fixed.
 
 | Token | Hex | Used for |
 |---|---|---|
-| `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. Home's Habits card icon and Last Workout square icon. |
-| `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. Steps (square icon, bars). |
+| `accentGreen` | `#4CD48A` | Success, completed set, active status, habit done. Home's Habits card icon and Training tile icon. |
+| `accentAmber` | `#E9B94C` | Gold coin checks, strain-style effort, streak flames. Steps (tile icon, bars). |
 | `accentBlue` | `#6F8CFF` | Protein. |
 | `accentOrange` | `#F2A83B` | Carbs. |
 | `accentPink` | `#F0609C` | Fat. |
-| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep (square icon, bars). Body Weight (chart, chip tile, Settings unit tile). |
+| `accentTeal` | `#3FCFC4` | Chest / primary volume. Sleep (tile icon, bars). Body Weight (chart, chip tile, Home tile, Settings unit tile). |
 | `accentLime` | `#B6E857` | Secondary volume groups. Exercises (chip tile) and Progression (Estimated 1RM chart, hero card icon). |
 | `accentLavender` | `#8C8DF5` | AI / coach. Progress Photos (chip tile, compare pick ring). Gradient partner: `#B49CFF`. |
 | `accentCoral` | `#E8735A` | Warm CTA (Finish workout), destructive-adjacent. |
@@ -124,8 +124,8 @@ row: teal, lavender, orange, yellow, green, blue. Use accent colors at ~85% satu
 | Page title | `.largeTitle` | bold | e.g. "Today, September 3" |
 | Page subtitle | `.subheadline` | regular, `textSecondary` | e.g. "Last 30 days" |
 | Section header | `.title2` | semibold | e.g. "Nutrition" |
-| Card title | `.headline` | semibold | leading icon optional; in a half-width Home square it may shrink to fit, to 65%, rather than truncate |
-| Hero number | `UIFont.systemFont(ofSize: 40, weight: .bold)` with `.rounded` descriptor design | | monospaced digits; in a half-width Home square it may shrink to fit, to 50%, rather than clip |
+| Card title | `.headline` | semibold | leading icon optional; may shrink to fit, to 65%, rather than truncate |
+| Hero number | `UIFont.systemFont(ofSize: 40, weight: .bold)` with `.rounded` descriptor design | | monospaced digits; inside a `StatRing` it may shrink to fit, to 40%, rather than clip |
 | Metric number | `.title3` | semibold | colored with metric accent |
 | Body | `.body` | regular | |
 | Caption / label | `.footnote` | regular, `textSecondary` | |
@@ -153,7 +153,6 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 |---|---|
 | `Card` | `surface` container, `radiusCard`, `spaceInner` padding, elevation above. Optional header row: icon + title + trailing `→` (navigates) or chevron (expands). |
 | `StatRing` | Circular gauge. `surfaceSunken` track, accent arc, rounded caps, bloom on cap. Center: hero number; below: label. Hatched arc segment for projected/estimated portion. |
-| `DotMatrix` | Grid of dots, one per unit: 5 g, or 50 kcal for calories, stepping to a coarser unit when the target would need more than two rows of 24. Filled dots in metric accent with bloom, unfilled in `surfaceSunken`; fixed-size dots spread evenly across the width. Header: icon + value in accent (the calories value is the card's hero in `textPrimary`). No matrix at all without a target. |
 | `HeroCounter` | Large flip-style digits in individual `fill` boxes, unit label trailing. |
 | `MetricRow` | Leading emoji or tinted icon, label, trailing value (`textSecondary`), optional square `→` button. Used for habits and journal-style entries. |
 | `CheckToggle` | Two-state `— / ✓` capsule. Used for yes/no habit check-ins; there is no recorded "miss", an empty day is the miss. |
@@ -198,7 +197,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | Need | Use |
 |---|---|
 | Daily score / progress to goal | `StatRing` |
-| Macro consumed vs target | `DotMatrix` (one per macro, colors fixed) where it is the hero (Home). A thin bar per macro where it is a compact header over other content (Food tab summary row). Same accents either way. |
+| Macro consumed vs target | On Home: a `StatRing` for calories (what is left as the hero) beside a labelled thin bar per gram macro. A thin bar per macro where it is a compact header over other content (Food tab summary row). Same accents either way. |
 | Streaks / consistency over weeks | Calendar heatmap, `surfaceSunken` cells, accent intensity by count |
 | Trend over time | Swift Charts line hosted in a `UIHostingController`, 2pt stroke in accent, bloom on last point, no gridlines, axis labels in `textTertiary` |
 | One value per Day over weeks (sleep, steps) | Swift Charts bars hosted the same way, one per Day that has a value, in the metric accent: latest bar saturated with bloom, earlier bars muted; Days without data are gaps, not zeros; no gridlines, axis labels in `textTertiary` |
@@ -229,20 +228,24 @@ Charts never show a legend when color already maps to a label on screen.
 ## 11. Screen map (settled 2026-09-13)
 
 - **Home** — date title ("Today, September 16") with a greeting subtitle, then top to
-  bottom: habits card (full-width; hero is how many are done today, then a `MetricRow` +
-  `CheckToggle` / `AmountControl` per Habit; taps go to Habits), today's macros (full-width
-  `DotMatrix` per macro; calories is the hero; without a target, `— target` captions, no
-  dots, and a Set targets action; taps go to Food on today), a 2-column grid of squares:
-  Sleep | Steps (push a 30-day detail in Home's own stack), Body Weight (Trend Weight) |
-  Last Workout (relative Day as the hero, Plan name as the caption); both switch to Train
-  and push the screen.
+  bottom, all on one screen: the macros card (full-width; a `StatRing` of calories with
+  kcal left, or over, as the hero, and a labelled bar per gram macro beside it; without a
+  target, a bare track around what was eaten, empty bars, and a Set targets action; taps go
+  to Food on today), the habits card (full-width; "3 of 7 done" in the header, then a
+  `MetricRow` + `CheckToggle` / `AmountControl` per check-in Habit still to do; done ones,
+  today or for the week, hide behind Show done, and a checked row leaves once its control
+  settles; tracked Habits are not on Home; taps go to Habits), then one row of four compact
+  tiles (`radiusInner`): Sleep and Steps (push a 30-day detail in Home's own stack, or ask
+  for Apple Health while it was never asked), Weight (Trend Weight, unit as caption; switches
+  to Train and pushes Body Weight), and Training (days with a Workout this week, against the
+  weekly workouts Habit's target when there is one; switches to Train).
 - **Habits** — a system segmented control (`UISegmentedControl`), Check in / Tracked,
   pinned under the title (+ on Tracked starts a tracked habit); then one card per habit
   of that tab: emoji, name, `CheckToggle` or amount, streak as the hero number, 7-row
   heatmap (Monday on top; yes/no cells binary, quantitative cells by intensity; weekly
   habits get a week-met dot per column). Detail page has a calendar
   for retroactive edits. Each tab's archived habits in a section at its bottom. Home lists
-  check-in habits first, then tracked.
+  only check-in habits.
 - **Food** — day view, macro summary, hourly timeline of entries, "+" sheet with Describe /
   Foods / Meals segments (Search is added only when a food database exists). Describe, the
   default, is one food per line, Reminders-style; each line fills in its macros under it
