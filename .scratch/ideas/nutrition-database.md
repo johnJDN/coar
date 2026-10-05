@@ -1,8 +1,10 @@
 # Nutrition database for brand and restaurant foods (later)
 
-Status: noted 2026-10-03 at John's request ("eventually I'd want to add a nutrition database
-as well"). Nothing built. Comes after the web-search lookup comparison
-(`.scratch/ai-food-logging/lookup-test.md`).
+Status: **dropped 2026-10-04 at John's request** ("I don't want to add a food database").
+Noted on 2026-10-03; nothing built. Kept for the reasoning in case it comes back. If it does,
+the shape discussed was a Search segment in Add Entry backed by an API at search time (not a
+copy on the phone), with the picked item copied into the Entry and, with Save as food, into
+Foods; manual picking avoids the wrong-product matches seen with word matching.
 
 ## Why
 
