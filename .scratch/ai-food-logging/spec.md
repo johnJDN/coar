@@ -22,8 +22,10 @@ A **Describe** tab becomes the first tab on the Food "+" sheet:
   stop typing, each line fills in its name, portion and macros.
 - **Photos.** A camera button does the same from a photo of a plate or a nutrition label.
 - **Logging.** **Log** turns the filled lines into ordinary Entries at the sheet's time.
-- **Your library.** Your own Food Items and Meals win whenever a line means one of them. Nothing
-  joins the library unless you tap Save as food.
+- **Your library.** Your own Food Items and Meals win whenever a line means one of them. A
+  line joins the library when it's added, unless its Save to Foods toggle is turned off
+  (changed 2026-10-04: on by default, a toggle on each line; never a second food of the same
+  name). A logged Entry can be saved as a food from its page.
 - **Not included:** an imported food database and a barcode scanner.
 
 The Entry becomes the base of food logging: a name, a portion and macros that stand on their

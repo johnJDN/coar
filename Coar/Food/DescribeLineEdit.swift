@@ -91,10 +91,19 @@ struct DescribeLineEdit: Equatable {
 
 extension Estimate {
 
-    /// The Serving that Save as food creates, and how many of it this line is. A line counted
-    /// in grams or millilitres ("150 × g") saves a "100 g" Serving, so the food logs sensibly
-    /// next time; anything else saves one of its unit.
+    /// The Serving that Save as food creates, and how many of it this line is
+    /// (`ServingDraft.toSave`).
     var servingToSave: (serving: ServingDraft, quantity: Double) {
+        ServingDraft.toSave(unit: unit, quantity: quantity, macros: macros, grams: grams)
+    }
+}
+
+extension ServingDraft {
+
+    /// The Serving that Save as food creates from a portion, and how many of it the portion
+    /// is. A portion counted in grams or millilitres ("150 × g") saves a "100 g" Serving, so
+    /// the food logs sensibly next time; anything else saves one of its unit.
+    static func toSave(unit: String, quantity: Double, macros: Macros, grams: Double?) -> (serving: ServingDraft, quantity: Double) {
         let per100 = ["g", "gram", "grams", "ml"]
         let unitWord = unit.lowercased().trimmingCharacters(in: .whitespaces)
         if per100.contains(unitWord), quantity > 0 {

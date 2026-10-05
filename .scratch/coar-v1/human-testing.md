@@ -480,3 +480,12 @@ Ticket: `.scratch/ai-food-logging/issues/06-*` (comment of 2026-10-03). Checked 
 
 - [ ] Food → + → Describe: "kind protein bar strawberry cocoa" now shows about 220 kcal "Estimated", not 0s "Looked up" (delete the stuck line and type it again: the cached 0s are skipped). "quest cookie dough bar" still says "Looked up" with Quest's numbers; "diet coke" can still be 0 kcal.
 - [ ] After the switch to Gemini + web search (2026-10-04): "kind protein bar raspberry cocoa crisp" shows 240 kcal · P 20 · F 13 · C 24, "Looked up"; tap the line: the note names the source in plain words (no brackets or links). A Big Mac or Chick-fil-A sandwich takes about 3 s and says "Looked up".
+
+## Added after v1: Save as food by default (2026-10-04)
+
+Ticket: `.scratch/ai-food-logging/issues/05-line-page-and-save-as-food.md` (comment of 2026-10-04). Checked by the agent in the simulator with fake estimates.
+
+- [ ] Describe a brand food: under its numbers, "✓ Save to Foods" is on (green). Tap it: it turns off (grey circle). A line that says "Your food" has no toggle.
+- [ ] Add with it on: the food is in Foods, and typing its name next time shows "Your food".
+- [ ] Open the KIND bar (or label-photo food) you logged before this build: "Save as food" near the bottom; tap it: "Saved to Foods". Type its name in Describe: "Your food".
+- [ ] Judgement calls: a food already saved under the same name isn't saved twice (the line logs on its own; the entry page says "Already in Foods"); the toggle can show on such a line and simply saves nothing.

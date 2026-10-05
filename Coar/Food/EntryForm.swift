@@ -2,11 +2,23 @@ import SwiftUI
 
 /// The Entry detail's content (ADR 0001: SwiftUI leaf, values in, closures out): the time,
 /// the quantity, and the four snapshotted macros, all editable; a Meal Entry's breakdown,
-/// read-only, scaled by the quantity; Delete at the bottom. Every edit reports the whole
-/// draft so the host can enable Save.
+/// read-only, scaled by the quantity; Save as food for an Entry that isn't from a Food Item or
+/// Meal; Delete at the bottom. Every edit reports the whole draft so the host can save it.
 struct EntryForm: View {
 
+    /// Where the Entry stands with Foods, for its Save as food row.
+    enum SaveAsFood: Equatable {
+        /// From a Food Item or a Meal already: no row.
+        case notOffered
+        case offered
+        /// A Food Item with the Entry's name is already in Foods.
+        case alreadyInFoods
+        case saved
+    }
+
     let servingName: String
+    var saveAsFood: SaveAsFood = .notOffered
+    var onSaveAsFood: () -> Void = {}
     /// A Meal Entry's lines for one of the Meal; empty for a Food Item Entry.
     let components: [EntryComponentRecord]
     let onChange: (EntryDraft) -> Void
@@ -67,6 +79,24 @@ struct EntryForm: View {
                 Text("As logged")
             } footer: {
                 Text("This entry's own record. Editing it never changes the food item it came from.")
+            }
+
+            if saveAsFood != .notOffered {
+                Section {
+                    Button(action: onSaveAsFood) {
+                        Label(saveAsFood == .offered ? "Save as food" : saveAsFood == .saved ? "Saved to Foods" : "Already in Foods",
+                              systemImage: saveAsFood == .offered ? "tray.and.arrow.down" : "checkmark.circle.fill")
+                    }
+                    .disabled(saveAsFood != .offered)
+                    .foregroundStyle(saveAsFood == .offered ? Color.accentGreen : Color.textSecondary)
+                    .formRow()
+                } footer: {
+                    switch saveAsFood {
+                    case .alreadyInFoods: Text("A food with this name is in Foods. Log it from there next time.")
+                    case .saved: Text("It's in Foods now: next time it's one tap, and typing its name uses these numbers.")
+                    default: Text("Adds it to Foods with this portion, so next time it's one tap, and typing its name uses these numbers.")
+                    }
+                }
             }
 
             Section {

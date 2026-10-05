@@ -129,11 +129,11 @@ final class DescribeLinePageTests: XCTestCase {
     func test_saveAsFood_isKeptWithTheDraft() throws {
         var draft = DescribeDraft()
         let id = try XCTUnwrap(draft.lines.first?.id)
-        draft.setSaveAsFood(id, true)
+        draft.setSaveAsFood(id, false)
         let data = try JSONEncoder().encode(draft)
-        XCTAssertEqual(try JSONDecoder().decode(DescribeDraft.self, from: data).line(id)?.saveAsFood, true)
+        XCTAssertEqual(try JSONDecoder().decode(DescribeDraft.self, from: data).line(id)?.saveAsFood, false)
 
         let older = #"{"lines":[{"id":"\#(id.uuidString)","text":"toast","state":{"typing":{}}}]}"#
-        XCTAssertEqual(try JSONDecoder().decode(DescribeDraft.self, from: Data(older.utf8)).line(id)?.saveAsFood, false, "a draft from before the flag still reads")
+        XCTAssertEqual(try JSONDecoder().decode(DescribeDraft.self, from: Data(older.utf8)).line(id)?.saveAsFood, true, "a draft from before the flag reads with the default")
     }
 }

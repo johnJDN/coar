@@ -19,8 +19,9 @@ struct DescribeLine: Identifiable, Equatable, Codable {
     let id: UUID
     var text: String
     var state: State
-    /// Add also saves it to Foods (ticket 05).
-    var saveAsFood = false
+    /// Add also saves it to Foods (ticket 05). On unless turned off (2026-10-04, John): a line
+    /// that is already one of the user's foods, or shares a saved food's name, saves nothing.
+    var saveAsFood = true
     /// A photo being read (ticket 07): a placeholder that becomes one line per food in it.
     var isPhoto = false
 
@@ -40,7 +41,7 @@ struct DescribeLine: Identifiable, Equatable, Codable {
         id = try container.decode(UUID.self, forKey: .id)
         text = try container.decode(String.self, forKey: .text)
         state = try container.decode(State.self, forKey: .state)
-        saveAsFood = try container.decodeIfPresent(Bool.self, forKey: .saveAsFood) ?? false
+        saveAsFood = try container.decodeIfPresent(Bool.self, forKey: .saveAsFood) ?? true
         isPhoto = try container.decodeIfPresent(Bool.self, forKey: .isPhoto) ?? false
     }
 

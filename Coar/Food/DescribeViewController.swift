@@ -130,7 +130,7 @@ final class DescribeViewController: UIViewController {
         for line in draft.filled {
             guard let estimate = line.estimate else { continue }
             do {
-                try log(estimate, typed: line.trimmedText, savingAsFood: line.saveAsFood)
+                try dependencies.store.logDescribed(estimate, typed: line.trimmedText, savingAsFood: line.saveAsFood, at: instant)
                 logged.insert(line.id)
             } catch {
                 Self.logger.error("Failed to log Entry: \(error, privacy: .public)")
@@ -163,30 +163,6 @@ final class DescribeViewController: UIViewController {
     /// One Entry: through the Food Item or Meal it matched, so it links to it (spec "Your
     /// library wins"); on its own otherwise. A match archived or deleted since it was made is
     /// logged on its own with the numbers shown, rather than lost.
-    private func log(_ estimate: Estimate, typed: String, savingAsFood: Bool) throws {
-        let store = dependencies.store
-        if savingAsFood, estimate.match == nil {
-            let (serving, quantity) = estimate.servingToSave
-            try store.logEntrySavingFood(name: estimate.name.isEmpty ? typed : estimate.name, serving: serving, quantity: quantity, at: instant)
-            return
-        }
-        do {
-            switch estimate.match {
-            case .foodItem(let id, let serving):
-                try store.logEntry(foodItem: id, serving: serving, quantity: estimate.quantity, at: instant)
-                return
-            case .meal(let id):
-                try store.logEntry(meal: id, quantity: estimate.quantity, at: instant)
-                return
-            case nil:
-                break
-            }
-        } catch is Store.NotFound {
-            Self.logger.info("Matched food is gone; logging the line on its own")
-        }
-        try store.logEntry(name: estimate.name.isEmpty ? typed : estimate.name, servingName: estimate.unit, quantity: estimate.quantity, macros: estimate.macros, at: instant)
-    }
-
     // MARK: - Key
 
     /// Shows the no-key card while there is no key, and takes it away once there is one,
@@ -387,6 +363,12 @@ final class DescribeViewController: UIViewController {
         onChange()
     }
 
+    /// The line's own Save to Foods toggle; the draft keeps it, so the line page agrees.
+    private func setSaveAsFood(_ id: DescribeLine.ID, _ saveAsFood: Bool) {
+        draft.setSaveAsFood(id, saveAsFood)
+        onChange()
+    }
+
     // MARK: - Typing
 
     private func returned(_ id: DescribeLine.ID) {
@@ -443,7 +425,8 @@ final class DescribeViewController: UIViewController {
                 onEdit: { [weak self] in self?.edited(id, text: $0) },
                 onReturn: { [weak self] in self?.returned(id) },
                 onDeleteEmpty: { [weak self] in self?.deletedEmpty(id) },
-                onEndEditing: { [weak self] in self?.send(id) }
+                onEndEditing: { [weak self] in self?.send(id) },
+                onSaveAsFood: { [weak self] in self?.setSaveAsFood(id, $0) }
             ))
         }
         let problemCell = UICollectionView.CellRegistration<UICollectionViewListCell, OpenRouterError> { [weak self] cell, _, problem in
@@ -567,5 +550,35 @@ extension DescribeViewController: PHPickerViewControllerDelegate {
                 self?.add(image)
             }
         }
+    }
+}
+
+extension Store {
+
+    /// Logs one Describe line as an Entry: through the user's Food Item or Meal when it
+    /// matched one (on its own if that has since gone), else saving it to Foods when asked
+    /// and no Food Item has its name, else on its own.
+    func logDescribed(_ estimate: Estimate, typed: String, savingAsFood: Bool, at instant: Date, in calendar: Calendar = .current) throws {
+        let name = estimate.name.isEmpty ? typed : estimate.name
+        if savingAsFood, estimate.match == nil, try foodItem(named: name) == nil {
+            let (serving, quantity) = estimate.servingToSave
+            try logEntrySavingFood(name: name, serving: serving, quantity: quantity, at: instant, in: calendar)
+            return
+        }
+        do {
+            switch estimate.match {
+            case .foodItem(let id, let serving):
+                try logEntry(foodItem: id, serving: serving, quantity: estimate.quantity, at: instant, in: calendar)
+                return
+            case .meal(let id):
+                try logEntry(meal: id, quantity: estimate.quantity, at: instant, in: calendar)
+                return
+            case nil:
+                break
+            }
+        } catch is Store.NotFound {
+            Logger(category: "Food").info("Matched food is gone; logging the line on its own")
+        }
+        try logEntry(name: name, servingName: estimate.unit, quantity: estimate.quantity, macros: estimate.macros, at: instant, in: calendar)
     }
 }

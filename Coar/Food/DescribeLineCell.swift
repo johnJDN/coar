@@ -4,6 +4,8 @@ import UIKit
 /// food into and, under it, the line's Estimate or state. Return asks for a new line below;
 /// backspace in an empty field asks to remove the line. The field keeps its text and caret
 /// across reconfigures: it is only overwritten when the line's text differs from what it shows.
+/// A filled line that isn't already one of the user's foods has a Save to Foods toggle under
+/// its Estimate, on by default, so it needn't be opened to change it.
 final class DescribeLineCell: UICollectionViewListCell {
 
     struct Actions {
@@ -11,10 +13,13 @@ final class DescribeLineCell: UICollectionViewListCell {
         var onReturn: () -> Void = {}
         var onDeleteEmpty: () -> Void = {}
         var onEndEditing: () -> Void = {}
+        var onSaveAsFood: (Bool) -> Void = { _ in }
     }
 
     private let field = LineTextField()
     private let caption = UILabel()
+    private let saveButton = UIButton(type: .system)
+    private let below = UIStackView()
     private var captionGap: NSLayoutConstraint!
     private var actions = Actions()
 
@@ -36,11 +41,39 @@ final class DescribeLineCell: UICollectionViewListCell {
         caption.textColor = UIColor.textSecondary
         caption.adjustsFontForContentSizeCategory = true
 
-        for view in [field, caption] as [UIView] {
+        var save = UIButton.Configuration.plain()
+        save.title = "Save to Foods"
+        save.imagePadding = 6
+        save.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 0, bottom: 2, trailing: 8)
+        save.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(textStyle: .footnote)
+        save.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var attributes = attributes
+            attributes.font = UIFont.label
+            return attributes
+        }
+        saveButton.configuration = save
+        saveButton.changesSelectionAsPrimaryAction = true
+        saveButton.configurationUpdateHandler = { button in
+            button.configuration?.image = UIImage(systemName: button.isSelected ? "checkmark.circle.fill" : "circle")
+            button.configuration?.baseForegroundColor = button.isSelected ? UIColor.accentGreen : UIColor.textSecondary
+        }
+        saveButton.accessibilityTraits.insert(.toggleButton)
+        saveButton.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            actions.onSaveAsFood(saveButton.isSelected)
+        }, for: .primaryActionTriggered)
+
+        below.axis = .vertical
+        below.alignment = .leading
+        below.spacing = 2
+        below.addArrangedSubview(caption)
+        below.addArrangedSubview(saveButton)
+
+        for view in [field, below] as [UIView] {
             view.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview(view)
         }
-        captionGap = caption.topAnchor.constraint(equalTo: field.bottomAnchor)
+        captionGap = below.topAnchor.constraint(equalTo: field.bottomAnchor)
         let margins = contentView.layoutMarginsGuide
         NSLayoutConstraint.activate([
             field.topAnchor.constraint(equalTo: margins.topAnchor),
@@ -48,9 +81,10 @@ final class DescribeLineCell: UICollectionViewListCell {
             field.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
             field.heightAnchor.constraint(greaterThanOrEqualToConstant: 28),
             captionGap,
-            caption.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
-            caption.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
-            caption.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
+            below.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
+            below.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
+            below.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
+            caption.widthAnchor.constraint(equalTo: below.widthAnchor),
         ])
         backgroundConfiguration = UIBackgroundConfiguration.listCell()
     }
@@ -67,7 +101,11 @@ final class DescribeLineCell: UICollectionViewListCell {
         field.accessibilityLabel = "Food"
         let text = Self.caption(for: line)
         caption.attributedText = text
+        caption.isHidden = text == nil
         captionGap.constant = text == nil ? 0 : 4
+        let offersSave = Self.offersSaveAsFood(line)
+        if saveButton.isHidden == offersSave { saveButton.isHidden = !offersSave }
+        saveButton.isSelected = line.saveAsFood
     }
 
     func focus() {
@@ -76,6 +114,12 @@ final class DescribeLineCell: UICollectionViewListCell {
 
     var isEditingText: Bool {
         field.isFirstResponder
+    }
+
+    /// The toggle shows on a filled line that isn't already one of the user's foods or meals.
+    static func offersSaveAsFood(_ line: DescribeLine) -> Bool {
+        guard let estimate = line.estimate else { return false }
+        return estimate.match == nil
     }
 
     // MARK: - Caption
@@ -96,9 +140,6 @@ final class DescribeLineCell: UICollectionViewListCell {
         case .filled(let estimate):
             let text = NSMutableAttributedString(attributedString: FoodText.styledMacroLineUIKit(estimate.macros))
             text.append(plain("\n\([estimate.name, estimate.portion, estimate.source.title].joined(separator: " · "))", color: UIColor.textSecondary))
-            if line.saveAsFood {
-                text.append(plain(" · Saving to Foods", color: UIColor.accentGreen))
-            }
             if estimate.caloriesDisagree {
                 text.append(NSAttributedString(string: "\n"))
                 text.append(withSymbol("exclamationmark.triangle.fill", "Calories don't match the macros. Check before adding.", color: UIColor.accentCoral, textColor: UIColor.textSecondary))

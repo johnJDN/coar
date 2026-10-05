@@ -72,3 +72,15 @@ Spec: stories 13–16, "Data: no schema change".
     - one typed macro is enough to add a failed line, the others counting as 0;
     - Save as food is off by default and hidden for matched lines;
     - a page open while its line fills from the network shows the numbers it opened with.
+- 2026-10-04 (agent): John's change: Save as food is **on by default**, with a small
+  "Save to Foods" toggle under each filled line (a stock toggle button: check circle, green
+  when on) so lines needn't be opened; it isn't offered on a line that matched a saved food or
+  meal. A logged Entry's page gains **Save as food** for anything logged before
+  (`Store.saveEntryAsFood`; one Serving from the Entry's portion, "100 g" for grams, the
+  Entry linked to it). The logging decision moved to `Store.logDescribed` so it is tested.
+  Left as deliberate:
+  - No second Food Item with the same name (ignoring case and spacing): such a line logs on
+    its own, and the Entry page says "Already in Foods".
+  - Lines in drafts saved before this read as on.
+  - Save to Foods stays offered on a line whose name is already in Foods (the line doesn't
+    know the library); it just saves nothing.

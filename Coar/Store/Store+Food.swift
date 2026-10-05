@@ -46,6 +46,31 @@ extension Store {
         try fetchFoodItem(id).flatMap(FoodItemRecord.init)
     }
 
+    /// The active Food Item with this name, ignoring case and spacing: Save as food's guard
+    /// against a second "Eggs".
+    func foodItem(named name: String) throws -> FoodItemRecord? {
+        let key = FoodText.normalised(name)
+        return try foodItems().first { FoodText.normalised($0.name) == key }
+    }
+
+    /// Saves a logged Entry to Foods (spec story 16, after the fact): a Food Item with one
+    /// Serving from the Entry's portion (`ServingDraft.toSave`), and the Entry linked to it.
+    /// Nil when the Entry is gone, already came from a Food Item or Meal, or a Food Item with
+    /// its name is already in Foods.
+    @discardableResult
+    func saveEntryAsFood(_ id: EntryRecord.ID) throws -> FoodItemRecord? {
+        guard let entry = try fetchEntry(id), entry.foodItem == nil, entry.meal == nil,
+              let name = entry.name, try foodItem(named: name) == nil else { return nil }
+        let (serving, _) = ServingDraft.toSave(unit: entry.servingName ?? "serving", quantity: entry.quantity, macros: entry.macros, grams: nil)
+        let item = FoodItem(context: context)
+        item.id = UUID()
+        item.isArchived = false
+        apply(name: name, servings: [serving], to: item)
+        entry.foodItem = item
+        try save()
+        return FoodItemRecord(item)
+    }
+
     /// Hides the Food Item from the picker; its Entries stay (CONTEXT.md "Archived").
     func archiveFoodItem(_ id: FoodItemRecord.ID) throws {
         try fetchFoodItem(id)?.isArchived = true

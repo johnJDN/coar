@@ -4,7 +4,8 @@ import os
 
 /// The Entry detail sheet, presented from the timeline. Hosts `EntryForm`. Corrections save
 /// as they are made (`EditorSaving`; its Day never changes, ADR 0005) and Done closes; an
-/// incomplete quantity is left as it was saved. Delete removes only the Entry.
+/// incomplete quantity is left as it was saved. Save as food adds it to Foods as it stands
+/// now. Delete removes only the Entry.
 final class EntryDetailViewController: UIHostingController<EntryForm> {
 
     private static let logger = Logger(category: "Food")
@@ -13,6 +14,8 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
     private let entryID: EntryRecord.ID
     private let onChange: () -> Void
     private let original: EntryDraft
+    private let entry: EntryRecord
+    private var saveAsFood: EntryForm.SaveAsFood
     private var draft: EntryDraft
     private var saved: EntryDraft
     private lazy var autosaver = Autosaver { [weak self] in self?.autosave() }
@@ -34,14 +37,10 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         original = EntryDraft(entry)
         draft = original
         saved = original
+        self.entry = entry
+        saveAsFood = Self.saveAsFood(for: entry, store: dependencies.store)
         super.init(rootView: EntryForm(draft: original, servingName: entry.servingName, components: entry.components, onChange: { _ in }, onDelete: {}))
-        rootView = EntryForm(
-            draft: original,
-            servingName: entry.servingName,
-            components: entry.components,
-            onChange: { [weak self] in self?.draftChanged($0) },
-            onDelete: { [weak self] in self?.confirmDelete(entry) }
-        )
+        rootView = form()
         title = entry.name
         navigationItem.subtitle = FoodText.when(entry.loggedAt)
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
@@ -51,6 +50,25 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
 
     @available(*, unavailable)
     @MainActor required dynamic init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    /// The form as it stands; the hosted view keeps its own draft across swaps.
+    private func form() -> EntryForm {
+        var form = EntryForm(
+            draft: original,
+            servingName: entry.servingName,
+            components: entry.components,
+            onChange: { [weak self] in self?.draftChanged($0) },
+            onDelete: { [weak self] in self.map { $0.confirmDelete($0.entry) } }
+        )
+        form.saveAsFood = saveAsFood
+        form.onSaveAsFood = { [weak self] in self?.saveToFoods() }
+        return form
+    }
+
+    private static func saveAsFood(for entry: EntryRecord, store: Store) -> EntryForm.SaveAsFood {
+        guard entry.foodItemID == nil, entry.mealID == nil else { return .notOffered }
+        return (try? store.foodItem(named: entry.name)) != nil ? .alreadyInFoods : .offered
+    }
 
     /// The sheet the Food tab presents; nil when the Entry no longer exists.
     static func sheet(dependencies: AppDependencies, entryID: EntryRecord.ID, onChange: @escaping () -> Void) -> UIViewController? {
@@ -83,6 +101,18 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
             onChange()
         } catch {
             Self.logger.error("Failed to update Entry: \(error, privacy: .public)")
+        }
+    }
+
+    /// Saves what the Entry holds now, so a correction typed a moment ago goes with it.
+    private func saveToFoods() {
+        autosaver.flush()
+        do {
+            saveAsFood = try dependencies.store.saveEntryAsFood(entryID) == nil ? .alreadyInFoods : .saved
+            rootView = form()
+            onChange()
+        } catch {
+            Self.logger.error("Failed to save Entry as food: \(error, privacy: .public)")
         }
     }
 
