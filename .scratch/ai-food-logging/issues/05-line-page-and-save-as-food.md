@@ -84,3 +84,9 @@ Spec: stories 13–16, "Data: no schema change".
   - Lines in drafts saved before this read as on.
   - Save to Foods stays offered on a line whose name is already in Foods (the line doesn't
     know the library); it just saves nothing.
+- 2026-10-14 (agent): An "Add food" row (a green +) sits under the last line while that line has
+  something in it, inside the same group; tapping it adds an empty line at the end with the
+  keyboard on it. It is hidden when the last line is empty (there is already one to type
+  into), so it never piles up empty lines. Before, the only way to a new line was Return, and
+  with the keyboard down there was none. Left as deliberate: it shows as soon as the last line
+  has its first character, and goes away when you press Return (the new line is empty).

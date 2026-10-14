@@ -133,6 +133,26 @@ final class DescribeTests: XCTestCase {
         XCTAssertTrue(draft.filled.isEmpty)
     }
 
+    func test_addFoodIsOffered_onlyWhileTheLastLineHasSomethingInIt() throws {
+        var draft = DescribeDraft()
+        let first = try XCTUnwrap(draft.lines.first?.id)
+        XCTAssertFalse(draft.offersAddLine, "an empty line to type into already")
+
+        draft.edit(first, text: "toast")
+        XCTAssertTrue(draft.offersAddLine)
+
+        let second = draft.insertLine(after: first)
+        XCTAssertFalse(draft.offersAddLine, "the new line is empty")
+        draft.edit(second, text: "  ")
+        XCTAssertFalse(draft.offersAddLine, "spaces are nothing")
+
+        draft.removeLine(second)
+        XCTAssertTrue(draft.offersAddLine)
+
+        _ = draft.addPhoto()
+        XCTAssertTrue(draft.offersAddLine, "a photo's placeholder reads Photo")
+    }
+
     func test_returnAddsALineBelow_andBackspaceOnAnEmptyLineRemovesIt_butNeverTheLast() throws {
         var draft = DescribeDraft()
         let first = try XCTUnwrap(draft.lines.first?.id)

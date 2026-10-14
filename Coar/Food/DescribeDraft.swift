@@ -95,6 +95,12 @@ struct DescribeDraft: Equatable, Codable {
         return line.id
     }
 
+    /// Whether the last line has something in it, so the screen offers "Add food". With an
+    /// empty last line there is already one to type into.
+    var offersAddLine: Bool {
+        lines.last.map { !$0.trimmedText.isEmpty } ?? false
+    }
+
     /// Removes a line (backspace on an empty line); returns the line before it, to focus. The
     /// last line left is emptied instead, so there is always somewhere to type.
     @discardableResult

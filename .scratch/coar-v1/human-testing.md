@@ -512,3 +512,4 @@ Ticket: `.scratch/quick-delete/issues/01-swipe-and-hold-to-delete.md`. Checked b
 - [ ] Judgement calls: no "Are you sure"; Undo lasts 7 seconds; the swipe is custom (only the row moves, the rail stays); the entry page's own Delete still asks first.
 - [ ] Describe tab: swipe a line (typed, or one a photo made) left: Remove; a long swipe removes it at once. The total updates. Press and hold the numbers under a food (not its text): a Remove menu. The last line can't be removed, only emptied.
 - [ ] Add a photo, then remove its "Photo" line while it's still reading: it goes and stays gone when the answer arrives.
+- [ ] Describe tab: with the last line filled in, an "+ Add food" row sits under it; tap it: a new empty line and the keyboard. The row is gone while the last line is empty, and comes back once you type in it or remove an empty line.

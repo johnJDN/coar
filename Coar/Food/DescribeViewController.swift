@@ -25,6 +25,8 @@ final class DescribeViewController: UIViewController {
     private enum Item: Hashable {
         case problem
         case line(DescribeLine.ID)
+        /// "Add food" under the last line, while that line has something in it.
+        case addRow
         case total
     }
 
@@ -196,6 +198,7 @@ final class DescribeViewController: UIViewController {
         let before = draft.line(id)?.state
         photos[id] = nil
         guard draft.edit(id, text: text) else { return }
+        syncAddRow()
         timers[id]?.cancel()
         if draft.line(id)?.state != before {
             reconfigure(id)
@@ -369,6 +372,16 @@ final class DescribeViewController: UIViewController {
         onChange()
     }
 
+    // MARK: - Adding a line
+
+    /// The "Add food" row: an empty line at the end, with the keyboard on it.
+    private func addLine() {
+        let id = draft.insertLine(after: draft.lines.last?.id)
+        render()
+        onChange()
+        focus(id)
+    }
+
     // MARK: - Removing a line
 
     /// The line at this row when there is something to remove: any line while there are
@@ -462,6 +475,11 @@ final class DescribeViewController: UIViewController {
                 onSaveAsFood: { [weak self] in self?.setSaveAsFood(id, $0) }
             ))
         }
+        let addCell = UICollectionView.CellRegistration<UICollectionViewListCell, String> { cell, _, title in
+            cell.contentConfiguration = UIListContentConfiguration.addRow(title)
+            cell.backgroundConfiguration = UIBackgroundConfiguration.listCell()
+            cell.accessibilityTraits = .button
+        }
         let problemCell = UICollectionView.CellRegistration<UICollectionViewListCell, OpenRouterError> { [weak self] cell, _, problem in
             let (title, message) = Self.card(for: problem)
             cell.contentConfiguration = UIHostingConfiguration {
@@ -485,6 +503,8 @@ final class DescribeViewController: UIViewController {
                 return collectionView.dequeueConfiguredReusableCell(using: problemCell, for: indexPath, item: self?.problem ?? .noKey)
             case .line(let id):
                 return collectionView.dequeueConfiguredReusableCell(using: lineCell, for: indexPath, item: id)
+            case .addRow:
+                return collectionView.dequeueConfiguredReusableCell(using: addCell, for: indexPath, item: "Add food")
             case .total:
                 return collectionView.dequeueConfiguredReusableCell(using: totalCell, for: indexPath, item: self?.draft.filledTotal ?? .zero)
             }
@@ -512,6 +532,7 @@ final class DescribeViewController: UIViewController {
         }
         snapshot.appendSections([.lines])
         snapshot.appendItems(draft.lines.map { .line($0.id) }, toSection: .lines)
+        if showsAddRow { snapshot.appendItems([.addRow], toSection: .lines) }
         if filledCount > 0 {
             snapshot.appendSections([.total])
             snapshot.appendItems([.total], toSection: .total)
@@ -520,9 +541,35 @@ final class DescribeViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: animated && viewIfLoaded?.window != nil)
     }
 
+    /// Whether "Add food" shows: the last line has something in it. With an empty last line
+    /// there is already one to type into, so no second way to add one.
+    private var showsAddRow: Bool {
+        draft.offersAddLine
+    }
+
+    /// Adds or takes away the "Add food" row to match the last line, without redrawing the
+    /// lines (so a field being typed in keeps its caret).
+    private func syncAddRow() {
+        var snapshot = dataSource.snapshot()
+        let has = snapshot.itemIdentifiers.contains(.addRow)
+        guard has != showsAddRow else { return }
+        if showsAddRow {
+            snapshot.appendItems([.addRow], toSection: .lines)
+        } else {
+            snapshot.deleteItems([.addRow])
+        }
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     /// Refreshes one line's caption in place (its field keeps the caret) and the total row.
     private func reconfigure(_ id: DescribeLine.ID) {
         var snapshot = dataSource.snapshot()
+        let hasAddRow = snapshot.itemIdentifiers.contains(.addRow)
+        if showsAddRow, !hasAddRow {
+            snapshot.appendItems([.addRow], toSection: .lines)
+        } else if !showsAddRow, hasAddRow {
+            snapshot.deleteItems([.addRow])
+        }
         let hasTotal = snapshot.sectionIdentifiers.contains(.total)
         if filledCount > 0, !hasTotal {
             snapshot.appendSections([.total])
@@ -545,6 +592,9 @@ extension DescribeViewController: UICollectionViewDelegate {
     /// Estimate to adjust, or why it has none, with Try again and fields to type it in.
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        if dataSource.itemIdentifier(for: indexPath) == .addRow {
+            return addLine()
+        }
         guard case .line(let id) = dataSource.itemIdentifier(for: indexPath), let line = draft.line(id) else { return }
         switch line.state {
         case .filled, .failed, .waiting:
