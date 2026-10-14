@@ -529,3 +529,10 @@ Ticket: `.scratch/extras/issues/01-record-extras.md`; spec `.scratch/extras/spec
 - [ ] Foods → a food → a serving: an **Also recorded (optional)** section with all four fields. Fill one, log that food: the entry carries it. Log it twice (quantity 2): doubled.
 - [ ] Delete an entry that has extras, then Undo: the extras are back.
 - [ ] Judgement calls: blank means "not known", never zero; the models give a number only where they can stand behind it, so a typed restaurant meal usually has no fiber or sodium (a brand lookup or a label gets them exactly); old entries have none; no targets or totals anywhere.
+
+## Added after v1: Entry cards in three rows (2026-10-14)
+
+Ticket: `.scratch/food-cards/issues/01-three-row-entry-cards.md`.
+
+- [ ] Food timeline: every entry card reads name / portion / macros. The calories sit level with the name's first line, even when the name takes two lines. Macros are whole grams ("P 1 · F 0 · C 27"); the entry's page still shows decimals.
+- [ ] Portions read naturally: "1 medium banana", "3 slices", "1 serving (28 g)", "150 g"; "4 × 1 egg" for a serving named with its own amount.

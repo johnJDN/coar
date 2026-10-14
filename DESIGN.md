@@ -264,7 +264,9 @@ Charts never show a legend when color already maps to a label on screen.
   pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food. A line
   swipes left to Remove (or press and hold the numbers under it), with no confirmation. An
   "Add food" row under the last line adds an empty one while the last line has text. Each
-  filled line has a "Save to Foods" toggle, on by default. On the timeline an Entry swipes
+  filled line has a "Save to Foods" toggle, on by default. On the timeline an entry card is three fixed rows: the name (up to two lines) with its
+  calories level with the first line, the portion as said ("3 slices"), and the gram macros
+  in whole grams. An Entry swipes
   left onto a coral Delete (a long swipe deletes at once), or press and hold for Save as food
   and Delete; deleting never confirms but shows an "Undo" toast on a glass capsule for 7
   seconds, which puts the Entry back as it was. An Entry's page lists its Extras (fiber,

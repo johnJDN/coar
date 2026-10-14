@@ -69,7 +69,7 @@ extension FoodText {
     /// "140 cal · P 12 · F 10 · C 0" with each gram macro's letter in its accent, so the
     /// three read apart at a glance; the numbers keep the line's colour. The one styled form of a macro line; plain
     /// `macroLine` stays for accessibility labels.
-    static func styledMacroLine(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true) -> AttributedString {
+    static func styledMacroLine(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true, wholeGrams: Bool = false) -> AttributedString {
         var line = AttributedString([leading, includesCalories ? calories(macros) : nil].compactMap { $0 }.joined(separator: " · "))
         for macro in [Macro.protein, .fat, .carbs] {
             if !line.characters.isEmpty { line += AttributedString(" · ") }
@@ -77,14 +77,15 @@ extension FoodText {
             // Both scopes: SwiftUI `Text` reads one, UIKit labels the other.
             letter.swiftUI.foregroundColor = macro.accent
             letter.uiKit.foregroundColor = macro.uiAccent
-            line += letter + AttributedString(" \(amount(macros[macro]))")
+            let grams = wholeGrams ? macros[macro].rounded().formatted(.number.precision(.fractionLength(0))) : amount(macros[macro])
+            line += letter + AttributedString(" \(grams)")
         }
         return line
     }
 
     /// `styledMacroLine` for UIKit list content.
-    static func styledMacroLineUIKit(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true) -> NSAttributedString {
-        (try? NSAttributedString(styledMacroLine(macros, leading: leading, includesCalories: includesCalories), including: \.uiKit))
+    static func styledMacroLineUIKit(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true, wholeGrams: Bool = false) -> NSAttributedString {
+        (try? NSAttributedString(styledMacroLine(macros, leading: leading, includesCalories: includesCalories, wholeGrams: wholeGrams), including: \.uiKit))
             ?? NSAttributedString(string: macroLine(macros))
     }
 }

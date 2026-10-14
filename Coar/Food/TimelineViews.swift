@@ -111,8 +111,10 @@ final class TimelineHourView: UICollectionReusableView {
     }
 }
 
-/// An Entry on the timeline: name, "2 × 1 egg" with the three gram macros in their accents,
-/// and the calories as the metric number (DESIGN.md §1.2, §3). A row on `surface` with
+/// An Entry on the timeline, in three fixed rows (`.scratch/food-cards/`): the name (up to two
+/// lines) with its calories level with the first line as the metric number; the portion as a
+/// person says it ("3 slices"); and the gram macros in their accents, in whole grams (the
+/// Entry's page keeps the decimals) (DESIGN.md §1.2, §3). A row on `surface` with
 /// `radiusInner` (a list row, not a `Card`) and the §6 card shadow, indented past the rail.
 /// Tapping opens the Entry's detail. Swiping the row left slides it off a coral Delete: a
 /// short swipe leaves Delete showing, a long one (or a fast flick) deletes at once, and the
@@ -140,7 +142,8 @@ final class EntryCell: UICollectionViewCell {
 
     private let cardView = UIView()
     private let nameLabel = UILabel()
-    private let detailLabel = UILabel()
+    private let portionLabel = UILabel()
+    private let macrosLabel = UILabel()
     private let caloriesLabel = UILabel()
 
     override init(frame: CGRect) {
@@ -178,10 +181,13 @@ final class EntryCell: UICollectionViewCell {
         nameLabel.adjustsFontForContentSizeCategory = true
         nameLabel.numberOfLines = 2
 
-        detailLabel.font = UIFont.label
-        detailLabel.textColor = UIColor.textSecondary
-        detailLabel.adjustsFontForContentSizeCategory = true
-        detailLabel.numberOfLines = 2
+        for label in [portionLabel, macrosLabel] {
+            label.font = UIFont.label
+            label.textColor = UIColor.textSecondary
+            label.adjustsFontForContentSizeCategory = true
+            label.numberOfLines = 1
+            label.lineBreakMode = .byTruncatingTail
+        }
 
         caloriesLabel.font = UIFont.metricNumber
         caloriesLabel.textColor = UIColor.textPrimary
@@ -189,14 +195,19 @@ final class EntryCell: UICollectionViewCell {
         caloriesLabel.setContentHuggingPriority(.required, for: .horizontal)
         caloriesLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let text = UIStackView(arrangedSubviews: [nameLabel, detailLabel])
-        text.axis = .vertical
-        text.spacing = 2
+        // Three rows whatever the food: the name (up to two lines) with the calories level
+        // with its first line, the portion, then the gram macros. Nothing shares a line, so
+        // nothing wraps into the next.
+        let top = UIStackView(arrangedSubviews: [nameLabel, caloriesLabel])
+        top.axis = .horizontal
+        top.alignment = .firstBaseline
+        top.spacing = Metrics.spaceTight
 
-        let row = UIStackView(arrangedSubviews: [text, caloriesLabel])
-        row.axis = .horizontal
-        row.alignment = .center
-        row.spacing = Metrics.spaceTight
+        let row = UIStackView(arrangedSubviews: [top, portionLabel, macrosLabel])
+        row.axis = .vertical
+        row.alignment = .fill
+        row.spacing = 2
+        row.setCustomSpacing(4, after: top)
         row.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(row)
 
@@ -326,15 +337,18 @@ final class EntryCell: UICollectionViewCell {
 
     func configure(with entry: EntryRecord) {
         nameLabel.text = entry.name
-        caloriesLabel.text = FoodText.calories(entry.macros)
-        detailLabel.attributedText = Self.detail(for: entry)
-        let grams = [Macro.protein, .fat, .carbs].map { "\(FoodText.amount(entry.macros[$0])) grams \($0.title.lowercased())" }
-        accessibilityLabel = "\(entry.name), \(FoodText.quantity(entry.quantity, of: entry.servingName)), \(FoodText.calories(entry.macros)), " + grams.joined(separator: ", ")
+        caloriesLabel.attributedText = Self.calories(entry.macros)
+        portionLabel.text = FoodText.portion(entry.quantity, of: entry.servingName)
+        macrosLabel.attributedText = FoodText.styledMacroLineUIKit(entry.macros, includesCalories: false, wholeGrams: true)
+        let grams = [Macro.protein, .fat, .carbs].map { "\(Int(entry.macros[$0].rounded())) grams \($0.title.lowercased())" }
+        accessibilityLabel = "\(entry.name), \(FoodText.portion(entry.quantity, of: entry.servingName)), \(FoodText.calories(entry.macros)), " + grams.joined(separator: ", ")
     }
 
-    /// "2 × 1 egg · P 12 · F 10 · C 0", each gram macro's letter in its accent.
-    private static func detail(for entry: EntryRecord) -> NSAttributedString {
-        FoodText.styledMacroLineUIKit(entry.macros, leading: FoodText.quantity(entry.quantity, of: entry.servingName), includesCalories: false)
+    /// "105 cal": the number as the metric number, the unit small and grey beside it.
+    private static func calories(_ macros: Macros) -> NSAttributedString {
+        let text = NSMutableAttributedString(string: macros.calories.formatted(.number.precision(.fractionLength(0))), attributes: [.font: UIFont.metricNumber, .foregroundColor: UIColor.textPrimary])
+        text.append(NSAttributedString(string: " cal", attributes: [.font: UIFont.label, .foregroundColor: UIColor.textSecondary]))
+        return text
     }
 }
 
