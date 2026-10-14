@@ -215,6 +215,35 @@ extension Store {
         try save()
     }
 
+    /// Puts back an Entry that was just deleted, as it was: the same id, time, Day, snapshot
+    /// (ADR 0003) and Meal breakdown, linked again to its Food Item or Meal if they are still
+    /// there. What Undo calls. Nothing happens when the Entry is already back.
+    @discardableResult
+    func restoreEntry(_ record: EntryRecord) throws -> EntryRecord {
+        if let existing = try fetchEntry(record.id) { return EntryRecord(existing)! }
+        let entry = Entry(context: context)
+        entry.id = record.id
+        entry.loggedAt = record.loggedAt
+        entry.day = record.day.rawValue
+        entry.name = record.name
+        entry.servingName = record.servingName
+        entry.quantity = record.quantity
+        entry.macros = record.macros
+        entry.foodItem = try record.foodItemID.flatMap { try fetchFoodItem($0) }
+        entry.meal = try record.mealID.flatMap { try fetchMeal($0) }
+        for (position, line) in record.components.enumerated() {
+            let component = EntryComponent(context: context)
+            component.name = line.name
+            component.servingName = line.servingName
+            component.quantity = line.quantity
+            component.macros = line.macros
+            component.sortOrder = Int32(position)
+            component.entry = entry
+        }
+        try save()
+        return EntryRecord(entry)!
+    }
+
     // MARK: - Writes
 
     private func write(name: String, servings drafts: [ServingDraft], to item: FoodItem) throws {

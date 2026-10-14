@@ -500,3 +500,13 @@ Ticket: `.scratch/watch-link/issues/01-link-a-health-workout.md`. Checked by the
 - [ ] `…` → Unlink Watch workout: the effort disappears from the card and from Recent workouts.
 - [ ] Do a second workout later the same day (a run, pickleball): link it to a workout you add with Log past workout.
 - [ ] Judgement calls: only a link is stored, the numbers come live from Health (so they disappear if Health loses the workout); no prompt on Finish; the first tap on the card asks for Health access; sleep and steps on Home don't ask again.
+
+## Added after v1: Quick delete on Food (2026-10-14)
+
+Ticket: `.scratch/quick-delete/issues/01-swipe-and-hold-to-delete.md`. Checked by the agent in the simulator.
+
+- [ ] Food timeline: swipe an entry left a little: a coral trash appears; tap it: the entry goes, "Deleted … Undo" shows above the tab bar; tap Undo within a few seconds: it comes back at the same time, and your totals go back.
+- [ ] Swipe an entry all the way left: it deletes at once with the same Undo.
+- [ ] Swipe one entry, then swipe another, scroll, or tap elsewhere: the first closes. A tap on a row with Delete showing closes it (doesn't open the entry).
+- [ ] Press and hold an entry: it lifts with Delete, and Save as food when it isn't from one of your foods yet. Save as food shows "Saved to Foods".
+- [ ] Judgement calls: no "Are you sure"; Undo lasts 7 seconds; the swipe is custom (only the row moves, the rail stays); the entry page's own Delete still asks first.

@@ -124,7 +124,7 @@ extension Store {
         }).compactMap(MealRecord.init)
     }
 
-    private func fetchMeal(_ id: MealRecord.ID) throws -> Meal? {
+    func fetchMeal(_ id: MealRecord.ID) throws -> Meal? {
         let request = Meal.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]

@@ -114,8 +114,29 @@ final class TimelineHourView: UICollectionReusableView {
 /// An Entry on the timeline: name, "2 × 1 egg" with the three gram macros in their accents,
 /// and the calories as the metric number (DESIGN.md §1.2, §3). A row on `surface` with
 /// `radiusInner` (a list row, not a `Card`) and the §6 card shadow, indented past the rail.
-/// Tapping opens the Entry's detail.
+/// Tapping opens the Entry's detail. Swiping the row left slides it off a coral Delete: a
+/// short swipe leaves Delete showing, a long one (or a fast flick) deletes at once, and the
+/// rail stays put. Only the row moves, so the Delete is exactly its height. A custom swipe
+/// because an hour section is not a list section, which is all UIKit's swipe actions serve.
 final class EntryCell: UICollectionViewCell {
+
+    /// Runs once the row has slid away or Delete was tapped; the owner deletes the Entry.
+    var onDelete: (() -> Void)?
+    /// Runs when a swipe leaves Delete showing, so the owner can close any other.
+    var onReveal: ((EntryCell) -> Void)?
+    /// The row alone, for the context menu's lift: not the rail beside it.
+    var previewTarget: UIView { cardView }
+    private(set) var isRevealed = false
+
+    private static let revealWidth: CGFloat = 88
+    private let deleteView = UIView()
+    private var deleteWidth: NSLayoutConstraint!
+    private var crossedFullSwipe = false
+    private lazy var pan: UIPanGestureRecognizer = {
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(panned(_:)))
+        pan.delegate = self
+        return pan
+    }()
 
     private let cardView = UIView()
     private let nameLabel = UILabel()
@@ -130,11 +151,27 @@ final class EntryCell: UICollectionViewCell {
         let rail = makeRailSlice()
         contentView.addSubview(rail)
 
+        deleteView.backgroundColor = UIColor.accentCoral
+        deleteView.layer.cornerRadius = Metrics.radiusInner
+        deleteView.layer.cornerCurve = .continuous
+        deleteView.clipsToBounds = true
+        deleteView.isHidden = true
+        deleteView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(deleteView)
+        let trash = UIImageView(image: UIImage(systemName: "trash.fill"))
+        trash.tintColor = .white
+        trash.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title3)
+        trash.translatesAutoresizingMaskIntoConstraints = false
+        deleteView.addSubview(trash)
+        deleteView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(deleteTapped)))
+
         cardView.backgroundColor = UIColor.surface
         cardView.layer.cornerRadius = Metrics.radiusInner
         cardView.layer.cornerCurve = .continuous
         cardView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cardView)
+        contentView.addGestureRecognizer(pan)
+        deleteWidth = deleteView.widthAnchor.constraint(equalToConstant: 0)
 
         nameLabel.font = UIFont.cardTitle
         nameLabel.textColor = UIColor.textPrimary
@@ -171,6 +208,12 @@ final class EntryCell: UICollectionViewCell {
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: TimelineMetrics.contentLeading),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Metrics.spaceTight),
+            deleteView.topAnchor.constraint(equalTo: cardView.topAnchor),
+            deleteView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
+            deleteView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+            deleteWidth,
+            trash.centerYAnchor.constraint(equalTo: deleteView.centerYAnchor),
+            trash.trailingAnchor.constraint(equalTo: deleteView.trailingAnchor, constant: -(Self.revealWidth - 24) / 2),
             row.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
             row.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Metrics.spaceInner),
             row.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -Metrics.spaceInner),
@@ -195,6 +238,88 @@ final class EntryCell: UICollectionViewCell {
         didSet { cardView.alpha = isHighlighted ? 0.85 : 1 }
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        setOffset(0)
+        isRevealed = false
+        onDelete = nil
+        onReveal = nil
+        accessibilityCustomActions = nil
+    }
+
+    // MARK: - Swipe to delete
+
+    /// How far the row is slid left, 0 to the cell's width: the coral Delete fills what it
+    /// uncovers.
+    private func setOffset(_ x: CGFloat) {
+        let offset = min(0, x)
+        cardView.transform = CGAffineTransform(translationX: offset, y: 0)
+        deleteWidth.constant = -offset
+        deleteView.isHidden = offset == 0
+    }
+
+    @objc private func panned(_ pan: UIPanGestureRecognizer) {
+        let start: CGFloat = isRevealed ? -Self.revealWidth : 0
+        let offset = start + pan.translation(in: contentView).x
+        let fullSwipe = -contentView.bounds.width * 0.5
+        switch pan.state {
+        case .began:
+            crossedFullSwipe = false
+        case .changed:
+            setOffset(offset)
+            if (offset <= fullSwipe) != crossedFullSwipe {
+                crossedFullSwipe = offset <= fullSwipe
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+        case .ended:
+            let velocity = pan.velocity(in: contentView).x
+            if offset <= fullSwipe || (velocity < -1500 && offset < -Self.revealWidth) {
+                slideAwayAndDelete()
+            } else {
+                settle(open: velocity < -300 || (offset < -Self.revealWidth / 2 && velocity < 300))
+            }
+        case .cancelled, .failed:
+            settle(open: isRevealed)
+        default:
+            break
+        }
+    }
+
+    /// Slides the row to rest, Delete showing or not.
+    private func settle(open: Bool) {
+        let wasRevealed = isRevealed
+        isRevealed = open
+        UIView.animate(springDuration: 0.4, bounce: 0.15) {
+            self.setOffset(open ? -Self.revealWidth : 0)
+            self.layoutIfNeeded()
+        }
+        if open, !wasRevealed { onReveal?(self) }
+    }
+
+    /// Closes a revealed Delete; the owner calls it on a scroll or a tap elsewhere.
+    func closeSwipe() {
+        guard isRevealed || cardView.transform.tx != 0 else { return }
+        settle(open: false)
+    }
+
+    private func slideAwayAndDelete() {
+        isRevealed = false
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseIn, animations: {
+            self.setOffset(-self.contentView.bounds.width)
+            self.layoutIfNeeded()
+        }, completion: { _ in self.onDelete?() })
+    }
+
+    @objc private func deleteTapped() {
+        slideAwayAndDelete()
+    }
+
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer === pan else { return true }
+        let velocity = pan.velocity(in: contentView)
+        return abs(velocity.x) > abs(velocity.y) * 1.5
+    }
+
     private func applyElevation() {
         Elevation.cardShadow(for: traitCollection.userInterfaceStyle).apply(to: cardView.layer)
     }
@@ -212,3 +337,5 @@ final class EntryCell: UICollectionViewCell {
         FoodText.styledMacroLineUIKit(entry.macros, leading: FoodText.quantity(entry.quantity, of: entry.servingName), includesCalories: false)
     }
 }
+
+extension EntryCell: UIGestureRecognizerDelegate {}

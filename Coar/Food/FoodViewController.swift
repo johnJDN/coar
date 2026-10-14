@@ -17,6 +17,10 @@ final class FoodViewController: UIViewController {
     private var timeObserver: NSObjectProtocol?
     private var remoteObserver: NSObjectProtocol?
     private var timeline: UICollectionView!
+    private let toast = ToastView()
+    /// The row a swipe left showing Delete, so another swipe, a scroll, or a tap elsewhere
+    /// can close it.
+    private weak var revealedCell: EntryCell?
     /// Sections are the 24 hours of the Day; items are the Entries in each.
     private var dataSource: UICollectionViewDiffableDataSource<Int, EntryRecord.ID>!
     private var entries: [EntryRecord.ID: EntryRecord] = [:]
@@ -61,6 +65,14 @@ final class FoodViewController: UIViewController {
         // below it moving together. As separate views pinned to the safe area they stayed
         // put while a pulled title slid over them.
         configureTimeline()
+        toast.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(toast)
+        NSLayoutConstraint.activate([
+            toast.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toast.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: Metrics.spaceEdge),
+            toast.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
+            toast.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Metrics.spaceTight),
+        ])
         NSLayoutConstraint.activate([
             timeline.topAnchor.constraint(equalTo: view.topAnchor),
             timeline.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -108,8 +120,18 @@ final class FoodViewController: UIViewController {
         view.addSubview(timeline)
 
         let entryCell = UICollectionView.CellRegistration<EntryCell, EntryRecord.ID> { [weak self] cell, _, id in
-            guard let entry = self?.entries[id] else { return }
+            guard let self, let entry = entries[id] else { return }
             cell.configure(with: entry)
+            cell.onDelete = { [weak self] in self?.delete(id) }
+            cell.onReveal = { [weak self] in
+                if self?.revealedCell !== $0 { self?.revealedCell?.closeSwipe() }
+                self?.revealedCell = $0
+            }
+            var actions = [UIAccessibilityCustomAction(name: "Delete") { [weak self] _ in self?.delete(id); return true }]
+            if canSaveAsFood(entry) {
+                actions.append(UIAccessibilityCustomAction(name: "Save as food") { [weak self] _ in self?.saveAsFood(id); return true })
+            }
+            cell.accessibilityCustomActions = actions
         }
         let hourHeader = UICollectionView.SupplementaryRegistration<TimelineHourView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] view, _, indexPath in
             guard let self else { return }
@@ -204,6 +226,50 @@ final class FoodViewController: UIViewController {
         Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: selectedDay.start()) ?? selectedDay.start()
     }
 
+    // MARK: - Deleting and saving an Entry
+
+    /// Deletes the Entry at once and offers Undo for a few seconds: no confirmation, since
+    /// putting it back restores it as it was (`Store.restoreEntry`).
+    private func delete(_ id: EntryRecord.ID) {
+        guard let entry = entries[id] else { return }
+        do {
+            try dependencies.store.deleteEntry(id)
+        } catch {
+            Self.logger.error("Failed to delete Entry: \(error, privacy: .public)")
+            return render()
+        }
+        revealedCell = nil
+        render()
+        toast.show("Deleted \(entry.name)", actionTitle: "Undo") { [weak self] in
+            do {
+                try self?.dependencies.store.restoreEntry(entry)
+            } catch {
+                Self.logger.error("Failed to restore Entry: \(error, privacy: .public)")
+            }
+            self?.render()
+        }
+    }
+
+    /// An Entry that isn't from a Food Item or Meal, and whose name isn't in Foods yet.
+    private func canSaveAsFood(_ entry: EntryRecord) -> Bool {
+        entry.foodItemID == nil && entry.mealID == nil && (try? dependencies.store.foodItem(named: entry.name)) == nil
+    }
+
+    private func saveAsFood(_ id: EntryRecord.ID) {
+        do {
+            let saved = try dependencies.store.saveEntryAsFood(id) != nil
+            render()
+            toast.show(saved ? "Saved to Foods" : "Already in Foods", duration: 3)
+        } catch {
+            Self.logger.error("Failed to save Entry as food: \(error, privacy: .public)")
+        }
+    }
+
+    private func closeRevealedCell() {
+        revealedCell?.closeSwipe()
+        revealedCell = nil
+    }
+
     // MARK: - Actions
 
     /// An hour's "+" starts the Entry at that hour; the toolbar "+" at the current time of
@@ -219,9 +285,50 @@ extension FoodViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        // A row left showing Delete closes first; the tap doesn't also open anything.
+        if revealedCell != nil { return closeRevealedCell() }
         guard let id = dataSource.itemIdentifier(for: indexPath),
               let sheet = EntryDetailViewController.sheet(dependencies: dependencies, entryID: id, onChange: { [weak self] in self?.render() })
         else { return render() }
         present(sheet, animated: true)
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        closeRevealedCell()
+    }
+
+    // MARK: Long press
+
+    /// Press and hold an Entry for Save as food (when it isn't one of the user's foods yet)
+    /// and Delete, which deletes at once like the swipe, with Undo.
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let indexPath = indexPaths.first, let id = dataSource.itemIdentifier(for: indexPath), let entry = entries[id] else { return nil }
+        closeRevealedCell()
+        return UIContextMenuConfiguration(identifier: id as NSUUID, previewProvider: nil) { [weak self] _ in
+            guard let self else { return nil }
+            var actions: [UIMenuElement] = []
+            if canSaveAsFood(entry) {
+                actions.append(UIAction(title: "Save as food", image: UIImage(systemName: "tray.and.arrow.down")) { [weak self] _ in self?.saveAsFood(id) })
+            }
+            actions.append(UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in self?.delete(id) })
+            return UIMenu(children: actions)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, highlightPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+        rowPreview(at: indexPath)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfiguration configuration: UIContextMenuConfiguration, dismissalPreviewForItemAt indexPath: IndexPath) -> UITargetedPreview? {
+        rowPreview(at: indexPath)
+    }
+
+    /// The row alone, rounded as it is, lifted by the menu: not the rail beside it.
+    private func rowPreview(at indexPath: IndexPath) -> UITargetedPreview? {
+        guard let cell = timeline.cellForItem(at: indexPath) as? EntryCell else { return nil }
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = .clear
+        parameters.visiblePath = UIBezierPath(roundedRect: cell.previewTarget.bounds, cornerRadius: Metrics.radiusInner)
+        return UITargetedPreview(view: cell.previewTarget, parameters: parameters)
     }
 }
