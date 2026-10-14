@@ -37,6 +37,7 @@ final class SettingsTargetsTests: XCTestCase {
             preferences: Preferences(defaults: UserDefaults(suiteName: #function)!),
             health: NoHealth(),
             healthReader: FakeHealthReader(),
+            healthWorkouts: FakeHealthWorkoutReader(),
             bodyWeightWriter: FakeBodyWeightWriter(),
             restTimer: RestTimer(),
             openRouter: OpenRouterClient(keys: FakeAPIKeyStore()),

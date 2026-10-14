@@ -9,6 +9,8 @@ struct AppDependencies {
     let preferences: Preferences
     let health: HealthAccess
     let healthReader: HealthReader
+    /// The Watch's workouts, read when the user links one to a Workout.
+    let healthWorkouts: HealthWorkoutReader
     let bodyWeightWriter: BodyWeightWriter
     /// The one rest timer, shared by the logger that starts it and the shell that shows it.
     let restTimer: RestTimer

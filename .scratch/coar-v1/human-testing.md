@@ -489,3 +489,14 @@ Ticket: `.scratch/ai-food-logging/issues/05-line-page-and-save-as-food.md` (comm
 - [ ] Add with it on: the food is in Foods, and typing its name next time shows "Your food".
 - [ ] Open the KIND bar (or label-photo food) you logged before this build: "Save as food" near the bottom; tap it: "Saved to Foods". Type its name in Describe: "Your food".
 - [ ] Judgement calls: a food already saved under the same name isn't saved twice (the line logs on its own; the entry page says "Already in Foods"); the toggle can show on such a line and simply saves nothing.
+
+## Added after v1: Watch link (2026-10-14)
+
+Ticket: `.scratch/watch-link/issues/01-link-a-health-workout.md`. Checked by the agent in the simulator with fake Health Workouts; the real Watch data is yours to check. **Do a Watch workout first** (strength training on the Watch, and log it in Coar), give it a few minutes to reach the iPhone.
+
+- [ ] Open that finished workout in Train: an **Apple Watch** card sits above the sets. With one Watch workout overlapping it, it shows its kcal and bpm and a "Link 3xx kcal" button. (First time the card may show nothing: tap the card, allow workouts, active energy and heart rate, and the list loads.)
+- [ ] Tap Link: the card now reads "… from Apple Health". Open Train: the workout's card in Recent workouts shows "🔥 3xx kcal · 1xx bpm".
+- [ ] Tap the card: a sheet lists the day's Watch workouts, the linked one checked. Pick a different one: it moves.
+- [ ] `…` → Unlink Watch workout: the effort disappears from the card and from Recent workouts.
+- [ ] Do a second workout later the same day (a run, pickleball): link it to a workout you add with Log past workout.
+- [ ] Judgement calls: only a link is stored, the numbers come live from Health (so they disappear if Health loses the workout); no prompt on Finish; the first tap on the card asks for Health access; sleep and steps on Home don't ask again.

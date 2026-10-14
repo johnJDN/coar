@@ -18,6 +18,9 @@ struct WorkoutRecord: Hashable, Identifiable {
     let exercises: [WorkoutExerciseRecord]
     /// Set for an Activity (CONTEXT.md "Activity"); nil for a strength Workout.
     var activity: WorkoutActivity? = nil
+    /// The Health Workout it is linked to (CONTEXT.md "Health Workout"): only the identifier
+    /// is kept, the effort numbers are read live from Apple Health (ADR 0002).
+    var healthWorkoutID: UUID? = nil
     let modifiedAt: Date
 
     var isActive: Bool { finishedAt == nil }

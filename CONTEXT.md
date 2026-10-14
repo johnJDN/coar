@@ -132,6 +132,18 @@ start and duration, and optionally a distance and notes, but no Exercises or set
 as a workout day like any other Workout.
 _Avoid_: Cardio, sport, session
 
+**Health Workout**:
+A workout Apple Health holds for the user, usually one the Apple Watch recorded. Coar reads
+it live and never stores it; a Workout is linked to one by its identifier alone. One Health
+Workout belongs to at most one Workout.
+_Avoid_: Watch workout (in the app's words), import, sync
+
+**Effort**:
+The active calories and average heart rate of a Health Workout, shown on the Workout linked
+to it as "320 kcal · 118 bpm". A reading of how hard the session was, not a number that
+enters food or Targets. Read live each time; the app keeps no copy.
+_Avoid_: Calories burned, intensity, strain
+
 **Active Workout**:
 The one Workout currently in progress. There is never more than one.
 _Avoid_: Current workout, live workout, in-progress session

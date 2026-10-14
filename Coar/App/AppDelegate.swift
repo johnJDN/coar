@@ -15,12 +15,21 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             preferences: Preferences(),
             health: health,
             healthReader: health,
+            healthWorkouts: healthWorkoutReader(health),
             bodyWeightWriter: health,
             restTimer: RestTimer(),
             openRouter: openRouter,
             foodEstimator: foodEstimator(openRouter)
         )
     }()
+
+    /// Apple Health's workouts, or canned ones while a debug build looks at the Watch link.
+    private static func healthWorkoutReader(_ health: HealthKitAccess) -> HealthWorkoutReader {
+        #if DEBUG
+        if DebugHealthWorkoutReader.isRequested { return DebugHealthWorkoutReader() }
+        #endif
+        return health
+    }
 
     /// The Keychain, or a stand-in key while a debug build uses canned estimates.
     private static func keyStore() -> APIKeyStore {

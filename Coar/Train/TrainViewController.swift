@@ -320,6 +320,8 @@ final class TrainViewController: ScreenViewController {
 
     // MARK: - Recent workouts
 
+    private var effortTask: Task<Void, Never>?
+
     private func renderRecent() {
         let recent: [WorkoutRecord]
         do {
@@ -332,6 +334,7 @@ final class TrainViewController: ScreenViewController {
         if recent.isEmpty {
             recentStack.addArrangedSubview(CardView.emptyState(caption: "Finished workouts land here.", accessibilityLabel: "No workouts yet. Finished workouts land here."))
         }
+        var cards: [WorkoutRecord.ID: WorkoutCardControl] = [:]
         for workout in recent {
             let card = WorkoutCardControl(workout: workout, distanceUnit: DistanceUnit(dependencies.preferences.massUnit))
             card.addAction(UIAction { [weak self] _ in
@@ -339,6 +342,14 @@ final class TrainViewController: ScreenViewController {
                 navigationController?.pushViewController(WorkoutScreens.screen(for: workout, dependencies: dependencies), animated: true)
             }, for: .touchUpInside)
             recentStack.addArrangedSubview(card)
+            cards[workout.id] = card
+        }
+        effortTask?.cancel()
+        effortTask = Task { [weak self] in
+            guard let self else { return }
+            let texts = await WorkoutEffort.texts(for: recent, reader: dependencies.healthWorkouts)
+            guard !Task.isCancelled else { return }
+            for (id, text) in texts { cards[id]?.showEffort(text) }
         }
     }
 

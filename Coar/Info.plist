@@ -7,7 +7,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Coar uses the camera to take Progress Photos, and photos of your food or its nutrition label to fill in the macros.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Coar reads your sleep and steps from Health to show them on Home.</string>
+	<string>Coar reads your sleep and steps from Health to show them on Home, and the calories and heart rate of a workout you link to one of yours.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Coar writes the Body Weight you log so the Health app agrees with it.</string>
 	<key>UIBackgroundModes</key>

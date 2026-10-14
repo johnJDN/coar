@@ -82,6 +82,10 @@ HealthKit, so the architecture favours the Watch).
   survives app kill; one left open 12+ hours is offered "finish or discard" on launch.
   Finish drops sets that were never completed and offers to update the plan's target
   weights to today's.
+- **Apple Watch link**: a finished workout can be linked to a workout Apple Health holds
+  (usually one the Watch recorded). The workout then shows its effort, the active calories
+  and average heart rate, as a way to compare how hard sessions were. Optional per workout;
+  the numbers are read live from Health, never copied into Coar (ADR 0002).
 - **Supersets**: adjacent exercises linked in a plan; the logger keeps both cards in
   place with no auto-advance; set counts may differ.
 - **Rest timer**: auto-starts on set completion (after the last exercise of a superset

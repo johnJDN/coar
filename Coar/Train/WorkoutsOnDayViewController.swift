@@ -37,12 +37,23 @@ final class WorkoutsOnDayViewController: ScreenViewController {
         }
         navigationItem.subtitle = TrainText.count(workouts.count, "workout")
         contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        var cards: [WorkoutRecord.ID: WorkoutCardControl] = [:]
         for workout in workouts {
             let card = WorkoutCardControl(workout: workout, distanceUnit: DistanceUnit(dependencies.preferences.massUnit))
             card.addAction(UIAction { [weak self] _ in self?.open(workout) }, for: .touchUpInside)
             contentStack.addArrangedSubview(card)
+            cards[workout.id] = card
+        }
+        effortTask?.cancel()
+        effortTask = Task { [weak self] in
+            guard let self else { return }
+            let texts = await WorkoutEffort.texts(for: workouts, reader: dependencies.healthWorkouts)
+            guard !Task.isCancelled else { return }
+            for (id, text) in texts { cards[id]?.showEffort(text) }
         }
     }
+
+    private var effortTask: Task<Void, Never>?
 
     private func open(_ workout: WorkoutRecord) {
         navigationController?.pushViewController(WorkoutScreens.screen(for: workout, dependencies: dependencies), animated: true)

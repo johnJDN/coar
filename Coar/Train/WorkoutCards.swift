@@ -29,6 +29,18 @@ final class WorkoutCardControl: CardControl {
         accessibilityLabel = "\(workout.title), \(when.text ?? ""), \(caption.text ?? "")"
     }
 
+    private let effortLabel = UILabel()
+
+    /// The linked Health Workout's effort under the caption ("🔥 320 kcal · 118 bpm"), read
+    /// after the card is on screen; nil takes it away again.
+    func showEffort(_ text: String?) {
+        guard let text else { return effortLabel.removeFromSuperview() }
+        effortLabel.attributedText = WorkoutEffort.line(text)
+        effortLabel.adjustsFontForContentSizeCategory = true
+        if effortLabel.superview == nil { card.contentStack.addArrangedSubview(effortLabel) }
+        accessibilityLabel = (accessibilityLabel ?? "") + ", \(text) from Apple Watch"
+    }
+
     /// "6:12 PM · 50 min" once finished; "Active · since 6:12 PM" while it is the Active Workout.
     private static func whenText(_ workout: WorkoutRecord) -> String {
         guard let finishedAt = workout.finishedAt else {

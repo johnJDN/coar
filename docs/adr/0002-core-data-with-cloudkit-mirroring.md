@@ -28,8 +28,11 @@ AI calls, not a database.
 - The model is written to CloudKit's constraints from day one: every attribute optional
   or defaulted, every relationship optional with an inverse, no unique constraints, no
   ordered relationships (store an explicit `sortOrder`).
-- HealthKit-sourced data (sleep, steps) is never persisted in the store. Body weight is
-  stored in the app and also written to HealthKit.
+- HealthKit-sourced data (sleep, steps, a Health Workout's calories and heart rate) is
+  never persisted in the store. Body weight is stored in the app and also written to
+  HealthKit. A Workout linked to a Health Workout keeps only its identifier, which is a
+  reference and no health reading; the numbers are read live (decided 2026-10-14 for
+  `.scratch/watch-link/`, replacing a plan to copy them).
 - Progress photos use external binary storage so CloudKit syncs them as assets.
 - No Supabase or other backend until a feature needs a server.
 

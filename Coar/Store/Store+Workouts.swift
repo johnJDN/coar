@@ -106,6 +106,28 @@ extension Store {
         try save()
     }
 
+    /// Links a finished Workout to a Health Workout, or unlinks it with nil. Only the
+    /// identifier is stored (ADR 0002). Linking an already-linked Health Workout moves the
+    /// link: one Health Workout belongs to at most one Workout.
+    func linkHealthWorkout(_ healthWorkoutID: UUID?, to id: WorkoutRecord.ID) throws {
+        guard let workout = try fetchWorkout(id), workout.finishedAt != nil else { return }
+        if let healthWorkoutID {
+            let request = Workout.fetchRequest()
+            request.predicate = NSPredicate(format: "healthWorkoutID == %@ AND id != %@", healthWorkoutID as CVarArg, id as CVarArg)
+            for other in try context.fetch(request) { other.healthWorkoutID = nil }
+        }
+        workout.healthWorkoutID = healthWorkoutID
+        try save()
+    }
+
+    /// The Health Workouts already linked to a Workout, optionally leaving out one Workout's
+    /// own: what the link sheet must not offer again.
+    func linkedHealthWorkoutIDs(excluding id: WorkoutRecord.ID? = nil) throws -> Set<UUID> {
+        let request = Workout.fetchRequest()
+        request.predicate = NSPredicate(format: "healthWorkoutID != nil")
+        return Set(try context.fetch(request).filter { $0.id != id }.compactMap(\.healthWorkoutID))
+    }
+
     /// The one Workout with no `finishedAt`, if any.
     func activeWorkout() throws -> WorkoutRecord? {
         let request = Workout.fetchRequest()
@@ -346,6 +368,7 @@ private extension WorkoutRecord {
             planName: object.plan?.name ?? object.planName,
             exercises: object.exerciseRecords,
             activity: object.activityName.map { WorkoutActivity(name: $0, distanceMeters: object.distanceMeters > 0 ? object.distanceMeters : nil, notes: object.notes) },
+            healthWorkoutID: object.healthWorkoutID,
             modifiedAt: modifiedAt
         )
     }

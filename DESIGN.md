@@ -259,8 +259,13 @@ Charts never show a legend when color already maps to a label on screen.
   → Recent workouts; a row of three `PillChip`s under the grid pushes Exercises, Body
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no
   auto-advance) and the rest-timer accessory bar (auto-starts on set completion; after
-  the last exercise of a superset group). Exercise detail: estimated-1RM progression
-  chart plus recent sets.
+  the last exercise of a superset group). A finished Workout opens with an Apple Watch
+  card above its sets: linked, its Effort ("320 kcal · 118 bpm", read live from Apple
+  Health) over the Health Workout it is; unlinked, an invitation, with a one-tap Link when
+  exactly one Health Workout overlaps it; tapping the card lists the Day's Health Workouts
+  in a sheet, and the `…` menu unlinks. Linked Workouts show their Effort ("🔥 318 kcal ·
+  118 bpm", a flame in `accentAmber`) on their cards in Recent workouts and a Day's list.
+  Exercise detail: estimated-1RM progression chart plus recent sets.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).
 - **Settings** — sheet from avatar button: targets, units (lbs default), HealthKit
   access, and the OpenRouter key (AI section: pasted once and checked before it is kept,

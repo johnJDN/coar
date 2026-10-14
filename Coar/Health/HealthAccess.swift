@@ -158,3 +158,93 @@ private extension SleepSample {
         self.init(start: sample.startDate, end: sample.endDate, stage: stage)
     }
 }
+
+// MARK: - Health Workouts read
+
+extension HealthKitAccess: HealthWorkoutReader {
+
+    /// What linking a Workout reads: workouts, and the active energy and heart rate Health
+    /// holds for them. Asked separately from sleep and steps so that Home's Health tiles
+    /// never go back to "Connect" because a new type was added.
+    static let workoutReadTypes: Set<HKObjectType> = [
+        HKObjectType.workoutType(),
+        HKQuantityType(.activeEnergyBurned),
+        HKQuantityType(.heartRate),
+    ]
+
+    func requestWorkoutAccess() async throws {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        try await healthStore.requestAuthorization(toShare: [], read: Self.workoutReadTypes)
+    }
+
+    func healthWorkouts(on day: Day) async throws -> [HealthWorkout] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let calendar = Calendar.current
+        let start = day.start(in: calendar)
+        let end = calendar.date(byAdding: .day, value: 1, to: start)!
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        return try await healthWorkouts(matching: predicate).sorted { $0.start < $1.start }
+    }
+
+    func healthWorkouts(withIDs ids: [UUID]) async throws -> [UUID: HealthWorkout] {
+        guard HKHealthStore.isHealthDataAvailable(), !ids.isEmpty else { return [:] }
+        let found = try await healthWorkouts(matching: HKQuery.predicateForObjects(with: Set(ids)))
+        return Dictionary(found.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func healthWorkouts(matching predicate: NSPredicate) async throws -> [HealthWorkout] {
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.workout(predicate)],
+            sortDescriptors: [SortDescriptor(\.startDate)]
+        )
+        return try await descriptor.result(for: healthStore).map(HealthWorkout.init)
+    }
+}
+
+private extension HealthWorkout {
+    /// A HealthKit workout as Coar shows it: its kind by name, and the active energy and
+    /// average heart rate Health summed over it.
+    init(_ workout: HKWorkout) {
+        let beatsPerMinute = HKUnit.count().unitDivided(by: .minute())
+        self.init(
+            id: workout.uuid,
+            name: workout.workoutActivityType.coarName,
+            start: workout.startDate,
+            end: workout.endDate,
+            activeKilocalories: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie()),
+            averageHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: beatsPerMinute)
+        )
+    }
+}
+
+private extension HKWorkoutActivityType {
+    /// The kinds a Watch records most, in the words Coar uses; "Workout" for the rest.
+    var coarName: String {
+        switch self {
+        case .traditionalStrengthTraining: return "Strength training"
+        case .functionalStrengthTraining: return "Functional strength"
+        case .coreTraining: return "Core training"
+        case .highIntensityIntervalTraining: return "HIIT"
+        case .mixedCardio: return "Mixed cardio"
+        case .running: return "Run"
+        case .walking: return "Walk"
+        case .hiking: return "Hike"
+        case .cycling: return "Cycle"
+        case .swimming: return "Swim"
+        case .rowing: return "Row"
+        case .elliptical: return "Elliptical"
+        case .stairClimbing: return "Stair climbing"
+        case .yoga: return "Yoga"
+        case .pilates: return "Pilates"
+        case .dance: return "Dance"
+        case .pickleball: return "Pickleball"
+        case .tennis: return "Tennis"
+        case .basketball: return "Basketball"
+        case .soccer: return "Soccer"
+        case .golf: return "Golf"
+        case .boxing: return "Boxing"
+        case .climbing: return "Climbing"
+        default: return "Workout"
+        }
+    }
+}
