@@ -72,7 +72,7 @@ extension Store {
         in calendar: Calendar = .current
     ) throws -> EntryRecord {
         guard let meal = try fetchMeal(mealID), let record = MealRecord(meal) else { throw NotFound(what: "Meal") }
-        let entry = makeEntry(name: record.name, servingName: EntryRecord.mealServingName, quantity: quantity, macros: record.macros.scaled(by: quantity), at: instant, in: calendar)
+        let entry = makeEntry(name: record.name, servingName: EntryRecord.mealServingName, quantity: quantity, macros: record.macros.scaled(by: quantity), extras: record.extras.scaled(by: quantity), at: instant, in: calendar)
         entry.meal = meal
         for (position, line) in record.components.enumerated() {
             let component = EntryComponent(context: context)
@@ -80,6 +80,7 @@ extension Store {
             component.servingName = line.servingName
             component.quantity = line.quantity
             component.macros = line.macros
+            component.extras = line.extras
             component.sortOrder = Int32(position)
             component.entry = entry
         }
@@ -165,7 +166,8 @@ private extension Meal {
                     name: foodItem.name ?? "",
                     servingName: object.serving?.name ?? "",
                     quantity: object.quantity,
-                    servingMacros: object.serving?.macros ?? .zero
+                    servingMacros: object.serving?.macros ?? .zero,
+                    servingExtras: object.serving?.extras ?? Extras()
                 )
             }
     }

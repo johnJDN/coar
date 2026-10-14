@@ -3,7 +3,7 @@ import Foundation
 /// An Estimate (CONTEXT.md): the name, portion, and macros given for a food the user described
 /// or photographed, before it is logged. Logging it makes an Entry, which keeps its own copy
 /// (ADR 0003) and nothing else of the Estimate: where the numbers came from shows only here.
-struct Estimate: Equatable, Codable {
+struct Estimate: Equatable {
 
     /// Where the numbers came from, shown beside them so the user knows which to check.
     enum Source: String, Codable {
@@ -41,10 +41,52 @@ struct Estimate: Equatable, Codable {
     var needsLookup = false
     /// The Food Item or Meal this is, when it is one of the user's: logged through it.
     var match: LibraryMatch?
+    /// Fiber, sodium, caffeine, and alcohol for the whole portion, only those the source
+    /// knew (CONTEXT.md "Extra"); never guessed for a brand or restaurant food.
+    var extras = Extras()
 
     /// "2 × large egg".
     var portion: String {
         FoodText.quantity(quantity, of: unit)
+    }
+}
+
+// MARK: - Saved drafts and the line cache
+
+/// Read with a missing field taking its default, so the Describe draft and the estimate cache
+/// saved by an older build still load (a new field must never cost the user a draft).
+extension Estimate: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case name, quantity, unit, grams, macros, source, assumption, needsLookup, match, extras
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        quantity = try container.decode(Double.self, forKey: .quantity)
+        unit = try container.decode(String.self, forKey: .unit)
+        grams = try container.decodeIfPresent(Double.self, forKey: .grams)
+        macros = try container.decode(Macros.self, forKey: .macros)
+        source = try container.decode(Source.self, forKey: .source)
+        assumption = try container.decode(String.self, forKey: .assumption)
+        needsLookup = try container.decodeIfPresent(Bool.self, forKey: .needsLookup) ?? false
+        match = try container.decodeIfPresent(LibraryMatch.self, forKey: .match)
+        extras = try container.decodeIfPresent(Extras.self, forKey: .extras) ?? Extras()
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(quantity, forKey: .quantity)
+        try container.encode(unit, forKey: .unit)
+        try container.encodeIfPresent(grams, forKey: .grams)
+        try container.encode(macros, forKey: .macros)
+        try container.encode(source, forKey: .source)
+        try container.encode(assumption, forKey: .assumption)
+        try container.encode(needsLookup, forKey: .needsLookup)
+        try container.encodeIfPresent(match, forKey: .match)
+        if !extras.isEmpty { try container.encode(extras, forKey: .extras) }
     }
 }
 
@@ -115,6 +157,10 @@ extension Estimate {
                 let carbs: Double
                 let assumption: String?
                 let match: ModelMatch?
+                let fiber_g: Double?
+                let sodium_mg: Double?
+                let caffeine_mg: Double?
+                let alcohol_drinks: Double?
             }
             let items: [Item]
         }
@@ -128,7 +174,8 @@ extension Estimate {
                 grams: item.grams.flatMap { $0 > 0 ? $0 : nil },
                 macros: Macros(calories: item.calories, protein: item.protein, fat: item.fat, carbs: item.carbs),
                 source: item.source == "label" ? .label : .photo,
-                assumption: item.assumption?.trimmingCharacters(in: .whitespaces) ?? ""
+                assumption: item.assumption?.trimmingCharacters(in: .whitespaces) ?? "",
+                extras: Extras(fiber: item.fiber_g, sodium: item.sodium_mg, caffeine: item.caffeine_mg, alcohol: item.alcohol_drinks).normalised()
             )
             return (estimate, item.match)
         }
@@ -154,6 +201,10 @@ extension Estimate {
             let needs_lookup: Bool?
             let assumption: String?
             let match: ModelMatch?
+            let fiber_g: Double?
+            let sodium_mg: Double?
+            let caffeine_mg: Double?
+            let alcohol_drinks: Double?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw ReplyError.unreadable }
         guard reply.is_food else { throw ReplyError.notFood }
@@ -166,7 +217,8 @@ extension Estimate {
             macros: Macros(calories: reply.calories, protein: reply.protein, fat: reply.fat, carbs: reply.carbs),
             source: source,
             assumption: reply.assumption?.trimmingCharacters(in: .whitespaces) ?? "",
-            needsLookup: reply.needs_lookup ?? false
+            needsLookup: reply.needs_lookup ?? false,
+            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised()
         )
         return (estimate, reply.match)
     }

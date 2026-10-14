@@ -83,6 +83,18 @@ struct DescribeLineForm: View {
                 Text(sourceNote)
             }
 
+            if !edit.shownExtras.isEmpty {
+                Section {
+                    ExtraRows(extras: edit.shownExtras) { extra in
+                        Binding(get: { edit.typed(extra) }, set: { edit.setExtra(extra, $0) })
+                    }
+                } header: {
+                    Text("Also recorded")
+                } footer: {
+                    Text("What the food had beyond the macros. Only what is known is shown.")
+                }
+            }
+
             if edit.offersSaveAsFood {
                 Section {
                     Toggle("Save as food", isOn: $edit.saveAsFood)

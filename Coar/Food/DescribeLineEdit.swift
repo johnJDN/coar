@@ -13,6 +13,8 @@ struct DescribeLineEdit: Equatable {
     private(set) var typedQuantity: Double?
     /// As typed; an empty field counts as 0.
     private(set) var typedMacros: [Macro: Double?]
+    /// The Extras the line holds, as typed; an empty field is not recorded.
+    private(set) var typedExtras: [Extra: Double?]
     var saveAsFood: Bool
     /// What the line held when the page opened; nil for a line with no Estimate yet.
     let original: Estimate?
@@ -28,6 +30,7 @@ struct DescribeLineEdit: Equatable {
         unit = estimate?.unit ?? "serving"
         typedQuantity = estimate?.quantity ?? 1
         typedMacros = Dictionary(uniqueKeysWithValues: Macro.allCases.map { macro in (macro, estimate?.macros[macro]) })
+        typedExtras = Dictionary(uniqueKeysWithValues: Extra.allCases.map { extra in (extra, estimate?.extras[extra]) })
         macrosQuantity = estimate?.quantity ?? 1
         saveAsFood = line.saveAsFood
     }
@@ -43,8 +46,29 @@ struct DescribeLineEdit: Equatable {
         guard let current = quantity, macrosQuantity > 0, let macros = Macros(typed: typedMacros) else { return }
         let scaled = macros.scaled(by: current / macrosQuantity)
         typedMacros = Dictionary(uniqueKeysWithValues: Macro.allCases.map { ($0, scaled[$0]) })
+        if let extras = Extras(typed: typedExtras) {
+            let scaledExtras = extras.scaled(by: current / macrosQuantity)
+            typedExtras = Dictionary(uniqueKeysWithValues: Extra.allCases.map { ($0, scaledExtras[$0]) })
+        }
         macrosQuantity = current
     }
+
+    mutating func setExtra(_ extra: Extra, _ value: Double?) {
+        typedExtras[extra] = value
+        extrasTyped = true
+    }
+
+    func typed(_ extra: Extra) -> Double? {
+        typedExtras[extra] ?? nil
+    }
+
+    /// The Extras the page shows: those the line holds, and any typed here.
+    var shownExtras: [Extra] {
+        Extra.allCases.filter { typed($0) != nil || (original?.extras[$0] != nil) }
+    }
+
+    /// An Extra was typed on this page.
+    private(set) var extrasTyped = false
 
     mutating func setMacro(_ macro: Macro, _ value: Double?) {
         typedMacros[macro] = value
@@ -70,7 +94,7 @@ struct DescribeLineEdit: Equatable {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedUnit = unit.trimmingCharacters(in: .whitespacesAndNewlines)
         let renamed = trimmedName != (original?.name ?? trimmedName) || trimmedUnit != (original?.unit ?? trimmedUnit)
-        let ownNumbers = macrosTyped || original == nil
+        let ownNumbers = macrosTyped || extrasTyped || original == nil
         let keepsMatch = !ownNumbers && !renamed
         var grams: Double?
         if let original, let originalGrams = original.grams, original.quantity > 0, !renamed {
@@ -84,7 +108,8 @@ struct DescribeLineEdit: Equatable {
             macros: macros,
             source: ownNumbers || (renamed && original?.match != nil) ? .typed : (original?.source ?? .typed),
             assumption: ownNumbers ? "" : (original?.assumption ?? ""),
-            match: keepsMatch ? original?.match : nil
+            match: keepsMatch ? original?.match : nil,
+            extras: (Extras(typed: typedExtras) ?? Extras()).normalised()
         )
     }
 }
@@ -94,7 +119,7 @@ extension Estimate {
     /// The Serving that Save as food creates, and how many of it this line is
     /// (`ServingDraft.toSave`).
     var servingToSave: (serving: ServingDraft, quantity: Double) {
-        ServingDraft.toSave(unit: unit, quantity: quantity, macros: macros, grams: grams)
+        ServingDraft.toSave(unit: unit, quantity: quantity, macros: macros, extras: extras, grams: grams)
     }
 }
 
@@ -103,15 +128,15 @@ extension ServingDraft {
     /// The Serving that Save as food creates from a portion, and how many of it the portion
     /// is. A portion counted in grams or millilitres ("150 × g") saves a "100 g" Serving, so
     /// the food logs sensibly next time; anything else saves one of its unit.
-    static func toSave(unit: String, quantity: Double, macros: Macros, grams: Double?) -> (serving: ServingDraft, quantity: Double) {
+    static func toSave(unit: String, quantity: Double, macros: Macros, extras: Extras = Extras(), grams: Double?) -> (serving: ServingDraft, quantity: Double) {
         let per100 = ["g", "gram", "grams", "ml"]
         let unitWord = unit.lowercased().trimmingCharacters(in: .whitespaces)
         if per100.contains(unitWord), quantity > 0 {
             let symbol = unitWord == "ml" ? "ml" : "g"
             let servings = quantity / 100
-            return (ServingDraft(name: "100 \(symbol)", macros: macros.scaled(by: 1 / servings), grams: symbol == "g" ? 100 : nil, isDefault: true), servings)
+            return (ServingDraft(name: "100 \(symbol)", macros: macros.scaled(by: 1 / servings), grams: symbol == "g" ? 100 : nil, isDefault: true, extras: extras.scaled(by: 1 / servings)), servings)
         }
         let perOne = quantity > 0 ? 1 / quantity : 1
-        return (ServingDraft(name: unit, macros: macros.scaled(by: perOne), grams: grams.map { $0 * perOne }, isDefault: true), quantity)
+        return (ServingDraft(name: unit, macros: macros.scaled(by: perOne), grams: grams.map { $0 * perOne }, isDefault: true, extras: extras.scaled(by: perOne)), quantity)
     }
 }

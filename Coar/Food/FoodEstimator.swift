@@ -26,6 +26,28 @@ enum FoodModels {
     static let photo = "google/gemini-3.8-flash"
 }
 
+/// The four Extras the models are asked for beside the macros (CONTEXT.md "Extra"), worded
+/// once for the text, photo, and lookup prompts: a number only where the model can stand
+/// behind it, null otherwise, so nothing guessed is shown as a reading.
+enum FoodExtrasPrompt {
+
+    static let rules = """
+    - fiber_g, sodium_mg, caffeine_mg and alcohol_drinks: for the whole portion, or null when you don't know them. Give a number only where you can stand behind it: a plain whole food you know well (an egg, a banana, rice) or a published figure. For a restaurant, brand or mixed dish you are unsure of, use null, not a guess.
+    - fiber_g in grams and sodium_mg in milligrams; 0 is a real value for a food with none.
+    - caffeine_mg in milligrams (coffee, tea, cola, energy drinks, chocolate); null when there is none or you don't know.
+    - alcohol_drinks in US standard drinks of 14 g pure alcohol (a 12 oz beer at 5%, 5 oz of wine at 12%, and 1.5 oz of 40% spirits are one each); null when there is none or you don't know. Name the strength you assumed in the assumption.
+    """
+
+    /// The four fields' place in a strict schema: a number, or null.
+    static let properties: [String: Any] = [
+        "fiber_g": ["type": ["number", "null"]],
+        "sodium_mg": ["type": ["number", "null"]],
+        "caffeine_mg": ["type": ["number", "null"]],
+        "alcohol_drinks": ["type": ["number", "null"]],
+    ]
+    static let required = ["fiber_g", "sodium_mg", "caffeine_mg", "alcohol_drinks"]
+}
+
 /// What the text model is told, and the JSON it must reply with. Every field is required
 /// (strict schemas allow no optional ones); `grams` is null when unknown.
 enum FoodEstimatePrompt {
@@ -44,6 +66,7 @@ enum FoodEstimatePrompt {
     - assumption: one short sentence on what you assumed, or "" if nothing.
     - is_food: false if the line is not something eaten or drunk; then the numbers are 0.
     - match: null, unless a list of the person's saved foods follows.
+    \(FoodExtrasPrompt.rules)
     """
 
     /// The catalogue section, added after the rules when the user has saved foods.
@@ -58,8 +81,8 @@ enum FoodEstimatePrompt {
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match"],
-        "properties": [
+        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match"] + FoodExtrasPrompt.required,
+        "properties": ([
             "is_food": ["type": "boolean"],
             "name": ["type": "string"],
             "quantity": ["type": "number"],
@@ -84,7 +107,7 @@ enum FoodEstimatePrompt {
                     ],
                 ] as [String: Any],
             ]],
-        ],
+        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first },
     ]
 }
 
@@ -106,6 +129,8 @@ enum FoodPhotoPrompt {
     - calories in kcal; protein, fat and carbs in grams; for the whole portion.
     - assumption: one short sentence on what you assumed about the portion or preparation, or "".
     - match: null, unless a list of the person's saved foods follows.
+    For a label item, read fiber, sodium, caffeine and alcohol exactly from the label when it prints them, and use null for any it doesn't.
+    \(FoodExtrasPrompt.rules)
     If there is no food or label in the photo, return no items.
     """
 
@@ -125,7 +150,7 @@ enum FoodPhotoPrompt {
         properties["needs_lookup"] = nil
         properties["source"] = ["type": "string", "enum": ["photo", "label"]]
         item["properties"] = properties
-        item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"]
+        item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"] + FoodExtrasPrompt.required
         return [
             "type": "object",
             "additionalProperties": false,
@@ -150,6 +175,7 @@ enum FoodLookupPrompt {
     - quantity and unit: the portion as the person counts it; the unit is singular ("bowl", "bar", "g").
     - grams: the whole portion's weight if published, else null.
     - calories in kcal; protein, fat and carbs in grams; null for any you did not find published.
+    - fiber_g (grams), sodium_mg (milligrams), caffeine_mg (milligrams) and alcohol_drinks (US standard drinks of 14 g pure alcohol, from the published strength and size): from the same published source, null for any it doesn't give. Never estimate these. A brand that doesn't publish caffeine gets null.
     - assumption: one short sentence naming where the numbers come from and anything assumed.
     - is_food is false only if the line is not something eaten or drunk.
     """
@@ -157,8 +183,8 @@ enum FoodLookupPrompt {
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "found", "product", "source_url", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption"],
-        "properties": [
+        "required": ["is_food", "found", "product", "source_url", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption"] + FoodExtrasPrompt.required,
+        "properties": ([
             "is_food": ["type": "boolean"],
             "found": ["type": "boolean"],
             "product": ["type": "string"],
@@ -172,7 +198,7 @@ enum FoodLookupPrompt {
             "fat": ["type": ["number", "null"]],
             "carbs": ["type": ["number", "null"]],
             "assumption": ["type": "string"],
-        ],
+        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first },
     ]
 
     /// The published label in a lookup's reply, or nil when the model found no label for this
@@ -191,6 +217,10 @@ enum FoodLookupPrompt {
             let fat: Double?
             let carbs: Double?
             let assumption: String
+            let fiber_g: Double?
+            let sodium_mg: Double?
+            let caffeine_mg: Double?
+            let alcohol_drinks: Double?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw Estimate.ReplyError.unreadable }
         guard reply.is_food, reply.found,
@@ -203,7 +233,8 @@ enum FoodLookupPrompt {
             grams: reply.grams.flatMap { $0 > 0 ? $0 : nil },
             macros: Macros(calories: calories, protein: protein, fat: fat, carbs: carbs),
             source: .lookedUp,
-            assumption: plainText(reply.assumption).trimmingCharacters(in: .whitespaces)
+            assumption: plainText(reply.assumption).trimmingCharacters(in: .whitespaces),
+            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised()
         )
     }
 
@@ -239,7 +270,14 @@ final class OpenRouterFoodEstimator: FoodEstimator {
             return resolved
         }
         guard estimate.needsLookup else { return estimate }
-        return await lookUp(line, replacing: estimate) ?? estimate
+        if let found = await lookUp(line, replacing: estimate) { return found }
+        // No label for this brand or restaurant food: its fiber and sodium would be guesses
+        // (tested: a guessed 150 mg for a drink with 5), so they are left blank. Caffeine and
+        // alcohol stay: they are estimates that say what they assumed, and tested close.
+        var kept = estimate
+        kept.extras.fiber = nil
+        kept.extras.sodium = nil
+        return kept
     }
 
     func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
@@ -339,7 +377,13 @@ final class DebugFoodEstimator: FoodEstimator {
             grams: nil,
             macros: Macros(calories: calories, protein: calories / 20, fat: calories / 45, carbs: calories / 10),
             source: .estimated,
-            assumption: "A made-up estimate for the simulator."
+            assumption: "A made-up estimate for the simulator.",
+            extras: Extras(
+                fiber: words * 1.5,
+                sodium: words * 120,
+                caffeine: text.contains("coffee") ? 95 * words : nil,
+                alcohol: text.contains("beer") || text.contains("wine") ? 1 : nil
+            )
         )
     }
 }

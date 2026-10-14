@@ -26,6 +26,15 @@ week (an average over the days that have data, or a count of days). A day with n
 judge (no food logged) is a miss for a daily goal.
 _Avoid_: Goal, auto habit, metric habit
 
+**Extra**:
+One of four optional nutrition values an Entry may carry beyond its Macros: fiber (g), sodium
+(mg), caffeine (mg), and alcohol (US standard drinks, 14 g of pure alcohol each). Recorded only
+where the source knew it (a label, a brand lookup, a plain food the model knows, or the user's
+own entry), never guessed, so an Extra is absent rather than 0 (except a real 0 fiber or sodium;
+no caffeine or alcohol is simply nothing). Shown only on an Entry's page; never a Target, a total,
+or a card. The coach reads them, counting what was recorded.
+_Avoid_: Micronutrient, nutrient, macro (the Macros stay exactly four)
+
 **Item**:
 One named thing on a checklist Habit, ticked off on its own: a friend to text, a supplement
 to take. An Item ticked on any day of a Period counts for that whole Period, once. Removing

@@ -672,6 +672,6 @@ extension Store {
         } catch is Store.NotFound {
             Logger(category: "Food").info("Matched food is gone; logging the line on its own")
         }
-        try logEntry(name: name, servingName: estimate.unit, quantity: estimate.quantity, macros: estimate.macros, at: instant, in: calendar)
+        try logEntry(name: name, servingName: estimate.unit, quantity: estimate.quantity, macros: estimate.macros, extras: estimate.extras, at: instant, in: calendar)
     }
 }

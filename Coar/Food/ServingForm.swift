@@ -12,6 +12,8 @@ struct ServingForm: View {
         var grams: Double?
         /// As typed; an empty field counts as 0.
         var macros: [Macro: Double?] = [:]
+        /// As typed; an empty field is not recorded.
+        var extras: [Extra: Double?] = [:]
         var isDefault = false
 
         init(_ serving: ServingDraft?) {
@@ -20,6 +22,7 @@ struct ServingForm: View {
             name = serving.name
             grams = serving.grams
             macros = Dictionary(uniqueKeysWithValues: Macro.allCases.map { ($0, serving.macros[$0]) })
+            extras = Dictionary(uniqueKeysWithValues: Extra.allCases.map { ($0, serving.extras[$0]) })
             isDefault = serving.isDefault
         }
 
@@ -29,8 +32,8 @@ struct ServingForm: View {
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return nil }
             if let grams, FoodText.quantity(typed: grams) == nil { return nil }
-            guard let values = Macros(typed: macros) else { return nil }
-            return ServingDraft(id: id, name: trimmed, macros: values, grams: grams, isDefault: isDefault)
+            guard let values = Macros(typed: macros), let extraValues = Extras(typed: extras) else { return nil }
+            return ServingDraft(id: id, name: trimmed, macros: values, grams: grams, isDefault: isDefault, extras: extraValues.normalised())
         }
     }
 
@@ -89,6 +92,16 @@ struct ServingForm: View {
                 Text("For one serving")
             } footer: {
                 Text("Leave a field empty for 0.")
+            }
+
+            Section {
+                ExtraRows(extras: Extra.allCases) { extra in
+                    Binding(get: { draft.extras[extra] ?? nil }, set: { draft.extras[extra] = $0 })
+                }
+            } header: {
+                Text("Also recorded (optional)")
+            } footer: {
+                Text("Fiber, sodium, caffeine and alcohol for one serving, if you know them. Leave empty if not: empty is not zero. They show on the entry's page only.")
             }
 
             Section {

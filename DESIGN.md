@@ -267,7 +267,11 @@ Charts never show a legend when color already maps to a label on screen.
   filled line has a "Save to Foods" toggle, on by default. On the timeline an Entry swipes
   left onto a coral Delete (a long swipe deletes at once), or press and hold for Save as food
   and Delete; deleting never confirms but shows an "Undo" toast on a glass capsule for 7
-  seconds, which puts the Entry back as it was.
+  seconds, which puts the Entry back as it was. An Entry's page lists its Extras (fiber,
+  sodium, caffeine, alcohol) under "Also recorded", only those it holds, as neutral-tiled
+  rows with `textPrimary` numbers (not accents: they are not macros); nothing about them on
+  the timeline, the day's summary, or Home. A saved food's serving editor lists all four,
+  optional.
 - **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans
   → Recent workouts; a row of three `PillChip`s under the grid pushes Exercises, Body
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no

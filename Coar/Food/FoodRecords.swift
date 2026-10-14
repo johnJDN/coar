@@ -28,6 +28,8 @@ struct ServingRecord: Hashable, Identifiable {
     let macros: Macros
     let grams: Double?
     let isDefault: Bool
+    /// What it holds beyond the macros, for one of it; nothing recorded by default.
+    var extras = Extras()
 }
 
 /// A Serving as typed on the Food Item editor. New drafts get a fresh `id`; drafts carrying
@@ -38,17 +40,19 @@ struct ServingDraft: Hashable, Identifiable {
     var macros: Macros
     var grams: Double?
     var isDefault = false
+    var extras = Extras()
 
-    init(id: UUID = UUID(), name: String, macros: Macros, grams: Double? = nil, isDefault: Bool = false) {
+    init(id: UUID = UUID(), name: String, macros: Macros, grams: Double? = nil, isDefault: Bool = false, extras: Extras = Extras()) {
         self.id = id
         self.name = name
         self.macros = macros
         self.grams = grams
         self.isDefault = isDefault
+        self.extras = extras
     }
 
     init(_ record: ServingRecord) {
-        self.init(id: record.id, name: record.name, macros: record.macros, grams: record.grams, isDefault: record.isDefault)
+        self.init(id: record.id, name: record.name, macros: record.macros, grams: record.grams, isDefault: record.isDefault, extras: record.extras)
     }
 }
 
@@ -65,6 +69,11 @@ struct MealRecord: Hashable, Identifiable {
     /// The four macros for one of the Meal: the components summed.
     var macros: Macros {
         Macros.sum(components.map(\.macros))
+    }
+
+    /// The Extras for one of the Meal: what its components recorded, summed.
+    var extras: Extras {
+        Extras.sum(components.map(\.extras))
     }
 
     /// Every line still has its Serving, so logging the Meal counts all of it.
@@ -87,10 +96,17 @@ struct MealComponentRecord: Hashable, Identifiable {
     let quantity: Double
     /// The Serving's macros for one, as the Food Item stands now; zero when the Serving is gone.
     let servingMacros: Macros
+    /// The Serving's Extras for one, as the Food Item stands now.
+    var servingExtras = Extras()
 
     /// The macros for `quantity` of the Serving.
     var macros: Macros {
         servingMacros.scaled(by: quantity)
+    }
+
+    /// The Extras for `quantity` of the Serving.
+    var extras: Extras {
+        servingExtras.scaled(by: quantity)
     }
 }
 
@@ -134,6 +150,8 @@ struct EntryRecord: Hashable, Identifiable {
     /// Item Entry.
     let components: [EntryComponentRecord]
     let modifiedAt: Date
+    /// What it holds beyond the macros, for the whole quantity; nothing recorded by default.
+    var extras = Extras()
 }
 
 /// One line of a Meal Entry's breakdown: the Food Item's name, Serving name, quantity, and
@@ -143,11 +161,12 @@ struct EntryComponentRecord: Hashable {
     let servingName: String
     let quantity: Double
     let macros: Macros
+    var extras = Extras()
 }
 
 extension EntryComponentRecord {
     /// The line as an Entry would snapshot it now.
     init(_ line: MealComponentRecord) {
-        self.init(name: line.name, servingName: line.servingName, quantity: line.quantity, macros: line.macros)
+        self.init(name: line.name, servingName: line.servingName, quantity: line.quantity, macros: line.macros, extras: line.extras)
     }
 }

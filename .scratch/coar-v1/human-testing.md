@@ -518,3 +518,14 @@ Ticket: `.scratch/quick-delete/issues/01-swipe-and-hold-to-delete.md`. Checked b
 
 - [ ] Calories read "cal" everywhere: Home ("1,420 cal left"), Food entries ("280 cal"), Foods and Meals lists ("70 cal • 1 egg"), Describe lines ("140 cal · P 12 …"), the Watch effort ("318 cal · 118 bpm"), and the unit beside the Calories Target in Settings. Anything still saying "kcal" is a miss.
 - [ ] Judgement calls: the AI is still told "kcal" in its instructions (the numbers it returns are kilocalories either way); error text like "Over 5,000 cal came back" follows the label.
+
+## Added after v1: Extras, fiber, sodium, caffeine, alcohol (2026-10-14)
+
+Ticket: `.scratch/extras/issues/01-record-extras.md`; spec `.scratch/extras/spec.md`; accuracy test `.scratch/extras/accuracy-test.md`. Checked by the agent in the simulator with fake estimates.
+
+- [ ] Describe: type "double espresso", "a beer", "quest cookie dough bar", "2 eggs". Tap under each line: its page has an **Also recorded** section for whatever was known (the espresso: caffeine; the beer: alcohol in drinks and a note like "assumed 5%"; the bar: fiber and sodium), and nothing for what wasn't. Change the Quantity: the extras scale.
+- [ ] Add them. Nothing about extras on the Food screen: not the timeline, not under the macros, not on Home. Open each entry: **Also recorded** shows the same rows, editable. An entry with none has no section.
+- [ ] Take a photo of a nutrition label that prints fiber and sodium (and an energy drink's, with caffeine): they come through exactly.
+- [ ] Foods → a food → a serving: an **Also recorded (optional)** section with all four fields. Fill one, log that food: the entry carries it. Log it twice (quantity 2): doubled.
+- [ ] Delete an entry that has extras, then Undo: the extras are back.
+- [ ] Judgement calls: blank means "not known", never zero; the models give a number only where they can stand behind it, so a typed restaurant meal usually has no fiber or sodium (a brand lookup or a label gets them exactly); old entries have none; no targets or totals anywhere.

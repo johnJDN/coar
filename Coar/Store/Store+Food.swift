@@ -61,7 +61,7 @@ extension Store {
     func saveEntryAsFood(_ id: EntryRecord.ID) throws -> FoodItemRecord? {
         guard let entry = try fetchEntry(id), entry.foodItem == nil, entry.meal == nil,
               let name = entry.name, try foodItem(named: name) == nil else { return nil }
-        let (serving, _) = ServingDraft.toSave(unit: entry.servingName ?? "serving", quantity: entry.quantity, macros: entry.macros, grams: nil)
+        let (serving, _) = ServingDraft.toSave(unit: entry.servingName ?? "serving", quantity: entry.quantity, macros: entry.macros, extras: entry.extras, grams: nil)
         let item = FoodItem(context: context)
         item.id = UUID()
         item.isArchived = false
@@ -115,7 +115,7 @@ extension Store {
     ) throws -> EntryRecord {
         guard let item = try fetchFoodItem(foodItemID), let record = FoodItemRecord(item) else { throw NotFound(what: "Food Item") }
         guard let serving = record.serving(servingID) else { throw NotFound(what: "Serving") }
-        let entry = makeEntry(name: record.name, servingName: serving.name, quantity: quantity, macros: serving.macros.scaled(by: quantity), at: instant, in: calendar)
+        let entry = makeEntry(name: record.name, servingName: serving.name, quantity: quantity, macros: serving.macros.scaled(by: quantity), extras: serving.extras.scaled(by: quantity), at: instant, in: calendar)
         entry.foodItem = item
         try save()
         return EntryRecord(entry)!
@@ -130,10 +130,11 @@ extension Store {
         servingName: String,
         quantity: Double,
         macros: Macros,
+        extras: Extras = Extras(),
         at instant: Date,
         in calendar: Calendar = .current
     ) throws -> EntryRecord {
-        let entry = makeEntry(name: name, servingName: servingName, quantity: quantity, macros: macros, at: instant, in: calendar)
+        let entry = makeEntry(name: name, servingName: servingName, quantity: quantity, macros: macros, extras: extras, at: instant, in: calendar)
         try save()
         return EntryRecord(entry)!
     }
@@ -153,7 +154,7 @@ extension Store {
         item.id = UUID()
         item.isArchived = false
         apply(name: name, servings: [draft], to: item)
-        let entry = makeEntry(name: name, servingName: draft.name, quantity: quantity, macros: draft.macros.scaled(by: quantity), at: instant, in: calendar)
+        let entry = makeEntry(name: name, servingName: draft.name, quantity: quantity, macros: draft.macros.scaled(by: quantity), extras: draft.extras.scaled(by: quantity), at: instant, in: calendar)
         entry.foodItem = item
         try save()
         return EntryRecord(entry)!
@@ -161,7 +162,7 @@ extension Store {
 
     /// A new Entry with its snapshot filled in (ADR 0003) and its Day fixed (ADR 0005); the
     /// caller sets the reference and saves. For the `Store+<Domain>` extensions only.
-    func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, at instant: Date, in calendar: Calendar) -> Entry {
+    func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, extras: Extras = Extras(), at instant: Date, in calendar: Calendar) -> Entry {
         let entry = Entry(context: context)
         entry.id = UUID()
         entry.loggedAt = instant
@@ -170,6 +171,7 @@ extension Store {
         entry.servingName = servingName
         entry.quantity = quantity
         entry.macros = macros
+        entry.extras = extras
         return entry
     }
 
@@ -200,11 +202,12 @@ extension Store {
 
     /// Corrects the past on the past (ADR 0003): the instant, the quantity, and the
     /// snapshotted macros. The Entry keeps the Day it was logged into (ADR 0005).
-    func updateEntry(_ id: EntryRecord.ID, loggedAt: Date, quantity: Double, macros: Macros) throws {
+    func updateEntry(_ id: EntryRecord.ID, loggedAt: Date, quantity: Double, macros: Macros, extras: Extras? = nil) throws {
         guard let entry = try fetchEntry(id) else { return }
         entry.loggedAt = loggedAt
         entry.quantity = quantity
         entry.macros = macros
+        if let extras { entry.extras = extras }
         try save()
     }
 
@@ -229,6 +232,7 @@ extension Store {
         entry.servingName = record.servingName
         entry.quantity = record.quantity
         entry.macros = record.macros
+        entry.extras = record.extras
         entry.foodItem = try record.foodItemID.flatMap { try fetchFoodItem($0) }
         entry.meal = try record.mealID.flatMap { try fetchMeal($0) }
         for (position, line) in record.components.enumerated() {
@@ -237,6 +241,7 @@ extension Store {
             component.servingName = line.servingName
             component.quantity = line.quantity
             component.macros = line.macros
+            component.extras = line.extras
             component.sortOrder = Int32(position)
             component.entry = entry
         }
@@ -260,6 +265,7 @@ extension Store {
             serving.id = draft.id
             serving.name = draft.name
             serving.macros = draft.macros
+            serving.extras = draft.extras
             serving.grams = draft.grams.map { NSNumber(value: $0) }
             serving.isDefault = draft.id == defaultID
             serving.sortOrder = Int32(position)
@@ -354,7 +360,8 @@ extension FoodItem {
                 name: object.name ?? "",
                 macros: object.macros,
                 grams: object.grams?.doubleValue,
-                isDefault: object === standingDefault
+                isDefault: object === standingDefault,
+                extras: object.extras
             )
         }
     }
@@ -365,7 +372,7 @@ private extension Entry {
     var componentRecords: [EntryComponentRecord] {
         (components as? Set<EntryComponent> ?? [])
             .sorted(by: Store.bySortOrder)
-            .map { EntryComponentRecord(name: $0.name ?? "", servingName: $0.servingName ?? "", quantity: $0.quantity, macros: $0.macros) }
+            .map { EntryComponentRecord(name: $0.name ?? "", servingName: $0.servingName ?? "", quantity: $0.quantity, macros: $0.macros, extras: $0.extras) }
     }
 }
 
@@ -385,7 +392,8 @@ extension EntryRecord {
             foodItemID: object.foodItem?.id,
             mealID: object.meal?.id,
             components: object.componentRecords,
-            modifiedAt: modifiedAt
+            modifiedAt: modifiedAt,
+            extras: object.extras
         )
     }
 }

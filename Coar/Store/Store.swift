@@ -250,6 +250,33 @@ extension MacroAttributes {
     }
 }
 
+/// The four Extras (`Extras`) as an object holds them: optional numbers, nil when not recorded.
+protocol ExtrasAttributes: AnyObject {
+    var fiber: NSNumber? { get set }
+    var sodium: NSNumber? { get set }
+    var caffeine: NSNumber? { get set }
+    var alcohol: NSNumber? { get set }
+}
+
+extension ExtrasAttributes {
+    var extras: Extras {
+        get {
+            Extras(fiber: fiber?.doubleValue, sodium: sodium?.doubleValue, caffeine: caffeine?.doubleValue, alcohol: alcohol?.doubleValue)
+        }
+        set {
+            let value = newValue.normalised()
+            fiber = value.fiber.map { NSNumber(value: $0) }
+            sodium = value.sodium.map { NSNumber(value: $0) }
+            caffeine = value.caffeine.map { NSNumber(value: $0) }
+            alcohol = value.alcohol.map { NSNumber(value: $0) }
+        }
+    }
+}
+
+extension Serving: ExtrasAttributes {}
+extension Entry: ExtrasAttributes {}
+extension EntryComponent: ExtrasAttributes {}
+
 extension MacroTarget: MacroAttributes {}
 extension Serving: MacroAttributes {}
 extension Entry: MacroAttributes {}

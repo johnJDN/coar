@@ -94,9 +94,9 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
     // MARK: - Writing
 
     private func autosave() {
-        guard draft != saved, let quantity = draft.quantity, let macros = draft.macros else { return }
+        guard draft != saved, let quantity = draft.quantity, let macros = draft.macros, let extras = draft.extras else { return }
         do {
-            try dependencies.store.updateEntry(entryID, loggedAt: draft.loggedAt, quantity: quantity, macros: macros)
+            try dependencies.store.updateEntry(entryID, loggedAt: draft.loggedAt, quantity: quantity, macros: macros, extras: extras)
             saved = draft
             onChange()
         } catch {

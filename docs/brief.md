@@ -57,7 +57,9 @@ HealthKit, so the architecture favours the Watch).
   (day number over weekday, today marked), a macro summary row (consumed / target with
   a thin bar for calories, P, F, C; Home has a ring and bars), then a vertical hourly timeline with a "+" per hour
   slot; entries sit on the rail at their time.
-- Macros tracked: calories, protein, fat, carbs. Nothing else.
+- Macros tracked: calories, protein, fat, carbs. Nothing else tracked or targeted. An entry
+  may also record four **extras** (fiber, sodium, caffeine, alcohol) where the source knew
+  them, shown only on the entry's page and read by the coach; see CONTEXT.md "Extra".
 - **Food items** (eggs, chicken breast, …) with one or more named servings, each with
   its macros and optionally its gram weight; one serving is the default.
 - **Meals**: named groups of food items in fixed quantities.

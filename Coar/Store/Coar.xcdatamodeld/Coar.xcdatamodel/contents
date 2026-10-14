@@ -55,6 +55,10 @@
         <relationship name="servings" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Serving" inverseName="foodItem" inverseEntity="Serving"/>
     </entity>
     <entity name="Serving" representedClassName="Serving" syncable="YES" codeGenerationType="class">
+        <attribute name="alcohol" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="caffeine" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="fiber" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="sodium" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="calories" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="carbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="fat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -86,6 +90,10 @@
         <relationship name="serving" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Serving" inverseName="mealComponents" inverseEntity="Serving"/>
     </entity>
     <entity name="Entry" representedClassName="Entry" syncable="YES" codeGenerationType="class">
+        <attribute name="alcohol" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="caffeine" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="fiber" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="sodium" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="calories" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="carbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="day" optional="YES" attributeType="String"/>
@@ -102,6 +110,10 @@
         <relationship name="meal" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Meal" inverseName="entries" inverseEntity="Meal"/>
     </entity>
     <entity name="EntryComponent" representedClassName="EntryComponent" syncable="YES" codeGenerationType="class">
+        <attribute name="alcohol" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="caffeine" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="fiber" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="sodium" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="calories" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="carbs" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="fat" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

@@ -119,7 +119,8 @@ struct FoodLibrary {
         Estimate(
             name: item.name, quantity: quantity, unit: serving.name, grams: serving.grams.map { $0 * quantity },
             macros: serving.macros.scaled(by: quantity), source: .food, assumption: "",
-            match: .foodItem(item.id, serving: serving.id)
+            match: .foodItem(item.id, serving: serving.id),
+            extras: serving.extras.scaled(by: quantity)
         )
     }
 
@@ -127,7 +128,8 @@ struct FoodLibrary {
         Estimate(
             name: meal.name, quantity: quantity, unit: EntryRecord.mealServingName, grams: nil,
             macros: meal.macros.scaled(by: quantity), source: .meal, assumption: "",
-            match: .meal(meal.id)
+            match: .meal(meal.id),
+            extras: meal.extras.scaled(by: quantity)
         )
     }
 }

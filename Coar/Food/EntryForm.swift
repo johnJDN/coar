@@ -81,6 +81,18 @@ struct EntryForm: View {
                 Text("This entry's own record. Editing it never changes the food item it came from.")
             }
 
+            if !draft.shownExtras.isEmpty {
+                Section {
+                    ExtraRows(extras: draft.shownExtras) { extra in
+                        Binding(get: { draft.typedExtras[extra] ?? nil }, set: { draft.typedExtras[extra] = $0 })
+                    }
+                } header: {
+                    Text("Also recorded")
+                } footer: {
+                    Text("What the food had beyond the macros. Only what is known is shown; a blank is not a zero.")
+                }
+            }
+
             if saveAsFood != .notOffered {
                 Section {
                     Button(action: onSaveAsFood) {
