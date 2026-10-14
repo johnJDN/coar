@@ -254,7 +254,8 @@ Charts never show a legend when color already maps to a label on screen.
   prominent Add logs the filled lines, with their total in a row beneath. A camera button
   beside `…` (Take Photo / Choose Photo) adds a "Photo" line that becomes one line per food
   it shows ("From photo"), or one per label serving ("From label"). Tapping under a line
-  pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food. Each
+  pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food. A line
+  swipes left to Remove (or press and hold the numbers under it), with no confirmation. Each
   filled line has a "Save to Foods" toggle, on by default. On the timeline an Entry swipes
   left onto a coral Delete (a long swipe deletes at once), or press and hold for Save as food
   and Delete; deleting never confirms but shows an "Undo" toast on a glass capsule for 7

@@ -37,6 +37,34 @@ final class DescribePhotoTests: XCTestCase {
 
     // MARK: The draft
 
+    func test_aRemovedPlaceholder_isNotBroughtBackByItsLateAnswer() throws {
+        var draft = DescribeDraft()
+        let photo = draft.addPhoto()
+        XCTAssertEqual(draft.begin(photo), DescribeDraft.photoPlaceholder)
+        let items = try Estimate.photoItems(reply: Data(plateReply.utf8)).map(\.estimate)
+
+        draft.removeLine(photo)
+
+        XCTAssertFalse(draft.finishPhoto(photo, result: .success(items)), "the answer finds no line")
+        XCTAssertFalse(draft.finishPhoto(photo, result: .failure(OpenRouterError.offline)))
+        XCTAssertEqual(draft.lines.map(\.text), [""], "only the empty line is left")
+    }
+
+    func test_aRemovedTypedLine_isNotBroughtBackByItsLateAnswer() throws {
+        var draft = DescribeDraft()
+        let first = try XCTUnwrap(draft.lines.first?.id)
+        draft.edit(first, text: "toast")
+        let second = draft.insertLine(after: first)
+        XCTAssertEqual(draft.begin(first), "toast")
+
+        draft.removeLine(first)
+        let toast = Estimate(name: "Toast", quantity: 1, unit: "slice", grams: nil, macros: Macros(calories: 80, protein: 3, fat: 1, carbs: 15), source: .estimated, assumption: "")
+
+        XCTAssertFalse(draft.finish(first, sentText: "toast", result: .success(toast)))
+        XCTAssertEqual(draft.lines.map(\.id), [second])
+        XCTAssertTrue(draft.filled.isEmpty)
+    }
+
     func test_aPhoto_replacesItsPlaceholderWithOneLinePerFood_beforeTheEmptyLine() throws {
         var draft = DescribeDraft()
         let empty = try XCTUnwrap(draft.lines.first?.id)

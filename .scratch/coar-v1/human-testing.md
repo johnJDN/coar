@@ -510,3 +510,5 @@ Ticket: `.scratch/quick-delete/issues/01-swipe-and-hold-to-delete.md`. Checked b
 - [ ] Swipe one entry, then swipe another, scroll, or tap elsewhere: the first closes. A tap on a row with Delete showing closes it (doesn't open the entry).
 - [ ] Press and hold an entry: it lifts with Delete, and Save as food when it isn't from one of your foods yet. Save as food shows "Saved to Foods".
 - [ ] Judgement calls: no "Are you sure"; Undo lasts 7 seconds; the swipe is custom (only the row moves, the rail stays); the entry page's own Delete still asks first.
+- [ ] Describe tab: swipe a line (typed, or one a photo made) left: Remove; a long swipe removes it at once. The total updates. Press and hold the numbers under a food (not its text): a Remove menu. The last line can't be removed, only emptied.
+- [ ] Add a photo, then remove its "Photo" line while it's still reading: it goes and stays gone when the answer arrives.

@@ -32,3 +32,17 @@ needn't be opened first. John asked for both a swipe and a long press (2026-10-1
   - The press-and-hold menu uses the iOS 16 `contextMenuConfigurationForItemsAt`; the older
     single-item method never fired on iOS 26.
   - Not offered on the entry page's own Delete, Meals, or Foods lists.
+- 2026-10-14 (agent): The same two gestures on the Describe tab's lines (typed, and the
+  foods a photo turned into), at John's request. Swipe a line left for Remove (UIKit's own
+  swipe, since Describe is a real list; a long swipe removes at once), or press and hold it
+  for a Remove menu. Checked in the simulator.
+  Left as deliberate:
+  - **No confirmation and no Undo** here: a removed line is cheap to type or take again and
+    nothing is logged. A photo still being read is let go; its answer finds no line to land
+    on (tested), so it doesn't come back.
+  - **The last line is emptied, not removed**, as backspace already does; an empty last line
+    has nothing to remove, so no swipe or menu.
+  - **Press and hold works on the numbers and caption under a food, not on the typed text
+    itself**: holding the text is iOS's own text selection and starts editing. The swipe works
+    anywhere on the row, with the keyboard up or down; with the keyboard up and a line being
+    edited, the menu may not appear, so the swipe is the dependable one.

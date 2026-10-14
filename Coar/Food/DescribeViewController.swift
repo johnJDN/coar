@@ -369,6 +369,27 @@ final class DescribeViewController: UIViewController {
         onChange()
     }
 
+    // MARK: - Removing a line
+
+    /// The line at this row when there is something to remove: any line while there are
+    /// several, and the last one only once it holds something.
+    private func removableLine(at indexPath: IndexPath) -> DescribeLine.ID? {
+        guard case .line(let id) = dataSource.itemIdentifier(for: indexPath), let line = draft.line(id) else { return nil }
+        return draft.lines.count > 1 || !line.trimmedText.isEmpty ? id : nil
+    }
+
+    /// Removes a line for good, with no confirmation: it is cheap to type or take again, and
+    /// nothing is logged. A photo still being read is let go (its answer finds no line to
+    /// land on); the last line left is emptied instead (`DescribeDraft.removeLine`).
+    private func removeLine(_ id: DescribeLine.ID) {
+        timers[id]?.cancel()
+        timers[id] = nil
+        photos[id] = nil
+        draft.removeLine(id)
+        render()
+        onChange()
+    }
+
     // MARK: - Typing
 
     private func returned(_ id: DescribeLine.ID) {
@@ -404,6 +425,18 @@ final class DescribeViewController: UIViewController {
         var configuration = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
         configuration.showsSeparators = false
         configuration.backgroundColor = .clear
+        // Swipe a line left to remove it; a long swipe removes it at once, as in any list.
+        configuration.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
+            guard let self, let id = removableLine(at: indexPath) else { return nil }
+            let remove = UIContextualAction(style: .destructive, title: "Remove") { [weak self] _, _, done in
+                self?.removeLine(id)
+                done(true)
+            }
+            remove.image = UIImage(systemName: "trash.fill")
+            let actions = UISwipeActionsConfiguration(actions: [remove])
+            actions.performsFirstActionWithFullSwipe = true
+            return actions
+        }
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout.list(using: configuration))
         collectionView.backgroundColor = .clear
         collectionView.dismissesKeyboardOnDrag()
@@ -518,6 +551,16 @@ extension DescribeViewController: UICollectionViewDelegate {
             openLine(line)
         case .typing, .checking:
             (collectionView.cellForItem(at: indexPath) as? DescribeLineCell)?.focus()
+        }
+    }
+
+    /// Press and hold a line for Remove, the same as the swipe.
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let indexPath = indexPaths.first, let id = removableLine(at: indexPath) else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
+            UIMenu(children: [
+                UIAction(title: "Remove", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in self?.removeLine(id) },
+            ])
         }
     }
 }
