@@ -31,7 +31,7 @@ final class WorkoutCardControl: CardControl {
 
     private let effortLabel = UILabel()
 
-    /// The linked Health Workout's effort under the caption ("🔥 320 kcal · 118 bpm"), read
+    /// The linked Health Workout's effort under the caption ("🔥 320 cal · 118 bpm"), read
     /// after the card is on screen; nil takes it away again.
     func showEffort(_ text: String?) {
         guard let text else { return effortLabel.removeFromSuperview() }

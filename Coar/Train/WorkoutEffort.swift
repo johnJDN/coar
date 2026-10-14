@@ -1,6 +1,6 @@
 import UIKit
 
-/// A linked Workout's effort as the lists show it (CONTEXT.md "Effort"): "320 kcal · 118 bpm",
+/// A linked Workout's effort as the lists show it (CONTEXT.md "Effort"): "320 cal · 118 bpm",
 /// read live from Apple Health for the Health Workouts the visible Workouts are linked to,
 /// in one query. A Workout with no link, or whose Health Workout Health no longer holds or
 /// may not be read, has none.

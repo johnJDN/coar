@@ -3,7 +3,7 @@ import XCTest
 
 /// Seam 1: the store façade, with Apple Health faked. Home is one snapshot of today derived
 /// through the façade: every card keeps its slot, and a missing Target, Body Weight, Workout,
-/// or Health value shows its empty form (`—`, a bare `g` or `kcal`), never a 0
+/// or Health value shows its empty form (`—`, a bare `g` or `cal`), never a 0
 /// (DESIGN.md §1.5, `.scratch/data-model/issues/02`).
 @MainActor
 final class HomeSnapshotTests: XCTestCase {
@@ -30,7 +30,7 @@ final class HomeSnapshotTests: XCTestCase {
 
         XCTAssertEqual(snapshot.habits, .none)
         XCTAssertEqual(snapshot.macros.calories, "0")
-        XCTAssertEqual(snapshot.macros.caloriesCaption, "kcal")
+        XCTAssertEqual(snapshot.macros.caloriesCaption, "cal")
         XCTAssertNil(snapshot.macros.calorieProgress)
         XCTAssertEqual(snapshot.macros.bars.map(\.macro), [.protein, .fat, .carbs])
         XCTAssertEqual(snapshot.macros.bars.map(\.consumed), ["0", "0", "0"])
@@ -74,7 +74,7 @@ final class HomeSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.habits.summary, "1 of 2 done")
 
         XCTAssertEqual(snapshot.macros.calories, "1,890")
-        XCTAssertEqual(snapshot.macros.caloriesCaption, "kcal left")
+        XCTAssertEqual(snapshot.macros.caloriesCaption, "cal left")
         XCTAssertEqual(snapshot.macros.calorieProgress, 0.1)
         XCTAssertEqual(snapshot.macros.bars.map(\.consumed), ["18", "15", "0"])
         XCTAssertEqual(snapshot.macros.bars.map(\.target), ["/180g", "/60g", "/210g"])
@@ -153,7 +153,7 @@ final class HomeSnapshotTests: XCTestCase {
         let snapshot = try await HomeSnapshot.load(store: store, health: FakeHealthReader(calendar: Self.calendar), healthStatus: .connected, unit: .pounds, today: sep16)
 
         XCTAssertEqual(snapshot.macros.calories, "80")
-        XCTAssertEqual(snapshot.macros.caloriesCaption, "kcal over")
+        XCTAssertEqual(snapshot.macros.caloriesCaption, "cal over")
         XCTAssertEqual(snapshot.macros.calorieProgress, 1)
         XCTAssertEqual(snapshot.macros.bars.map(\.progress), [1, 1, 0])
     }

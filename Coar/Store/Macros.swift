@@ -1,6 +1,7 @@
 import Foundation
 
-/// One of exactly four tracked nutrition values (CONTEXT.md "Macro"). Calories in kcal;
+/// One of exactly four tracked nutrition values (CONTEXT.md "Macro"). Calories are kilocalories,
+/// shown as "cal" (John, 2026-10-14: in this app "cal" reads fine and is shorter);
 /// protein, fat, and carbs in grams.
 enum Macro: CaseIterable {
     case calories, protein, fat, carbs
@@ -15,7 +16,7 @@ enum Macro: CaseIterable {
     }
 
     var unit: String {
-        self == .calories ? "kcal" : "g"
+        self == .calories ? "cal" : "g"
     }
 
     var keyPath: WritableKeyPath<Macros, Double> {

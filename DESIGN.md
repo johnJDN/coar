@@ -117,6 +117,13 @@ row: teal, lavender, orange, yellow, green, blue. Use accent colors at ~85% satu
 | `spaceTight` | 8 |
 | `spaceSection` | 28 (above a section header) |
 
+## 4a. Units
+
+Calories are labelled **cal** everywhere they are shown ("280 cal", "1,420 cal left"), not
+"kcal" (John, 2026-10-14: in this app it reads fine and is shorter). They are kilocalories
+underneath, and Apple Health's own app labels them the same way. Protein, fat, and carbs are
+grams (`g`); heart rate is `bpm`.
+
 ## 5. Typography (SF Pro, system, no custom fonts)
 
 | Role | Style | Weight | Notes |
@@ -160,11 +167,11 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | `PillChip` | Capsule with leading icon tile, title, subtitle, trailing chevron. Glass when floating, `fill` when in-card. |
 | `SetRow` | `[set #] [weight lbs] [reps] [✓]` — four pills in `fill`. The check shows a `textSecondary` ✓ before it is done (never `—`, which reads as an empty field). Completed: all pills and text flood `accentGreen` at 18% fill / 100% text. |
 | `ExerciseCard` | Thumbnail, name, "Equipment • n sets", timer + more buttons; `SetRow` list; footer split actions "Progression | Add Set". Superset link icon between cards. |
-| `ListRow` (sheet) | Thumbnail, title, subtitle "310 kcal • 1 burger", trailing square `+` button. |
+| `ListRow` (sheet) | Thumbnail, title, subtitle "310 cal • 1 burger", trailing square `+` button. |
 | `IconTile` | Pastel rounded square with white symbol (settings). |
 | `EmptyValue` | `—` / `-%` / `No data` in `textTertiary`, same size as the value it stands in for. |
 | `SegmentedTabs` | Text tabs with an underline indicator (e.g. Foods / Meals) at the top of sheets. |
-| `MacroStrip` | The four macros of one thing as a visual, not a text line: four columns (number in its accent over a small grey label: kcal / Protein / Fat / Carbs) and a thin bar under them split by P / F / C share of calories. Used for a meal's total and a meal line. |
+| `MacroStrip` | The four macros of one thing as a visual, not a text line: four columns (number in its accent over a small grey label: cal / Protein / Fat / Carbs) and a thin bar under them split by P / F / C share of calories. Used for a meal's total and a meal line. |
 | `WarningCard` | Something blocks what the screen is for: a coral-tinted card with a warning symbol, title, what to do, and the fixing action as a coral glass button. Never a footer sentence. Lists flag the same item with a coral warning symbol and caption. |
 | `ActionGrid` | 3×3 grid of circular `fill` buttons with labels, in a sheet, opened by the "+" button. |
 
@@ -229,7 +236,7 @@ Charts never show a legend when color already maps to a label on screen.
 
 - **Home** — date title ("Today, September 16") with a greeting subtitle, then top to
   bottom, all on one screen: the macros card (full-width; a `StatRing` of calories with
-  kcal left, or over, as the hero, and a labelled bar per gram macro beside it; without a
+  cal left, or over, as the hero, and a labelled bar per gram macro beside it; without a
   target, a bare track around what was eaten, empty bars, and a Set targets action; taps go
   to Food on today), the habits card (full-width; "3 of 7 done" in the header, then a
   `MetricRow` + `CheckToggle` / `AmountControl` per check-in Habit still to do; done ones,
@@ -266,10 +273,10 @@ Charts never show a legend when color already maps to a label on screen.
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no
   auto-advance) and the rest-timer accessory bar (auto-starts on set completion; after
   the last exercise of a superset group). A finished Workout opens with an Apple Watch
-  card above its sets: linked, its Effort ("320 kcal · 118 bpm", read live from Apple
+  card above its sets: linked, its Effort ("320 cal · 118 bpm", read live from Apple
   Health) over the Health Workout it is; unlinked, an invitation, with a one-tap Link when
   exactly one Health Workout overlaps it; tapping the card lists the Day's Health Workouts
-  in a sheet, and the `…` menu unlinks. Linked Workouts show their Effort ("🔥 318 kcal ·
+  in a sheet, and the `…` menu unlinks. Linked Workouts show their Effort ("🔥 318 cal ·
   118 bpm", a flame in `accentAmber`) on their cards in Recent workouts and a Day's list.
   Exercise detail: estimated-1RM progression chart plus recent sets.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).

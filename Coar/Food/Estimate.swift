@@ -62,7 +62,7 @@ extension Estimate {
         let numbers = [quantity, macros.calories, macros.protein, macros.fat, macros.carbs] + (grams.map { [$0] } ?? [])
         if numbers.contains(where: { !$0.isFinite || $0 < 0 }) { return "Impossible numbers came back." }
         if quantity == 0 { return "No amount came back." }
-        if macros.calories > Self.maximumCalories { return "Over 5,000 kcal came back, which can't be right." }
+        if macros.calories > Self.maximumCalories { return "Over 5,000 cal came back, which can't be right." }
         if let grams, grams > Self.maximumGrams { return "Over 3 kg came back, which can't be right." }
         return nil
     }

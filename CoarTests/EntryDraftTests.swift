@@ -65,6 +65,6 @@ final class EntryDraftTests: XCTestCase {
         XCTAssertEqual(FoodText.amount(1.5), "1.5")
         XCTAssertEqual(FoodText.amount(93.333), "93.3")
         XCTAssertEqual(FoodText.quantity(2, of: "1 egg"), "2 × 1 egg")
-        XCTAssertEqual(FoodText.calories(Macros(calories: 140.4, protein: 0, fat: 0, carbs: 0)), "140 kcal")
+        XCTAssertEqual(FoodText.calories(Macros(calories: 140.4, protein: 0, fat: 0, carbs: 0)), "140 cal")
     }
 }

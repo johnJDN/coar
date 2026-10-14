@@ -2,7 +2,7 @@ import UIKit
 
 /// The Apple Watch card at the top of a finished Workout (DESIGN.md §7 `Card` with a
 /// trailing `→`; `.scratch/watch-link/`): the Health Workout it is linked to as its effort
-/// ("320 kcal · 118 bpm") over what it was; or, unlinked, an invitation to link one, with the
+/// ("320 cal · 118 bpm") over what it was; or, unlinked, an invitation to link one, with the
 /// Health Workout that overlaps it offered in one tap when there is exactly one. Tapping the
 /// card opens the list of Health Workouts for the Day; the inline button links the offered
 /// one. The owner reads Health and keeps the link; the card only shows what it is given.

@@ -17,6 +17,6 @@ final class MacroLineTests: XCTestCase {
             let number = line.attribute(.foregroundColor, at: range.location + 2, effectiveRange: nil)
             XCTAssertNil(number, "\(macro)'s number keeps the line's colour")
         }
-        XCTAssertNil(line.attribute(.foregroundColor, at: 0, effectiveRange: nil), "kcal keeps the label's colour")
+        XCTAssertNil(line.attribute(.foregroundColor, at: 0, effectiveRange: nil), "cal keeps the label's colour")
     }
 }

@@ -32,7 +32,7 @@ struct HomeSnapshot: Equatable {
     struct Macros: Equatable {
         /// The ring's centre: calories left ("1,420"), over ("150"), or eaten without a Target.
         let calories: String
-        /// "kcal left", "kcal over", or "kcal" without a Target.
+        /// "cal left", "cal over", or "cal" without a Target.
         let caloriesCaption: String
         /// How much of the calorie Target was eaten, 0 to 1; nil without a Target.
         let calorieProgress: Double?
@@ -65,7 +65,7 @@ struct HomeSnapshot: Equatable {
     /// claims "No habits yet" for the instant before it knows.
     static let placeholder = HomeSnapshot(
         habits: Habits(toDo: [], done: [], summary: ""),
-        macros: Macros(calories: "—", caloriesCaption: "kcal", calorieProgress: nil, bars: [Macro.protein, .fat, .carbs].map { MacroBar(macro: $0, consumed: "—", target: "g", progress: nil) }, hasTarget: true),
+        macros: Macros(calories: "—", caloriesCaption: "cal", calorieProgress: nil, bars: [Macro.protein, .fat, .carbs].map { MacroBar(macro: $0, consumed: "—", target: "g", progress: nil) }, hasTarget: true),
         sleep: HomeTile(value: nil, caption: HealthMetric.sleep.title),
         steps: HomeTile(value: nil, caption: HealthMetric.steps.title),
         bodyWeight: HomeTile(value: nil, caption: ""),
@@ -115,12 +115,12 @@ struct HomeSnapshot: Equatable {
             )
         }
         guard let target, target.calories > 0 else {
-            return Macros(calories: MacroSummary.amountText(consumed.calories), caloriesCaption: "kcal", calorieProgress: nil, bars: bars, hasTarget: target != nil)
+            return Macros(calories: MacroSummary.amountText(consumed.calories), caloriesCaption: "cal", calorieProgress: nil, bars: bars, hasTarget: target != nil)
         }
         let left = target.calories - consumed.calories
         return Macros(
             calories: MacroSummary.amountText(abs(left.rounded())),
-            caloriesCaption: left.rounded() < 0 ? "kcal over" : "kcal left",
+            caloriesCaption: left.rounded() < 0 ? "cal over" : "cal left",
             calorieProgress: progress(consumed.calories, of: target.calories),
             bars: bars,
             hasTarget: true

@@ -16,14 +16,14 @@ struct HealthWorkout: Equatable, Identifiable {
 
     var duration: TimeInterval { end.timeIntervalSince(start) }
 
-    /// "320 kcal", "320 kcal · 118 bpm", "118 bpm"; nil with neither (CONTEXT.md "Effort").
+    /// "320 cal", "320 cal · 118 bpm", "118 bpm"; nil with neither (CONTEXT.md "Effort").
     var effortText: String? {
         HealthWorkout.effortText(kilocalories: activeKilocalories, heartRate: averageHeartRate)
     }
 
     static func effortText(kilocalories: Double?, heartRate: Double?) -> String? {
         let parts = [
-            kilocalories.map { "\(Int($0.rounded())) kcal" },
+            kilocalories.map { "\(Int($0.rounded())) cal" },
             heartRate.map { "\(Int($0.rounded())) bpm" },
         ].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")

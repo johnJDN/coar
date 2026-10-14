@@ -21,7 +21,7 @@ struct MacroStrip: View {
                             .foregroundStyle(macros == nil ? Color.textTertiary : macro.accent)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
-                        Text(macro == .calories ? "kcal" : macro.title)
+                        Text(macro == .calories ? "cal" : macro.title)
                             .font(Font.label)
                             .foregroundStyle(Color.textSecondary)
                             .lineLimit(1)
@@ -66,7 +66,7 @@ struct EnergySplitBar: View {
 
 extension FoodText {
 
-    /// "140 kcal · P 12 · F 10 · C 0" with each gram macro's letter in its accent, so the
+    /// "140 cal · P 12 · F 10 · C 0" with each gram macro's letter in its accent, so the
     /// three read apart at a glance; the numbers keep the line's colour. The one styled form of a macro line; plain
     /// `macroLine` stays for accessibility labels.
     static func styledMacroLine(_ macros: Macros, leading: String? = nil, includesCalories: Bool = true) -> AttributedString {

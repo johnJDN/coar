@@ -24,10 +24,10 @@ extension Macro {
         }
     }
 
-    /// The short form for a compact line: "P 12 · F 10 · C 0", "140 kcal".
+    /// The short form for a compact line: "P 12 · F 10 · C 0", "140 cal".
     var abbreviation: String {
         switch self {
-        case .calories: return "kcal"
+        case .calories: return "cal"
         case .protein: return "P"
         case .fat: return "F"
         case .carbs: return "C"

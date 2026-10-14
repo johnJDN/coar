@@ -57,8 +57,8 @@ final class HealthWorkoutTests: XCTestCase {
     }
 
     func test_effortText_namesWhatHealthHas() {
-        XCTAssertEqual(health(from: at(18), minutes: 50).effortText, "320 kcal · 118 bpm")
-        XCTAssertEqual(health(from: at(18), minutes: 50, kilocalories: 319.6, heartRate: nil).effortText, "320 kcal")
+        XCTAssertEqual(health(from: at(18), minutes: 50).effortText, "320 cal · 118 bpm")
+        XCTAssertEqual(health(from: at(18), minutes: 50, kilocalories: 319.6, heartRate: nil).effortText, "320 cal")
         XCTAssertEqual(health(from: at(18), minutes: 50, kilocalories: nil, heartRate: 117.5).effortText, "118 bpm")
         XCTAssertNil(health(from: at(18), minutes: 50, kilocalories: nil, heartRate: nil).effortText)
     }

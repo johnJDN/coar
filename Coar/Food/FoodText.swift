@@ -19,17 +19,17 @@ enum FoodText {
         return value
     }
 
-    /// "140 kcal".
+    /// "140 cal".
     static func calories(_ macros: Macros) -> String {
-        "\(macros.calories.formatted(.number.precision(.fractionLength(0)))) kcal"
+        "\(macros.calories.formatted(.number.precision(.fractionLength(0)))) cal"
     }
 
-    /// "140 kcal · P 12 · F 10 · C 0": the four macros on one line.
+    /// "140 cal · P 12 · F 10 · C 0": the four macros on one line.
     static func macroLine(_ macros: Macros) -> String {
         ([calories(macros)] + [Macro.protein, .fat, .carbs].map { "\($0.abbreviation) \(amount(macros[$0]))" }).joined(separator: " · ")
     }
 
-    /// "70 kcal • 1 egg": a Serving's line in the picker (DESIGN.md §7 `ListRow`).
+    /// "70 cal • 1 egg": a Serving's line in the picker (DESIGN.md §7 `ListRow`).
     static func summary(of serving: ServingRecord) -> String {
         "\(calories(serving.macros)) • \(serving.name)"
     }

@@ -140,7 +140,7 @@ _Avoid_: Watch workout (in the app's words), import, sync
 
 **Effort**:
 The active calories and average heart rate of a Health Workout, shown on the Workout linked
-to it as "320 kcal · 118 bpm". A reading of how hard the session was, not a number that
+to it as "320 cal · 118 bpm". A reading of how hard the session was, not a number that
 enters food or Targets. Read live each time; the app keeps no copy.
 _Avoid_: Calories burned, intensity, strain
 

@@ -131,7 +131,7 @@ private struct MacroBarView: View {
 
 #Preview {
     MacroRingSummary(macros: HomeSnapshot.Macros(
-        calories: "1,420", caloriesCaption: "kcal left", calorieProgress: 0.32,
+        calories: "1,420", caloriesCaption: "cal left", calorieProgress: 0.32,
         bars: [
             .init(macro: .protein, consumed: "32", target: "/180g", progress: 0.18),
             .init(macro: .fat, consumed: "20", target: "/60g", progress: 0.33),
