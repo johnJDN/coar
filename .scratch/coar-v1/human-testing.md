@@ -598,3 +598,13 @@ Ticket: `.scratch/health-pages/issues/02-sleep-score-overnight-cardio.md`.
 - [ ] Night card: "84 Sleep score · Good" with Duration / Bedtime / Interruptions parts. Tap an older bar: its score and readings change too.
 - [ ] Steps page, bottom: Cardio fitness with your latest VO2 max and a year's line (or a note if the Watch hasn't measured one).
 - [ ] Judgement calls: the score is Coar's (Apple's can't be read); only the worrying direction is flagged; VO2 max lives on Steps.
+
+## Added after v1: History charts (2026-10-15)
+
+Ticket: `.scratch/health-pages/issues/03-history-charts.md`.
+
+- [ ] Sleep page → History: Time Asleep with W / M / 6M / Y. Drag a finger across: a line follows it and the big number shows that night and its date (a light tick as it moves); lift: back to the average.
+- [ ] 6M shows a bar per week, Y a bar per month; dragging names the week or month and how many days had data.
+- [ ] Tap the Sleep Score: its own chart. Tap any Overnight row: its chart with a shaded band for your usual range.
+- [ ] Steps page → History; Cardio fitness card → its chart.
+- [ ] Body Weight: drag across the chart: a capsule shows that weigh-in, its trend, and the date.

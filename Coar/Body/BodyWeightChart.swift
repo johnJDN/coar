@@ -4,7 +4,9 @@ import SwiftUI
 /// The weight screen's chart (DESIGN.md §8 "Trend over time"): raw Body Weights as muted
 /// points, Trend Weight as a 2pt accent line with bloom on its last point, no gridlines,
 /// axis labels in `textTertiary`; the Goal Weight, when it falls inside the axis, as a dashed
-/// `textTertiary` rule. A SwiftUI leaf: values in, nothing out (ADR 0001).
+/// `textTertiary` rule. Dragging across it scrubs: a rule follows the finger with the nearest
+/// weigh-in and its trend in a capsule above. A SwiftUI leaf: values in, nothing out
+/// (ADR 0001).
 struct BodyWeightChart: View {
 
     struct Model: Equatable {
@@ -18,6 +20,13 @@ struct BodyWeightChart: View {
     let model: Model
 
     @Environment(\.colorScheme) private var colorScheme
+    @State private var scrubbed: Date?
+
+    /// The weigh-in nearest the finger, with its trend.
+    private var selected: (raw: TrendPoint, trend: TrendPoint?)? {
+        guard let scrubbed, let nearest = model.raw.min(by: { abs($0.date.timeIntervalSince(scrubbed)) < abs($1.date.timeIntervalSince(scrubbed)) }) else { return nil }
+        return (nearest, model.trend.first { $0.date == nearest.date })
+    }
 
     var body: some View {
         Chart {
@@ -37,13 +46,38 @@ struct BodyWeightChart: View {
                     .foregroundStyle(Color.textTertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
             }
-            if let last = model.trend.last {
+            if let last = model.trend.last, selected == nil {
                 PointMark(x: .value("Day", last.date), y: .value("Trend Weight", last.value))
                     .foregroundStyle(Color.accentTeal)
                     .symbolSize(56)
                     .bloom(Color.accentTeal, in: colorScheme)
             }
+            if let selected {
+                RuleMark(x: .value("Selected", selected.raw.date))
+                    .foregroundStyle(Color.textTertiary)
+                    .annotation(position: .top, spacing: 4, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        VStack(spacing: 0) {
+                            Text("\(selected.raw.value.formatted(.number.precision(.fractionLength(1)))) \(model.unit)")
+                                .font(Font.label.weight(.semibold))
+                                .foregroundStyle(Color.textPrimary)
+                            Text(selected.trend.map { "trend \($0.value.formatted(.number.precision(.fractionLength(1)))) · " } ?? "")
+                                .font(Font.label)
+                                .foregroundStyle(Color.textSecondary)
+                            + Text(selected.raw.date.formatted(.dateTime.month(.abbreviated).day()))
+                                .font(Font.label)
+                                .foregroundStyle(Color.textSecondary)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.surfaceSunken, in: Capsule())
+                    }
+                PointMark(x: .value("Day", selected.raw.date), y: .value("Body Weight", selected.raw.value))
+                    .foregroundStyle(Color.accentTeal)
+                    .symbolSize(56)
+            }
         }
+        .chartXSelection(value: $scrubbed)
+        .sensoryFeedback(.selection, trigger: selected?.raw)
         .trendChartChrome(over: model.raw)
         .animation(.easeIn(duration: Elevation.bloomFade), value: model)
         .accessibilityLabel("Body Weight chart in \(model.unit)")

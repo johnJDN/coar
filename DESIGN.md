@@ -208,6 +208,7 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | Streaks / consistency over weeks | Calendar heatmap, `surfaceSunken` cells, accent intensity by count |
 | Trend over time | Swift Charts line hosted in a `UIHostingController`, 2pt stroke in accent, bloom on last point, no gridlines, axis labels in `textTertiary` |
 | One value per Day over weeks (sleep, steps) | Swift Charts bars hosted the same way, one per Day that has a value, in the metric accent: latest bar saturated with bloom, earlier bars muted; Days without data are gaps, not zeros; no gridlines, axis labels in `textTertiary` |
+| A reading against the user's usual | The usual range (the last 30 Nights' average ± one standard deviation) as a band in the accent at 12% behind the line |
 | A target on a chart (sleep, steps, Goal Weight) | A dashed 1pt `textTertiary` rule; no label beyond the card's own text |
 | Time in each sleep stage | One bar split by stage in sleep's teal at falling strengths (deep strongest, then core, REM), awake in `textTertiary`, over a row per stage with its time and share |
 | One Day by hour (steps) | The daily bars' vocabulary at hour scale: a muted bar per hour with steps, the busiest saturated with bloom, labels at 12 AM / 6 AM / 12 PM / 6 PM |
@@ -317,7 +318,13 @@ Charts never show a legend when color already maps to a label on screen.
   what's off; its own Apple Health ask behind "Show overnight readings"), then Usual times (asleep around / up around ± a typical night's spread, over 14 nights)
   with the target. Steps: then This week (last 7 full Days against the 7 before) with the
   target, then By hour for the picked Day, then Cardio fitness (latest VO2 max, its change
-  over 3 months, and the year as an amber trend line). The target is the user's tracked Sleep or Steps
+  over 3 months, and the year as an amber trend line). History: the overview's History
+  action, the Sleep Score, each Overnight row (with a chevron), and the Cardio fitness card
+  (`→`) push one shared history page: a segmented W / M / 6M / Y (a Day, a Day, a week's
+  average, a month's average per point), the range's average as the hero with its dates,
+  then the chart; dragging scrubs (a `textTertiary` rule, the hero shows that point and its
+  date, a selection haptic), and lifting goes back to the average. The Body Weight chart
+  scrubs the same way, its weigh-in and trend in a `surfaceSunken` capsule inside the chart. The target is the user's tracked Sleep or Steps
   Habit; with none, Set a target opens New Habit on that metric.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).
 - **Settings** — sheet from avatar button: targets, units (lbs default), HealthKit

@@ -95,6 +95,12 @@ final class HealthDetailViewController: ScreenViewController {
         overview.contentStack.addArrangedSubview(captionLabel)
         overview.contentStack.setCustomSpacing(Metrics.spaceInner, after: captionLabel)
         host(chart, in: overview.contentStack)
+        let history = UIButton.inCardAction(title: "History", systemImage: "chart.bar.xaxis") { [weak self] in
+            guard let self else { return }
+            showHistory(metric == .sleep ? .timeAsleep : .steps)
+        }
+        overview.contentStack.setCustomSpacing(Metrics.spaceInner, after: chart.view)
+        overview.contentStack.addArrangedSubview(UIStackView(arrangedSubviews: [history, UIView()]))
 
         let dayCard = CardView(title: metric == .sleep ? "Night" : "By hour", systemImage: metric == .sleep ? "moon.stars.fill" : "clock.fill", iconTint: metric.uiAccent, detail: dayDetailLabel)
         dayCard.contentStack.addArrangedSubview(dayLabel)
@@ -104,6 +110,12 @@ final class HealthDetailViewController: ScreenViewController {
             scoreLabel.numberOfLines = 0
             dayCard.contentStack.addArrangedSubview(scoreLabel)
             dayCard.contentStack.addArrangedSubview(scoreCaption)
+            for view in [scoreLabel, scoreCaption] {
+                view.isUserInteractionEnabled = true
+                view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showScoreHistory)))
+            }
+            scoreLabel.accessibilityTraits = .button
+            scoreLabel.accessibilityHint = "Shows the Sleep Score over time"
             dayCard.contentStack.setCustomSpacing(Metrics.spaceInner, after: scoreCaption)
             host(stages, in: dayCard.contentStack)
         } else {
@@ -143,7 +155,16 @@ final class HealthDetailViewController: ScreenViewController {
             usual.textAlignment = .right
             usual.setContentHuggingPriority(.required, for: .horizontal)
             usual.widthAnchor.constraint(greaterThanOrEqualToConstant: 72).isActive = true
-            let row = MetricRowView(trailing: usual)
+            let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+            chevron.tintColor = UIColor.textTertiary
+            chevron.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .footnote, scale: .small)
+            chevron.setContentHuggingPriority(.required, for: .horizontal)
+            let trailing = UIStackView(arrangedSubviews: [usual, chevron])
+            trailing.spacing = Metrics.spaceTight
+            trailing.alignment = .center
+            let row = MetricRowView(trailing: trailing)
+            row.addGestureRecognizer(HistoryTap(metric: .vital(vital), target: self, action: #selector(historyTapped(_:))))
+            row.accessibilityTraits = .button
             vitalRows[vital] = (row, usual)
             card.contentStack.addArrangedSubview(row)
         }
@@ -155,7 +176,8 @@ final class HealthDetailViewController: ScreenViewController {
 
     /// VO2 max over the last year.
     private func fitnessCard() -> CardView {
-        let card = CardView(title: "Cardio fitness", systemImage: "heart.circle.fill", iconTint: metric.uiAccent)
+        let card = CardView(title: "Cardio fitness", systemImage: "heart.circle.fill", iconTint: metric.uiAccent, accessory: .navigates)
+        card.addGestureRecognizer(HistoryTap(metric: .cardioFitness, target: self, action: #selector(historyTapped(_:))))
         fitnessValue.font = UIFont.metricNumber
         fitnessValue.textColor = UIColor.textPrimary
         fitnessValue.adjustsFontForContentSizeCategory = true
@@ -164,6 +186,18 @@ final class HealthDetailViewController: ScreenViewController {
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: fitnessCaption)
         host(fitnessChart, in: card.contentStack)
         return card
+    }
+
+    private func showHistory(_ history: HistoryMetric) {
+        navigationController?.pushViewController(MetricHistoryViewController(dependencies: dependencies, metric: history), animated: true)
+    }
+
+    @objc private func showScoreHistory() {
+        showHistory(.sleepScore)
+    }
+
+    @objc private func historyTapped(_ tap: HistoryTap) {
+        showHistory(tap.metric)
     }
 
     private func host<Content: View>(_ controller: UIHostingController<Content>, in stack: UIStackView) {
@@ -489,5 +523,15 @@ final class HealthDetailViewController: ScreenViewController {
 private extension String {
     var capitalizedFirst: String {
         prefix(1).uppercased() + dropFirst()
+    }
+}
+
+/// A tap that opens a metric's history page.
+private final class HistoryTap: UITapGestureRecognizer {
+    let metric: HistoryMetric
+
+    init(metric: HistoryMetric, target: Any?, action: Selector?) {
+        self.metric = metric
+        super.init(target: target, action: action)
     }
 }
