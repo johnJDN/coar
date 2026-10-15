@@ -9,9 +9,11 @@ final class FakeFoodEstimator: FoodEstimator {
     private(set) var libraries: [FoodLibrary] = []
     var photoReply: Result<[Estimate], Error> = .success([])
     private(set) var photosSent: [Data] = []
+    private(set) var notesSent: [String?] = []
 
-    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
         photosSent.append(jpeg)
+        notesSent.append(note)
         return try photoReply.get()
     }
 

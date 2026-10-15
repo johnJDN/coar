@@ -132,6 +132,9 @@ extension Estimate {
         case notFood
         /// The reply was not the agreed JSON.
         case unreadable
+        /// The line listed separate foods ("eggs, toast and coffee"): each as its own line,
+        /// as the model wrote it, for the Describe tab to split into.
+        case severalFoods([String])
     }
 
     /// A model's pick from the user's catalogue, by handle (`FoodLibrary.promptListing`).
@@ -205,9 +208,12 @@ extension Estimate {
             let sodium_mg: Double?
             let caffeine_mg: Double?
             let alcohol_drinks: Double?
+            let parts: [String]?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw ReplyError.unreadable }
         guard reply.is_food else { throw ReplyError.notFood }
+        let parts = (reply.parts ?? []).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        if parts.count > 1 { throw ReplyError.severalFoods(parts) }
         let unit = reply.unit.trimmingCharacters(in: .whitespaces)
         let estimate = Estimate(
             name: reply.name.trimmingCharacters(in: .whitespaces),

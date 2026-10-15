@@ -46,7 +46,12 @@ final class DescribeViewController: UIViewController {
     /// Photos being read, by their placeholder line: kept in memory until read, so a failed
     /// one can be tried again, and never written anywhere.
     private var photos: [DescribeLine.ID: Data] = [:]
+    /// What the user said about each photo, sent with it (and again on a retry).
+    private var photoNotes: [DescribeLine.ID: String] = [:]
     private var collectionView: UICollectionView!
+    /// Your foods offered above the keyboard for the line being typed.
+    private let suggestionBar = SuggestionBar()
+    private var suggestingLine: DescribeLine.ID?
     private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
     init(dependencies: AppDependencies, at instant: Date, draftFile: DescribeDraftFile = .standard, onLogged: @escaping () -> Void) {
@@ -72,6 +77,7 @@ final class DescribeViewController: UIViewController {
         seedLinesForDebugging()
         #endif
         configureCollectionView()
+        suggestionBar.onPick = { [weak self] in self?.pick($0) }
         checkKey()
         render(animated: false)
         draft.unsent.forEach(send)
@@ -197,8 +203,10 @@ final class DescribeViewController: UIViewController {
     private func edited(_ id: DescribeLine.ID, text: String) {
         let before = draft.line(id)?.state
         photos[id] = nil
+        photoNotes[id] = nil
         guard draft.edit(id, text: text) else { return }
         syncAddRow()
+        suggest(for: id, text: text)
         timers[id]?.cancel()
         if draft.line(id)?.state != before {
             reconfigure(id)
@@ -265,14 +273,33 @@ final class DescribeViewController: UIViewController {
         present(picker, animated: true)
     }
 
-    /// A placeholder line reads "Photo" while the photo model looks at it.
+    /// Asks for an optional note before the photo is read ("I ate half", "it's turkey"): what
+    /// the model can't see, it is told. Read photo with the field empty sends it as it is.
     private func add(_ image: UIImage) {
         guard let jpeg = FoodPhoto.jpeg(from: image) else {
             Self.logger.error("Couldn't encode the photo")
             return
         }
+        let alert = UIAlertController(title: "Anything to add?", message: "How much you ate, or what something is. Leave it empty to just read the photo.", preferredStyle: .alert)
+        alert.addTextField { field in
+            field.placeholder = "I ate half"
+            field.autocapitalizationType = .sentences
+            field.returnKeyType = .done
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Read photo", style: .default) { [weak self, weak alert] _ in
+            self?.read(jpeg, note: alert?.textFields?.first?.text)
+        })
+        alert.preferredAction = alert.actions.last
+        present(alert, animated: true)
+    }
+
+    /// A placeholder line reads "Photo" while the photo model looks at it.
+    private func read(_ jpeg: Data, note: String?) {
         let id = draft.addPhoto()
         photos[id] = jpeg
+        let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !trimmed.isEmpty { photoNotes[id] = trimmed }
         render()
         onChange()
         sendPhoto(id, jpeg: jpeg)
@@ -283,10 +310,11 @@ final class DescribeViewController: UIViewController {
         reconfigure(id)
         let estimator = dependencies.foodEstimator
         let library = currentLibrary()
+        let note = photoNotes[id]
         Task { [weak self] in
             let result: Result<[Estimate], Error>
             do {
-                result = .success(try await estimator.estimate(photo: jpeg, library: library))
+                result = .success(try await estimator.estimate(photo: jpeg, note: note, library: library))
             } catch {
                 result = .failure(error)
             }
@@ -299,6 +327,7 @@ final class DescribeViewController: UIViewController {
         switch result {
         case .success:
             photos[id] = nil
+            photoNotes[id] = nil
         case .failure(let error):
             let error = OpenRouterError.from(error)
             if [.noKey, .keyRejected, .limitReached].contains(error) {
@@ -321,6 +350,14 @@ final class DescribeViewController: UIViewController {
     }
 
     private func received(_ id: DescribeLine.ID, sentText: String, result: Result<Estimate, Error>) {
+        // Several foods on one line: each becomes its own line and is estimated on its own.
+        if case .failure(Estimate.ReplyError.severalFoods(let parts)) = result {
+            guard let ids = draft.split(id, sentText: sentText, into: parts) else { return }
+            render()
+            onChange()
+            ids.forEach(send)
+            return
+        }
         guard draft.finish(id, sentText: sentText, result: result) else { return }
         if case .failure(let error) = result {
             let error = OpenRouterError.from(error)
@@ -372,6 +409,43 @@ final class DescribeViewController: UIViewController {
         onChange()
     }
 
+    // MARK: - Your foods as you type
+
+    /// Offers the saved foods the line's words start, above the keyboard; none once nothing
+    /// matches or the line already is a name (it fills in from Foods by itself).
+    private func suggest(for id: DescribeLine.ID, text: String) {
+        let suggestions = currentLibrary().suggestions(for: text)
+        suggestionBar.show(suggestions)
+        suggestingLine = suggestions.isEmpty ? nil : id
+        cell(for: id)?.showSuggestions(suggestions.isEmpty ? nil : suggestionBar)
+    }
+
+    /// Leaving a line sends it, and its suggestions go with the keyboard.
+    private func endedEditing(_ id: DescribeLine.ID) {
+        if suggestingLine == id {
+            suggestingLine = nil
+            cell(for: id)?.showSuggestions(nil)
+        }
+        send(id)
+    }
+
+    /// The line becomes the food's name (after any amount typed) and fills in from Foods.
+    private func pick(_ suggestion: FoodLibrary.Suggestion) {
+        guard let id = suggestingLine else { return }
+        suggestingLine = nil
+        cell(for: id)?.showSuggestions(nil)
+        timers[id]?.cancel()
+        draft.edit(id, text: suggestion.text)
+        syncAddRow()
+        reconfigure(id)
+        send(id)
+        onChange()
+    }
+
+    private func cell(for id: DescribeLine.ID) -> DescribeLineCell? {
+        dataSource.indexPath(for: .line(id)).flatMap { collectionView.cellForItem(at: $0) as? DescribeLineCell }
+    }
+
     // MARK: - Adding a line
 
     /// The "Add food" row: an empty line at the end, with the keyboard on it.
@@ -398,6 +472,7 @@ final class DescribeViewController: UIViewController {
         timers[id]?.cancel()
         timers[id] = nil
         photos[id] = nil
+        photoNotes[id] = nil
         draft.removeLine(id)
         render()
         onChange()
@@ -471,7 +546,7 @@ final class DescribeViewController: UIViewController {
                 onEdit: { [weak self] in self?.edited(id, text: $0) },
                 onReturn: { [weak self] in self?.returned(id) },
                 onDeleteEmpty: { [weak self] in self?.deletedEmpty(id) },
-                onEndEditing: { [weak self] in self?.send(id) },
+                onEndEditing: { [weak self] in self?.endedEditing(id) },
                 onSaveAsFood: { [weak self] in self?.setSaveAsFood(id, $0) }
             ))
         }

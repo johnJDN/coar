@@ -8,8 +8,9 @@ import os
 protocol FoodEstimator {
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate
     /// Every food in a photo, or the one food a nutrition label is for (ticket 07); none when
-    /// the photo shows neither. `jpeg` is sent and never kept.
-    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate]
+    /// the photo shows neither. `jpeg` is sent and never kept. `note` is what the user said
+    /// about it ("I ate half"), sent with it; nil for none.
+    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate]
 }
 
 /// The models, one constant each, so swapping one is a one-line change (ADR 0007).
@@ -66,6 +67,7 @@ enum FoodEstimatePrompt {
     - assumption: one short sentence on what you assumed, or "" if nothing.
     - is_food: false if the line is not something eaten or drunk; then the numbers are 0.
     - match: null, unless a list of the person's saved foods follows.
+    - parts: when the line lists separate foods eaten together ("eggs, toast and coffee", "burger and fries", "2 eggs + bacon"), each food as its own short line with its amount, as the person wrote it ("2 eggs", "toast", "coffee"); otherwise []. One food with parts is one food: "toast with butter", "chicken burrito bowl", "coffee with milk", "pho with extra noodles" are []. When parts has two or more, fill the other fields for the whole line anyway.
     \(FoodExtrasPrompt.rules)
     """
 
@@ -73,7 +75,7 @@ enum FoodEstimatePrompt {
     static func library(_ listing: String) -> String {
         """
 
-        The person's saved foods and meals, by handle. If the line clearly means one of them, set match: food is its handle, serving is the handle of the serving that fits what they said (null for a meal, or when they don't say), and quantity is how many of that serving (or of the meal). Match only when it is the same food as saved: not when the line adds something the saved food doesn't include ("with milk", "and fries"). Otherwise match is null. Fill in the estimate fields either way.
+        The person's saved foods and meals, by handle. If the line clearly means one of them, set match: food is its handle, serving is the handle of the serving that fits what they said (null for a meal, or when they don't say), and quantity is how many of that serving (or of the meal). Match only when it is the same food as saved: not when the line adds something the saved food doesn't include ("with milk", "and fries", "with extra noodles"); an addition is not a size. If the line asks for a size and one of the servings is named for that size ("large" for "large fries"), use that serving, quantity 1. Only if none is ("large pho" against a single "bowl", "half a sandwich"), still match it, with quantity scaled from the serving that fits: large about 1.5, small about 0.75, half 0.5, double 2. A product's standard size is not a portion size: "2 large eggs" against a "1 egg" serving is quantity 2. Otherwise match is null. Fill in the estimate fields either way.
         \(listing)
         """
     }
@@ -81,9 +83,10 @@ enum FoodEstimatePrompt {
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match"] + FoodExtrasPrompt.required,
+        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts"] + FoodExtrasPrompt.required,
         "properties": ([
             "is_food": ["type": "boolean"],
+            "parts": ["type": "array", "items": ["type": "string"]],
             "name": ["type": "string"],
             "quantity": ["type": "number"],
             "unit": ["type": "string"],
@@ -131,6 +134,7 @@ enum FoodPhotoPrompt {
     - match: null, unless a list of the person's saved foods follows.
     For a label item, read fiber, sodium, caffeine and alcohol exactly from the label when it prints them, and use null for any it doesn't.
     \(FoodExtrasPrompt.rules)
+    The person may send a short note with the photo. Trust it over what you see: it can say how much they ate ("I ate half", "only the chicken"), what a food is ("it's turkey, not chicken"), or what was added that you can't see ("cooked in butter"). Apply it to the items and say so in their assumption.
     If there is no food or label in the photo, return no items.
     """
 
@@ -148,6 +152,7 @@ enum FoodPhotoPrompt {
         var properties = item["properties"] as? [String: Any] ?? [:]
         properties["is_food"] = nil
         properties["needs_lookup"] = nil
+        properties["parts"] = nil
         properties["source"] = ["type": "string", "enum": ["photo", "label"]]
         item["properties"] = properties
         item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"] + FoodExtrasPrompt.required
@@ -280,11 +285,12 @@ final class OpenRouterFoodEstimator: FoodEstimator {
         return kept
     }
 
-    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
+        let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let reply = try await client.complete(
             model: FoodModels.photo,
             system: FoodPhotoPrompt.system + (library.promptListing.map(FoodPhotoPrompt.library) ?? ""),
-            user: [.jpeg(jpeg)],
+            user: [.jpeg(jpeg)] + (trimmed.isEmpty ? [] : [.text("Note from the person: \(trimmed)")]),
             schema: (name: "photo", json: FoodPhotoPrompt.schema),
             timeout: 40
         )
@@ -350,7 +356,7 @@ final class DebugFoodEstimator: FoodEstimator {
     }
 
     /// Two plate items after two seconds; a third photo in a row fails, to see the retry.
-    func estimate(photo jpeg: Data, library: FoodLibrary) async throws -> [Estimate] {
+    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
         try await Task.sleep(for: .seconds(2))
         photos += 1
         if photos % 3 == 0 { throw OpenRouterError.failed("OpenRouter took too long to reply") }

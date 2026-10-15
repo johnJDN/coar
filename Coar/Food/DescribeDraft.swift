@@ -156,6 +156,8 @@ struct DescribeDraft: Equatable, Codable {
             return .failed("Not a food Coar knows. Check the spelling, or say more.")
         case Estimate.ReplyError.unreadable:
             return .failed("The reply couldn't be read.")
+        case Estimate.ReplyError.severalFoods:
+            return .failed("This is several foods. Put each on its own line.")
         default:
             switch OpenRouterError.from(error) {
             case .noKey, .keyRejected, .limitReached: return .typing
@@ -210,6 +212,22 @@ struct DescribeDraft: Equatable, Codable {
             lines[index].state = Self.state(after: error)
         }
         return true
+    }
+
+    /// The model found separate foods on one line ("eggs, toast and coffee"): the line becomes
+    /// one line per food, in its place, each to be sent on its own; their ids. Nothing happens
+    /// (nil) when the line has since changed or is no longer waiting for this answer. The line's
+    /// Save to Foods choice carries to each.
+    mutating func split(_ id: DescribeLine.ID, sentText: String, into parts: [String]) -> [DescribeLine.ID]? {
+        guard parts.count > 1, let index = index(id), lines[index].trimmedText == sentText, lines[index].state == .checking else { return nil }
+        let saveAsFood = lines[index].saveAsFood
+        let replacements = parts.map { text -> DescribeLine in
+            var line = DescribeLine(text: text)
+            line.saveAsFood = saveAsFood
+            return line
+        }
+        lines.replaceSubrange(index...index, with: replacements)
+        return replacements.map(\.id)
     }
 
     /// Lines waiting for a connection, to send once there is one.

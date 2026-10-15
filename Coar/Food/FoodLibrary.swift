@@ -45,6 +45,46 @@ struct FoodLibrary {
         return nil
     }
 
+    // MARK: Suggestions while typing
+
+    /// One of the user's foods or meals offered above the keyboard as a line is typed.
+    struct Suggestion: Equatable {
+        /// What the line becomes when it is picked: the name, after the amount typed if any
+        /// ("2 Pho"), so it matches exactly and fills in with no model.
+        let text: String
+        let name: String
+        /// "bowl · 450 cal", or "meal · 620 cal".
+        let detail: String
+    }
+
+    /// The saved foods and meals whose name the line (after any amount) starts, or a word of it
+    /// starts: names starting with it first, each group in the catalogue's order (most recently
+    /// used first). Nothing for under two letters, or when the line already is a name.
+    func suggestions(for line: String, limit: Int = 4) -> [Suggestion] {
+        let normalised = FoodText.normalised(line)
+        let (quantity, typed) = Self.leadingQuantity(normalised)
+        guard typed.count >= 2, exactMatch(line) == nil else { return [] }
+        let prefix = quantity == 1 && typed == normalised ? "" : "\(FoodText.amount(quantity)) "
+
+        var candidates: [(name: String, detail: String)] = foodItems.compactMap { item in
+            item.defaultServing.map { (item.name, "\($0.name) · \(FoodText.calories($0.macros))") }
+        }
+        candidates += meals.map { ($0.name, "meal · \(FoodText.calories($0.macros))") }
+
+        func rank(_ name: String) -> Int? {
+            let key = FoodText.normalised(name)
+            if key.hasPrefix(typed) { return 0 }
+            if key.split(separator: " ").contains(where: { $0.hasPrefix(typed) }) { return 1 }
+            return nil
+        }
+        return candidates
+            .enumerated()
+            .compactMap { index, candidate in rank(candidate.name).map { (rank: $0, index: index, candidate: candidate) } }
+            .sorted { ($0.rank, $0.index) < ($1.rank, $1.index) }
+            .prefix(limit)
+            .map { Suggestion(text: prefix + $0.candidate.name, name: $0.candidate.name, detail: $0.candidate.detail) }
+    }
+
     /// A leading amount and what follows it; 1 and the whole line when there is none.
     static func leadingQuantity(_ normalised: String) -> (Double, String) {
         var words = normalised.split(separator: " ").map(String.init)

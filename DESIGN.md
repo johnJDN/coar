@@ -263,7 +263,10 @@ Charts never show a legend when color already maps to a label on screen.
   it shows ("From photo"), or one per label serving ("From label"). Tapping under a line
   pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food. A line
   swipes left to Remove (or press and hold the numbers under it), with no confirmation. An
-  "Add food" row under the last line adds an empty one while the last line has text. Each
+  "Add food" row under the last line adds an empty one while the last line has text. While
+  a line is typed, your saved foods whose name starts with it show as glass capsules above
+  the keyboard (name over serving and calories); one tap fills the line from Foods. A line
+  listing several foods splits into one line each. A photo asks "Anything to add?" first. Each
   filled line has a "Save to Foods" toggle, on by default. On the timeline an entry card is three fixed rows: the name (up to two lines) with its
   calories level with the first line, the portion as said ("3 slices"), and the gram macros
   in whole grams. An Entry swipes

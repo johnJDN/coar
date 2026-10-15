@@ -536,3 +536,13 @@ Ticket: `.scratch/food-cards/issues/01-three-row-entry-cards.md`.
 
 - [ ] Food timeline: every entry card reads name / portion / macros. The calories sit level with the name's first line, even when the name takes two lines. Macros are whole grams ("P 1 · F 0 · C 27"); the entry's page still shows decimals.
 - [ ] Portions read naturally: "1 medium banana", "3 slices", "1 serving (28 g)", "150 g"; "4 × 1 egg" for a serving named with its own amount.
+
+## Added after v1: Describe quality of life (2026-10-14)
+
+Ticket: `.scratch/describe-qol/issues/01-sizes-splits-suggestions-notes.md`.
+
+- [ ] Save a food "Pho" with one serving "bowl". Describe "large pho": "1.5 × bowl · Your food". "small pho": 0.75. Add a "large bowl" serving: "large pho" now uses it (1 × large bowl).
+- [ ] Describe "eggs, toast and coffee": after a moment it becomes three lines, each filled in on its own. "toast with butter" stays one line.
+- [ ] Type the first letters of a food you've saved ("ph"): it shows above the keyboard with its serving and calories. Tap it: the line fills in at once as "Your food". With "2 ph", it fills "2 Pho".
+- [ ] Add a photo: "Anything to add?" Type "I ate half": the foods come back halved and their notes mention it. Read photo with the field empty works as before.
+- [ ] Judgement calls: sizes scale by rule of thumb (large 1.5, small 0.75); the note is asked each time; suggestions from two letters, at most four.

@@ -108,8 +108,20 @@ final class DescribeLineCell: UICollectionViewListCell {
         saveButton.isSelected = line.saveAsFood
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        field.inputAccessoryView = nil
+    }
+
     func focus() {
         field.becomeFirstResponder()
+    }
+
+    /// The bar of suggestions above the keyboard while this line is typed, or none.
+    func showSuggestions(_ bar: UIView?) {
+        guard field.inputAccessoryView !== bar else { return }
+        field.inputAccessoryView = bar
+        if field.isFirstResponder { field.reloadInputViews() }
     }
 
     var isEditingText: Bool {

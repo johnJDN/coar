@@ -1,0 +1,497 @@
+[
+ {
+  "line": "pho",
+  "expected": [
+   "match",
+   "f1",
+   "s1",
+   1
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Pho",
+   "quantity": 1,
+   "unit": "bowl",
+   "grams": 600,
+   "calories": 450,
+   "protein": 30,
+   "fat": 12,
+   "carbs": 55,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard bowl of beef pho.",
+   "match": {
+    "food": "f1",
+    "serving": "s1",
+    "quantity": 1
+   },
+   "fiber_g": 2,
+   "sodium_mg": 1200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "large pho",
+  "expected": [
+   "match",
+   "f1",
+   "s1",
+   1.5
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Pho",
+   "quantity": 1.5,
+   "unit": "bowl",
+   "grams": 675,
+   "calories": 525,
+   "protein": 36,
+   "fat": 12,
+   "carbs": 68,
+   "needs_lookup": false,
+   "assumption": "Assumed a large bowl is 1.5 times a standard bowl serving.",
+   "match": {
+    "food": "f1",
+    "serving": "s1",
+    "quantity": 1.5
+   },
+   "fiber_g": 3,
+   "sodium_mg": 1800,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "small pho",
+  "expected": [
+   "match",
+   "f1",
+   "s1",
+   0.75
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Pho",
+   "quantity": 1,
+   "unit": "bowl",
+   "grams": 600,
+   "calories": 450,
+   "protein": 30,
+   "fat": 10,
+   "carbs": 60,
+   "needs_lookup": false,
+   "assumption": "Assumed a small restaurant bowl of beef pho.",
+   "match": {
+    "food": "f1",
+    "serving": "s1",
+    "quantity": 0.75
+   },
+   "fiber_g": 3,
+   "sodium_mg": 1200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "half a pho",
+  "expected": [
+   "match",
+   "f1",
+   "s1",
+   0.5
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Pho",
+   "quantity": 0.5,
+   "unit": "bowl",
+   "grams": 350,
+   "calories": 300,
+   "protein": 15,
+   "fat": 6,
+   "carbs": 45,
+   "needs_lookup": false,
+   "assumption": "Assumed half of a standard bowl of beef pho.",
+   "match": {
+    "food": "f1",
+    "serving": "s1",
+    "quantity": 0.5
+   },
+   "fiber_g": 2,
+   "sodium_mg": 1100,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "2 large eggs",
+  "expected": [
+   "match",
+   "f2",
+   "s1",
+   2
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Eggs",
+   "quantity": 2,
+   "unit": "large egg",
+   "grams": 100,
+   "calories": 143,
+   "protein": 12.6,
+   "fat": 9.5,
+   "carbs": 0.7,
+   "needs_lookup": false,
+   "assumption": "Assumed 2 standard large whole eggs.",
+   "match": {
+    "food": "f2",
+    "serving": "s1",
+    "quantity": 2
+   },
+   "fiber_g": 0,
+   "sodium_mg": 142,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "large fries",
+  "expected": [
+   "match",
+   "f3",
+   "s3",
+   1
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Large Fries",
+   "quantity": 1,
+   "unit": "large",
+   "grams": 160,
+   "calories": 510,
+   "protein": 6,
+   "fat": 24,
+   "carbs": 66,
+   "needs_lookup": false,
+   "assumption": "Assumed a typical large fast-food French fries portion of 160g.",
+   "match": {
+    "food": "f3",
+    "serving": "s3",
+    "quantity": 1
+   },
+   "fiber_g": 5,
+   "sodium_mg": 300,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "venti iced latte",
+  "expected": [
+   "match",
+   "f4",
+   "s1",
+   1.25
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Iced latte",
+   "quantity": 1,
+   "unit": "venti",
+   "grams": 709,
+   "calories": 250,
+   "protein": 15,
+   "fat": 7,
+   "carbs": 33,
+   "needs_lookup": true,
+   "assumption": "Assumed standard Starbucks venti iced latte with 2% milk.",
+   "match": {
+    "food": "f4",
+    "serving": "s1",
+    "quantity": 1.5
+   },
+   "fiber_g": 0,
+   "sodium_mg": 200,
+   "caffeine_mg": 225,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "pho with extra noodles",
+  "expected": [
+   "none"
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Pho with extra noodles",
+   "quantity": 1,
+   "unit": "bowl",
+   "grams": 700,
+   "calories": 550,
+   "protein": 35,
+   "fat": 12,
+   "carbs": 75,
+   "needs_lookup": false,
+   "assumption": "Assumed a standard bowl of beef pho with an extra portion of rice noodles.",
+   "match": null,
+   "fiber_g": 3,
+   "sodium_mg": 1800,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "eggs, toast and coffee",
+  "expected": [
+   "parts",
+   3
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [
+    "eggs",
+    "toast",
+    "coffee"
+   ],
+   "name": "Eggs, toast and coffee",
+   "quantity": 1,
+   "unit": "meal",
+   "grams": 400,
+   "calories": 350,
+   "protein": 15,
+   "fat": 12,
+   "carbs": 45,
+   "needs_lookup": false,
+   "assumption": "Assumed 2 scrambled eggs, 2 slices of white toast with butter, and 1 black coffee.",
+   "match": null,
+   "fiber_g": 3,
+   "sodium_mg": 550,
+   "caffeine_mg": 95,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "burger and fries",
+  "expected": [
+   "parts",
+   2
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [
+    "burger",
+    "fries"
+   ],
+   "name": "Burger and fries",
+   "quantity": 1,
+   "unit": "meal",
+   "grams": 450,
+   "calories": 900,
+   "protein": 35,
+   "fat": 45,
+   "carbs": 90,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard fast food cheeseburger and a medium order of fries.",
+   "match": null,
+   "fiber_g": 6,
+   "sodium_mg": 1200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "2 eggs + bacon",
+  "expected": [
+   "parts",
+   2
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [
+    "2 eggs",
+    "bacon"
+   ],
+   "name": "Eggs and bacon",
+   "quantity": 1,
+   "unit": "portion",
+   "grams": 160,
+   "calories": 280,
+   "protein": 15,
+   "fat": 23,
+   "carbs": 1,
+   "needs_lookup": false,
+   "assumption": "Assumed 2 large eggs and 3 slices of pan-fried bacon.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 580,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "big mac and medium fries",
+  "expected": [
+   "parts",
+   2
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [
+    "big mac",
+    "medium fries"
+   ],
+   "name": "Big Mac and Medium Fries",
+   "quantity": 1,
+   "unit": "meal",
+   "grams": 476,
+   "calories": 910,
+   "protein": 29,
+   "fat": 48,
+   "carbs": 95,
+   "needs_lookup": true,
+   "assumption": "Assumed one McDonald's Big Mac and one medium order of fries.",
+   "match": null,
+   "fiber_g": 7,
+   "sodium_mg": 1330,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "toast with butter",
+  "expected": [
+   "none"
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Toast with butter",
+   "quantity": 1,
+   "unit": "slice",
+   "grams": 45,
+   "calories": 140,
+   "protein": 3,
+   "fat": 6,
+   "carbs": 18,
+   "needs_lookup": false,
+   "assumption": "Assumed 1 slice of white toast with 1 tablespoon of butter.",
+   "match": null,
+   "fiber_g": 1,
+   "sodium_mg": 180,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "chicken burrito bowl",
+  "expected": [
+   "none"
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Chicken burrito bowl",
+   "quantity": 1,
+   "unit": "bowl",
+   "grams": 500,
+   "calories": 650,
+   "protein": 45,
+   "fat": 22,
+   "carbs": 70,
+   "needs_lookup": false,
+   "assumption": "Assumed a standard chicken burrito bowl with rice, beans, chicken, cheese, and salsa.",
+   "match": null,
+   "fiber_g": 9,
+   "sodium_mg": 1100,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "coffee with milk",
+  "expected": [
+   "none"
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Coffee with milk",
+   "quantity": 1,
+   "unit": "mug",
+   "grams": 250,
+   "calories": 30,
+   "protein": 1,
+   "fat": 1,
+   "carbs": 2,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard mug of coffee with 30ml of whole milk.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 15,
+   "caffeine_mg": 95,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "rice and beans",
+  "expected": [
+   "parts",
+   2
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [
+    "rice",
+    "beans"
+   ],
+   "name": "Rice and beans",
+   "quantity": 1,
+   "unit": "plate",
+   "grams": 350,
+   "calories": 400,
+   "protein": 12,
+   "fat": 8,
+   "carbs": 70,
+   "needs_lookup": false,
+   "assumption": "Assumed one typical portion of 1 cup cooked rice and 3/4 cup cooked beans with minor fat.",
+   "match": null,
+   "fiber_g": 10,
+   "sodium_mg": 400,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ },
+ {
+  "line": "salt and pepper chicken wings",
+  "expected": [
+   "none"
+  ],
+  "reply": {
+   "is_food": true,
+   "parts": [],
+   "name": "Salt And Pepper Chicken Wings",
+   "quantity": 1,
+   "unit": "serving",
+   "grams": 250,
+   "calories": 650,
+   "protein": 45,
+   "fat": 48,
+   "carbs": 8,
+   "needs_lookup": false,
+   "assumption": "Assumed one restaurant-style portion of 250g deep-fried wings.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 1200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  }
+ }
+]
