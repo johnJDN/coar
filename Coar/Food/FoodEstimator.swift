@@ -304,7 +304,10 @@ final class OpenRouterFoodEstimator: FoodEstimator {
             let reply = try await client.complete(
                 model: FoodModels.lookup,
                 system: FoodLookupPrompt.system,
-                user: [.text(line)],
+                // The web search is made from this message: the line alone ("shin ramen") found
+                // brand pages with calories but no sodium or fiber; asking for the label finds
+                // the full panel (`.scratch/extras/accuracy-test/report.md`, run 3).
+                user: [.text("\(line) nutrition facts")],
                 schema: (name: "lookup", json: FoodLookupPrompt.schema),
                 webSearch: FoodModels.lookupSearch,
                 timeout: 25

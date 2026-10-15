@@ -32,3 +32,22 @@
 | guinness | text (lookup found nothing) | –: — (truth —) | –: — (truth —) | –: — (truth —) | WRONG: 1.2 (truth 1.04) |
 | glass of red wine | text | ?: 0 (truth —) | ?: 5 (truth —) | –: — (truth —) | ok: 1 (truth 1.13) |
 | shot of vodka | text | ok: 0 (truth 0) | ok: 0 (truth 0) | ok: — (truth 0) | ok: 1.0 (truth 1.0) |
+
+## Run 3 (2026-10-14): the lookup searches for "<line> nutrition facts"
+
+Prompted by "shin ramen" coming back with no sodium: the search, made from the line alone,
+kept landing on Nongshim's Korean page (calories only), and three replays of the old setup
+all ended with sodium blank. Asking for the label lands on nongshimusa.com every time (520
+cal, 1,620 mg sodium, 3 g fiber). One pass of the 25 lines, `run3-nutrition-facts.json`
+($0.15), against run 1 / run 2:
+
+| Extra | Right | Wrong | Missing | Unpublished number |
+|---|---|---|---|---|
+| fiber | 20 (19 / 19) | 0 | 1 (2 / 2) | 1 |
+| sodium | 20 (16 / 17) | 1 | 0 (4 / 4) | 2 |
+| caffeine | 13 (12 / 12) | 0 | 0 (1 / 1) | 0 |
+| alcohol | 24 | 1 | 0 | 0 |
+
+Lookups now find labels for Celsius, Monster and Bud Light (before: nothing found), and
+sodium for Clif, Crunchwrap and Diet Coke. The one new "unpublished" is Monster's 370 mg,
+which its US can does print; the truth file just doesn't have it.

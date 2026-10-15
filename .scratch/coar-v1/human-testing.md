@@ -567,3 +567,7 @@ Ticket: `.scratch/describe-qol/issues/03-rename-logged-entries.md`.
 - [ ] A meal entry: Name is editable; there's no Unit row ("× meal" beside the quantity).
 - [ ] Rename an entry that came from the Describe tab to the name of a saved food: Save as food reads "Already in Foods".
 - [ ] Judgement calls: a unit change saves without new macros (with the warning); no "Estimate again" here; renaming never changes the saved food and the entry stays linked to it.
+
+## Added after v1: Lookups find the full label (2026-10-14)
+
+- [ ] Describe "shin ramen": after the lookup, its page's Also recorded shows sodium (about 1,620 mg) and fiber, from Nongshim's US label (520 cal).

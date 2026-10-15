@@ -33,3 +33,7 @@ pages.
   - **Estimate decoding is lenient** so an older saved Describe draft and the line cache still
     load.
   - Alcohol is stored in drinks (14 g) and shown in drinks; the grams are not kept.
+- 2026-10-14 (agent): John typed "shin ramen" and saw no sodium. The lookup now searches for
+  "<line> nutrition facts", which finds the US label instead of a calories-only brand page.
+  Re-ran the 25-line accuracy test: sodium missing 4 → 0, nothing got worse
+  (`../accuracy-test/report.md`, run 3).
