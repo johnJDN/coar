@@ -65,7 +65,7 @@ enum FoodEstimatePrompt {
     - calories in kcal; protein, fat and carbs in grams; all for the whole portion.
     - needs_lookup: true only when the line names a restaurant chain, a brand, or a packaged product whose published nutrition would be more accurate than an estimate. Otherwise false.
     - assumption: one short sentence on what you assumed, or "" if nothing.
-    - is_food: false if the line is not something eaten or drunk; then the numbers are 0.
+    - is_food: false only if the line cannot be something eaten or drunk (a sentence that isn't a food, an activity, a medicine, a vape); then the numbers are 0. This is a food log: when a name could be a food or something else ("Built Puff bar" is a protein bar, not a Puff Bar vape), it's the food.
     - match: null, unless a list of the person's saved foods follows.
     - parts: when the line lists separate foods eaten together ("eggs, toast and coffee", "burger and fries", "2 eggs + bacon"), each food as its own short line with its amount, as the person wrote it ("2 eggs", "toast", "coffee"); otherwise []. One food with parts is one food: "toast with butter", "chicken burrito bowl", "coffee with milk", "pho with extra noodles" are []. When parts has two or more, fill the other fields for the whole line anyway.
     \(FoodExtrasPrompt.rules)
@@ -182,7 +182,7 @@ enum FoodLookupPrompt {
     - calories in kcal; protein, fat and carbs in grams; null for any you did not find published.
     - fiber_g (grams), sodium_mg (milligrams), caffeine_mg (milligrams) and alcohol_drinks (US standard drinks of 14 g pure alcohol, from the published strength and size): from the same published source, null for any it doesn't give. Never estimate these. A brand that doesn't publish caffeine gets null.
     - assumption: one short sentence naming where the numbers come from and anything assumed.
-    - is_food is false only if the line is not something eaten or drunk.
+    - is_food is false only if the line cannot be something eaten or drunk. This is a food log: when a name could be a food or something else, it's the food.
     """
 
     static let schema: [String: Any] = [

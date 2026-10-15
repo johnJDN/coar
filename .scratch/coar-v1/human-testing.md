@@ -584,3 +584,7 @@ Ticket: `.scratch/health-pages/issues/01-sleep-steps-weight-pages.md`. Needs the
 - [ ] Set goal: type a weight; Progress says how far and "around <date> at this pace"; if close enough, a dashed line on the chart. Change goal → Remove goal clears it. It syncs to your other devices.
 - [ ] Weigh-ins: tap one, change the Day or the value, Save. Delete weigh-in: gone, with Undo (Undo brings it back, also in Apple Health). All weigh-ins: grouped by month; swipe left to delete.
 - [ ] Judgement calls: target comes from your tracked habit; goal line only when the chart reaches it; usual times ignore naps; steps' week leaves out today.
+
+## Added after v1: Brand names that are also non-foods (2026-10-15)
+
+- [ ] Describe "built puff bar": it fills in as a Built Puff protein bar (about 140–150 cal, looked up), not "not a food Coar knows". "went for a run" or "2 advil" still say it isn't a food.
