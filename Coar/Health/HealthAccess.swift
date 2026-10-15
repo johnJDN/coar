@@ -69,6 +69,8 @@ final class HealthKitAccess: HealthAccess {
 /// nothing is read back (ADR 0002). Faked in tests.
 protocol BodyWeightWriter: AnyObject {
     func writeBodyWeight(kilograms: Double, on day: Day) async throws
+    /// Removes what Coar wrote for that Day.
+    func deleteBodyWeight(on day: Day) async throws
 }
 
 extension HealthKitAccess: BodyWeightWriter {
@@ -86,13 +88,22 @@ extension HealthKitAccess: BodyWeightWriter {
         let calendar = Calendar.current
         let start = day.start(in: calendar)
         let end = calendar.date(byAdding: .day, value: 1, to: start)!
-        let thatDay = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
-        _ = try await healthStore.deleteObjects(of: type, predicate: thatDay)
+        try await deleteBodyWeight(on: day)
 
         let now = Date()
         let instant = (start..<end).contains(now) ? now : calendar.date(bySettingHour: 12, minute: 0, second: 0, of: start)!
         let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: kilograms)
         try await healthStore.save(HKQuantitySample(type: type, quantity: quantity, start: instant, end: instant))
+    }
+
+    /// HealthKit lets an app delete only its own samples, so a scale's reading stays.
+    func deleteBodyWeight(on day: Day) async throws {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        let calendar = Calendar.current
+        let start = day.start(in: calendar)
+        let end = calendar.date(byAdding: .day, value: 1, to: start)!
+        let thatDay = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        _ = try await healthStore.deleteObjects(of: HKQuantityType(.bodyMass), predicate: thatDay)
     }
 }
 
@@ -103,7 +114,15 @@ extension HealthKitAccess: HealthReader {
     /// Every sleep sample touching the nights that end on `days`, reduced per wake Day by
     /// `SleepNight`. A read HealthKit has not been allowed simply returns no samples.
     func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval] {
-        guard HKHealthStore.isHealthDataAvailable(), let first = days.min(), let last = days.max() else { return [:] }
+        SleepNight.timeAsleep(wakingOn: days, from: try await sleepSamples(wakingOn: days), in: .current)
+    }
+
+    func sleepNights(wakingOn days: [Day]) async throws -> [Day: SleepNightDetail] {
+        SleepNight.details(wakingOn: days, from: try await sleepSamples(wakingOn: days), in: .current)
+    }
+
+    private func sleepSamples(wakingOn days: [Day]) async throws -> [SleepSample] {
+        guard HKHealthStore.isHealthDataAvailable(), let first = days.min(), let last = days.max() else { return [] }
         let calendar = Calendar.current
         let start = SleepNight.window(wakingOn: first, in: calendar).lowerBound
         let end = SleepNight.window(wakingOn: last, in: calendar).upperBound
@@ -111,8 +130,28 @@ extension HealthKitAccess: HealthReader {
             predicates: [.categorySample(type: HKCategoryType(.sleepAnalysis), predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
             sortDescriptors: []
         )
-        let samples = try await descriptor.result(for: healthStore).compactMap(SleepSample.init)
-        return SleepNight.timeAsleep(wakingOn: days, from: samples, in: calendar)
+        return try await descriptor.result(for: healthStore).compactMap(SleepSample.init)
+    }
+
+    /// The step sum per hour of a Day, from HealthKit's statistics like `steps(on:)`.
+    func hourlySteps(on day: Day) async throws -> [Int: Int] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [:] }
+        let calendar = Calendar.current
+        let start = day.start(in: calendar)
+        let end = day.advanced(by: 1).start(in: calendar)
+        let descriptor = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(type: HKQuantityType(.stepCount), predicate: HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)),
+            options: .cumulativeSum,
+            anchorDate: start,
+            intervalComponents: DateComponents(hour: 1)
+        )
+        let collection = try await descriptor.result(for: healthStore)
+        var result: [Int: Int] = [:]
+        collection.enumerateStatistics(from: start, to: end) { statistics, _ in
+            guard let sum = statistics.sumQuantity() else { return }
+            result[calendar.component(.hour, from: statistics.startDate)] = Int(sum.doubleValue(for: .count()).rounded())
+        }
+        return result
     }
 
     /// The step sum per Day, from HealthKit's own statistics so a watch and a phone that

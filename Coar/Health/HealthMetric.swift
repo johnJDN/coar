@@ -22,6 +22,14 @@ enum HealthMetric: CaseIterable {
         }
     }
 
+    /// The tracked Habit metric whose target the page draws.
+    var trackedMetric: TrackedMetric {
+        switch self {
+        case .sleep: return .sleep
+        case .steps: return .steps
+        }
+    }
+
     /// One accent per metric (DESIGN.md §3): teal for Sleep, amber for Steps.
     var uiAccent: UIColor {
         switch self {

@@ -206,9 +206,11 @@ final class EmojiTextField: UITextField {
 }
 
 extension HabitForm.Draft {
-    /// A new one of `kind`; a tracked one starts at its metric's usual goal.
-    init(kind: HabitKind) {
+    /// A new one of `kind`; a tracked one starts at its metric's usual goal (`metric`, when
+    /// given: a Health page's "Set a target" starts a Sleep or Steps Habit).
+    init(kind: HabitKind, metric: TrackedMetric? = nil) {
         target.kind = kind
+        if let metric { target.metric = metric }
         if kind == .tracked {
             let defaults = target.metric.defaults
             target.comparison = defaults.comparison

@@ -3,13 +3,16 @@ import SwiftUI
 
 /// The weight screen's chart (DESIGN.md §8 "Trend over time"): raw Body Weights as muted
 /// points, Trend Weight as a 2pt accent line with bloom on its last point, no gridlines,
-/// axis labels in `textTertiary`. A SwiftUI leaf: values in, nothing out (ADR 0001).
+/// axis labels in `textTertiary`; the Goal Weight, when it falls inside the axis, as a dashed
+/// `textTertiary` rule. A SwiftUI leaf: values in, nothing out (ADR 0001).
 struct BodyWeightChart: View {
 
     struct Model: Equatable {
         var raw: [TrendPoint]
         var trend: [TrendPoint]
         var unit: String
+        /// In the display unit; drawn only when inside the points' axis.
+        var goal: Double? = nil
     }
 
     let model: Model
@@ -28,6 +31,11 @@ struct BodyWeightChart: View {
                     .foregroundStyle(Color.accentTeal)
                     .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                     .interpolationMethod(.catmullRom)
+            }
+            if let goal = model.goal {
+                RuleMark(y: .value("Goal Weight", goal))
+                    .foregroundStyle(Color.textTertiary)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
             }
             if let last = model.trend.last {
                 PointMark(x: .value("Day", last.date), y: .value("Trend Weight", last.value))

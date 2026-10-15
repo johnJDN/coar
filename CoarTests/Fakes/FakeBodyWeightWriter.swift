@@ -11,10 +11,17 @@ final class FakeBodyWeightWriter: BodyWeightWriter {
     }
 
     private(set) var samples: [Sample] = []
+    private(set) var deletedDays: [Day] = []
     var failure: Error?
 
     func writeBodyWeight(kilograms: Double, on day: Day) async throws {
         if let failure { throw failure }
         samples.append(Sample(kilograms: kilograms, day: day))
+    }
+
+    func deleteBodyWeight(on day: Day) async throws {
+        if let failure { throw failure }
+        deletedDays.append(day)
+        samples.removeAll { $0.day == day }
     }
 }

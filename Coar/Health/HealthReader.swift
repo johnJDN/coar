@@ -25,8 +25,13 @@ struct SleepSample: Equatable {
 protocol HealthReader: AnyObject {
     /// Seconds asleep per wake Day, for the Days that have any asleep sample.
     func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval]
+    /// Each Night's detail (bedtime, wake time, stages) per wake Day, for the Days that have
+    /// any asleep sample.
+    func sleepNights(wakingOn days: [Day]) async throws -> [Day: SleepNightDetail]
     /// Steps per Day, for the Days that have any.
     func steps(on days: [Day]) async throws -> [Day: Int]
+    /// Steps per hour of a Day (0 is midnight to 1 AM), for the hours that have any.
+    func hourlySteps(on day: Day) async throws -> [Int: Int]
 }
 
 extension HealthReader {

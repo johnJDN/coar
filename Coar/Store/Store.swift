@@ -82,6 +82,36 @@ final class Store {
         try save()
     }
 
+    /// Removes the Body Weight for a Day, if there is one; the Days around it are untouched.
+    func deleteBodyWeight(on day: Day) throws {
+        let request = BodyWeight.fetchRequest()
+        request.predicate = NSPredicate(format: "day == %@", day.rawValue)
+        try context.fetch(request).forEach(context.delete)
+        try save()
+    }
+
+    /// The Goal Weight in kilograms (CONTEXT.md "Goal Weight"), or nil when none is set.
+    /// Duplicates a pre-dedupe sync can leave resolve by latest `modifiedAt`.
+    func goalWeight() throws -> Double? {
+        let request = GoalWeight.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "modifiedAt", ascending: false)]
+        request.fetchLimit = 1
+        return try context.fetch(request).first?.kilograms
+    }
+
+    /// Sets the Goal Weight, or clears it with nil.
+    func setGoalWeight(kilograms: Double?) throws {
+        let existing = try context.fetch(GoalWeight.fetchRequest())
+        if let kilograms {
+            let record = existing.first ?? GoalWeight(context: context)
+            record.kilograms = kilograms
+            existing.dropFirst().forEach(context.delete)
+        } else {
+            existing.forEach(context.delete)
+        }
+        try save()
+    }
+
     func bodyWeight(on day: Day) throws -> BodyWeightRecord? {
         try fetchBodyWeight(on: day).flatMap(BodyWeightRecord.init)
     }
@@ -331,4 +361,5 @@ extension Workout: ModifiedAtStamped {}
 extension WorkoutExercise: ModifiedAtStamped {}
 extension LoggedSet: ModifiedAtStamped {}
 extension BodyWeight: ModifiedAtStamped {}
+extension GoalWeight: ModifiedAtStamped {}
 extension ProgressPhoto: ModifiedAtStamped {}

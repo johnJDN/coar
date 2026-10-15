@@ -62,6 +62,23 @@ final class SyncDedupeTests: XCTestCase {
         XCTAssertTrue(secondRun.isEmpty, "a second run finds nothing to do")
     }
 
+    // MARK: Goal Weight
+
+    func test_twoGoalWeights_keepTheLatestModified() async throws {
+        let store = Store.inMemory()
+        for (kilograms, modifiedAt) in [(80.0, later), (78.0, earlier)] {
+            let goal = GoalWeight(context: store.context)
+            goal.kilograms = kilograms
+            goal.modifiedAt = modifiedAt
+        }
+        try store.context.save()
+
+        let report = try await store.runDedupePass()
+
+        XCTAssertEqual(report, DedupePass.Report(goalWeightsDeleted: 1))
+        XCTAssertEqual(try store.goalWeight(), 80)
+    }
+
     // MARK: Default Serving
 
     func test_twoDefaultServings_keepTheLatestModifiedAsDefaultAndTheOtherServing() async throws {

@@ -13,11 +13,12 @@ final class HabitFormViewController: UIHostingController<HabitForm> {
     private var draft: HabitForm.Draft
     private let saveItem = UIBarButtonItem(systemItem: .save)
 
-    /// `kind` pre-picks the kind: the Habits tab's Tracked tab starts a tracked Habit.
-    init(dependencies: AppDependencies, kind: HabitKind = .yesNo, onCreated: @escaping () -> Void) {
+    /// `kind` pre-picks the kind: the Habits tab's Tracked tab starts a tracked Habit, and a
+    /// Health page starts one tracking its `metric`.
+    init(dependencies: AppDependencies, kind: HabitKind = .yesNo, metric: TrackedMetric? = nil, onCreated: @escaping () -> Void) {
         self.dependencies = dependencies
         self.onCreated = onCreated
-        let draft = HabitForm.Draft(kind: kind)
+        let draft = HabitForm.Draft(kind: kind, metric: metric)
         self.draft = draft
         super.init(rootView: HabitForm { _ in })
         rootView = HabitForm(draft: draft) { [weak self] in self?.draftChanged($0) }
@@ -39,8 +40,8 @@ final class HabitFormViewController: UIHostingController<HabitForm> {
     }
 
     /// The sheet the Habits tab presents.
-    static func sheet(dependencies: AppDependencies, kind: HabitKind = .yesNo, onCreated: @escaping () -> Void) -> UIViewController {
-        HabitFormViewController(dependencies: dependencies, kind: kind, onCreated: onCreated).inSheet(detents: [.large()])
+    static func sheet(dependencies: AppDependencies, kind: HabitKind = .yesNo, metric: TrackedMetric? = nil, onCreated: @escaping () -> Void) -> UIViewController {
+        HabitFormViewController(dependencies: dependencies, kind: kind, metric: metric, onCreated: onCreated).inSheet(detents: [.large()])
     }
 
     private func draftChanged(_ draft: HabitForm.Draft) {

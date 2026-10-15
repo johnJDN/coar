@@ -50,8 +50,10 @@ enum DebugSeed {
                 MealComponentDraft(foodItemID: rice.id, servingID: rice.servings[0].id, quantity: 1),
             ])
 
-            for (offset, kilograms) in [(-5, 84.6), (-3, 84.2), (-1, 84.0)] {
-                try store.logBodyWeight(kilograms: kilograms, on: today.advanced(by: offset))
+            // Four months of most-days weigh-ins drifting from 88 to 84 kg, with water swings.
+            for offset in stride(from: -120, through: -1, by: 1) where offset % 7 != -3 && offset % 11 != -5 {
+                let swing = sin(Double(offset) * 1.7) * 0.6 + cos(Double(offset) * 0.6) * 0.3
+                try store.logBodyWeight(kilograms: ((84.0 - Double(offset) * 4 / 120 + swing) * 10).rounded() / 10, on: today.advanced(by: offset))
             }
 
             let bench = try store.createExercise(name: "Bench press", muscleGroup: .chest, secondaryMuscleGroups: [.triceps, .shoulders], equipment: "Barbell", restSeconds: 150)

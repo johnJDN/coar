@@ -2,10 +2,11 @@ import Charts
 import SwiftUI
 
 /// A sleep or steps detail chart (DESIGN.md §8 "One value per Day"): one bar per Day that
-/// has a value, in the metric's accent, the latest bar with a value saturated with bloom
-/// and earlier ones muted; Days without data leave a gap; no gridlines, no legend, axis labels in
+/// has a value, in the metric's accent, the chosen bar (the latest unless one was tapped)
+/// saturated with bloom and the others muted; Days without data leave a gap; a target, when
+/// there is one, as a dashed `textTertiary` rule; no gridlines, no legend, axis labels in
 /// `textTertiary`; `No data` alone in the slot when nothing in the span has a value. A
-/// SwiftUI leaf: values in, nothing out (ADR 0001).
+/// SwiftUI leaf: values in, a tapped Day out (ADR 0001).
 struct DailyBarChart: View {
 
     struct Model: Equatable {
@@ -14,30 +15,58 @@ struct DailyBarChart: View {
         var points: [TrendPoint]
         /// The whole span the bars sit in, so a sparse month still reads as a month.
         var span: ClosedRange<Date>
+        /// The target in chart units, drawn as a rule.
+        var target: Double? = nil
+        /// The tapped Day's start; nil for the latest.
+        var selected: Date? = nil
     }
 
     let model: Model
+    /// A bar's Day start when tapped; nil when the chosen bar is tapped again.
+    var onSelect: (Date?) -> Void = { _ in }
 
     @Environment(\.colorScheme) private var colorScheme
 
     private static let mutedOpacity = 0.7
 
     private var valueDomain: ClosedRange<Double> {
-        0...max(1, (model.points.map(\.value).max() ?? 0) * 1.1)
+        0...max(1, max(model.points.map(\.value).max() ?? 0, model.points.isEmpty ? 0 : model.target ?? 0) * 1.1)
+    }
+
+    /// The bar drawn saturated: the tapped one, or the latest.
+    private var chosen: TrendPoint? {
+        model.points.first { $0.date == model.selected } ?? model.points.last
     }
 
     var body: some View {
         Chart {
-            ForEach(model.points.dropLast()) { point in
+            ForEach(model.points.filter { $0 != chosen }) { point in
                 BarMark(x: .value("Day", point.date, unit: .day), y: .value(model.metric.title, point.value))
                     .foregroundStyle(model.metric.accent.opacity(Self.mutedOpacity))
                     .cornerRadius(3)
             }
-            if let last = model.points.last {
-                BarMark(x: .value("Day", last.date, unit: .day), y: .value(model.metric.title, last.value))
+            if let chosen {
+                BarMark(x: .value("Day", chosen.date, unit: .day), y: .value(model.metric.title, chosen.value))
                     .foregroundStyle(model.metric.accent)
                     .cornerRadius(3)
                     .bloom(model.metric.accent, in: colorScheme)
+            }
+            if let target = model.target, !model.points.isEmpty {
+                RuleMark(y: .value("Target", target))
+                    .foregroundStyle(Color.textTertiary)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            }
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle().fill(.clear).contentShape(Rectangle())
+                    .onTapGesture { location in
+                        guard let frame = proxy.plotFrame.map({ geometry[$0] }),
+                              let date: Date = proxy.value(atX: location.x - frame.origin.x) else { return }
+                        let day = Calendar.current.startOfDay(for: date)
+                        guard model.points.contains(where: { $0.date == day }) else { return }
+                        onSelect(day == chosen?.date && model.selected != nil ? nil : day)
+                    }
             }
         }
         .chartXAxis(model.points.isEmpty ? .hidden : .automatic)

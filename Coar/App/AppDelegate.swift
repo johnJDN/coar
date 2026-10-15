@@ -14,7 +14,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             store: isTestHost ? Store.inMemory() : AppDelegate.liveStore(),
             preferences: Preferences(),
             health: health,
-            healthReader: health,
+            healthReader: healthReader(health),
             healthWorkouts: healthWorkoutReader(health),
             bodyWeightWriter: health,
             restTimer: RestTimer(),
@@ -22,6 +22,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             foodEstimator: foodEstimator(openRouter)
         )
     }()
+
+    /// Apple Health's sleep and steps, or canned ones while a debug build looks at their pages.
+    private static func healthReader(_ health: HealthKitAccess) -> HealthReader {
+        #if DEBUG
+        if DebugHealthReader.isRequested { return DebugHealthReader() }
+        #endif
+        return health
+    }
 
     /// Apple Health's workouts, or canned ones while a debug build looks at the Watch link.
     private static func healthWorkoutReader(_ health: HealthKitAccess) -> HealthWorkoutReader {

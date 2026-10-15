@@ -1,31 +1,39 @@
 import UIKit
 import os
 
-/// The log sheet: one field for today's Body Weight in the display unit, prefilled with
-/// the latest value. Saving stores kilograms for today and mirrors to Apple Health through
-/// `BodyWeightLogger`; logging on a Day that already has a value replaces it.
+/// The log sheet: one field for a Body Weight in the display unit and the Day it's for
+/// (today unless picked; never a future Day). New, it's prefilled with the latest value;
+/// opened on a weigh-in, with that one, and it can be deleted. Saving stores kilograms and
+/// mirrors to Apple Health through `BodyWeightLogger`; logging on a Day that already has a
+/// value replaces it, and moving a weigh-in to another Day removes it from its old one.
 final class BodyWeightLogViewController: UIViewController {
 
     private static let logger = Logger(category: "BodyWeight")
 
     private let dependencies: AppDependencies
+    /// The weigh-in being edited; nil for a new one.
+    private let original: BodyWeightRecord?
     private let onLogged: () -> Void
+    private let onDeleted: (BodyWeightRecord) -> Void
     private let field = UITextField()
+    private let datePicker = UIDatePicker()
     private let saveItem = UIBarButtonItem(systemItem: .save)
 
-    init(dependencies: AppDependencies, onLogged: @escaping () -> Void) {
+    init(dependencies: AppDependencies, day: Day? = nil, onLogged: @escaping () -> Void, onDeleted: @escaping (BodyWeightRecord) -> Void = { _ in }) {
         self.dependencies = dependencies
+        self.original = day.flatMap { try? dependencies.store.bodyWeight(on: $0) }
         self.onLogged = onLogged
+        self.onDeleted = onDeleted
         super.init(nibName: nil, bundle: nil)
-        title = "Log Body Weight"
+        title = original == nil ? "Log Body Weight" : "Weigh-in"
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    /// The sheet the weight screen presents.
-    static func sheet(dependencies: AppDependencies, onLogged: @escaping () -> Void) -> UIViewController {
-        BodyWeightLogViewController(dependencies: dependencies, onLogged: onLogged).inSheet(detents: [.medium()])
+    /// The sheet the weight screen presents: new with `day` nil, else that Day's weigh-in.
+    static func sheet(dependencies: AppDependencies, day: Day? = nil, onLogged: @escaping () -> Void, onDeleted: @escaping (BodyWeightRecord) -> Void = { _ in }) -> UIViewController {
+        BodyWeightLogViewController(dependencies: dependencies, day: day, onLogged: onLogged, onDeleted: onDeleted).inSheet(detents: [.medium()])
     }
 
     override func viewDidLoad() {
@@ -48,8 +56,8 @@ final class BodyWeightLogViewController: UIViewController {
         field.adjustsFontForContentSizeCategory = true
         field.accessibilityLabel = "Body Weight in \(unit.symbol)"
         field.addAction(UIAction { [weak self] _ in self?.updateSaveState() }, for: .editingChanged)
-        if let latest = try? dependencies.store.bodyWeights().last {
-            field.text = unit.displayValueText(fromKilograms: latest.kilograms)
+        if let shown = original ?? (try? dependencies.store.bodyWeights().last) {
+            field.text = unit.displayValueText(fromKilograms: shown.kilograms)
         }
 
         let unitLabel = UILabel()
@@ -73,7 +81,36 @@ final class BodyWeightLogViewController: UIViewController {
         well.addSubview(row)
         view.addSubview(well)
 
+        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .compact
+        datePicker.maximumDate = Date()
+        datePicker.date = (original?.day ?? .today()).start()
+        datePicker.tintColor = UIColor.accentTeal
+        let dateLabel = UILabel()
+        dateLabel.text = "Day"
+        dateLabel.font = UIFont.bodyText
+        dateLabel.textColor = UIColor.textPrimary
+        dateLabel.adjustsFontForContentSizeCategory = true
+        let dateRow = UIStackView(arrangedSubviews: [dateLabel, UIView(), datePicker])
+        dateRow.alignment = .center
+        dateRow.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(dateRow)
+
+        var deleteConfiguration = UIButton.Configuration.plain()
+        deleteConfiguration.title = "Delete weigh-in"
+        deleteConfiguration.baseForegroundColor = UIColor.accentCoral
+        let deleteButton = UIButton(configuration: deleteConfiguration, primaryAction: UIAction { [weak self] _ in self?.delete() })
+        deleteButton.isHidden = original == nil
+        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(deleteButton)
+
         NSLayoutConstraint.activate([
+            dateRow.topAnchor.constraint(equalTo: well.bottomAnchor, constant: Metrics.spaceInner),
+            dateRow.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge + Metrics.spaceInner),
+            dateRow.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
+            deleteButton.topAnchor.constraint(equalTo: dateRow.bottomAnchor, constant: Metrics.spaceInner),
+            deleteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
             well.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: Metrics.spaceCard),
             well.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Metrics.spaceEdge),
             well.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Metrics.spaceEdge),
@@ -108,14 +145,33 @@ final class BodyWeightLogViewController: UIViewController {
         guard let value = enteredValue else { return }
         saveItem.isEnabled = false
         let logger = BodyWeightLogger(store: dependencies.store, healthWriter: dependencies.bodyWeightWriter)
+        let day = Day(datePicker.date)
         Task {
             do {
-                try await logger.log(value, in: dependencies.preferences.massUnit)
+                if let original, original.day != day {
+                    try await logger.delete(on: original.day)
+                }
+                try await logger.log(value, in: dependencies.preferences.massUnit, on: day)
                 onLogged()
                 dismiss(animated: true)
             } catch {
                 Self.logger.error("Failed to log Body Weight: \(error, privacy: .public)")
                 saveItem.isEnabled = true
+            }
+        }
+    }
+
+    /// No confirmation: the weight screen offers Undo.
+    private func delete() {
+        guard let original else { return }
+        let logger = BodyWeightLogger(store: dependencies.store, healthWriter: dependencies.bodyWeightWriter)
+        Task {
+            do {
+                try await logger.delete(on: original.day)
+                dismiss(animated: true)
+                onDeleted(original)
+            } catch {
+                Self.logger.error("Failed to delete Body Weight: \(error, privacy: .public)")
             }
         }
     }

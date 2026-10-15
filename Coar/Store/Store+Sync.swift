@@ -14,6 +14,7 @@ enum DedupePass {
     struct Report: Equatable {
         var checkInsDeleted = 0
         var bodyWeightsDeleted = 0
+        var goalWeightsDeleted = 0
         var servingDefaultsCleared = 0
         var workoutsFinished = 0
         var workoutsDeleted = 0
@@ -27,6 +28,7 @@ enum DedupePass {
         var report = Report()
         report.checkInsDeleted = try dedupeCheckIns(in: context)
         report.bodyWeightsDeleted = try dedupeBodyWeights(in: context)
+        report.goalWeightsDeleted = try dedupeGoalWeights(in: context)
         report.servingDefaultsCleared = try dedupeDefaultServings(in: context)
         (report.workoutsFinished, report.workoutsDeleted) = try dedupeActiveWorkouts(in: context)
         try Store.stampAndSave(context)
@@ -57,6 +59,16 @@ enum DedupePass {
     private static func dedupeBodyWeights(in context: NSManagedObjectContext) throws -> Int {
         let bodyWeights = try context.fetch(BodyWeight.fetchRequest())
         let losers = losers(among: bodyWeights, key: \.day) {
+            ($0.modifiedAt ?? .distantPast, $0.kilograms) > ($1.modifiedAt ?? .distantPast, $1.kilograms)
+        }
+        losers.forEach(context.delete)
+        return losers.count
+    }
+
+    /// One Goal Weight: the latest `modifiedAt` stays.
+    private static func dedupeGoalWeights(in context: NSManagedObjectContext) throws -> Int {
+        let goals = try context.fetch(GoalWeight.fetchRequest())
+        let losers = losers(among: goals, key: { _ in 0 }) {
             ($0.modifiedAt ?? .distantPast, $0.kilograms) > ($1.modifiedAt ?? .distantPast, $1.kilograms)
         }
         losers.forEach(context.delete)

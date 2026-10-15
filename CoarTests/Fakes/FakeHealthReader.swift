@@ -8,6 +8,7 @@ final class FakeHealthReader: HealthReader {
 
     var sleepSamples: [SleepSample] = []
     var stepsByDay: [Day: Int] = [:]
+    var hourlyStepsByDay: [Day: [Int: Int]] = [:]
     var failure: Error?
     let calendar: Calendar
 
@@ -18,6 +19,16 @@ final class FakeHealthReader: HealthReader {
     func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval] {
         if let failure { throw failure }
         return SleepNight.timeAsleep(wakingOn: days, from: sleepSamples, in: calendar)
+    }
+
+    func sleepNights(wakingOn days: [Day]) async throws -> [Day: SleepNightDetail] {
+        if let failure { throw failure }
+        return SleepNight.details(wakingOn: days, from: sleepSamples, in: calendar)
+    }
+
+    func hourlySteps(on day: Day) async throws -> [Int: Int] {
+        if let failure { throw failure }
+        return hourlyStepsByDay[day] ?? [:]
     }
 
     func steps(on days: [Day]) async throws -> [Day: Int] {

@@ -208,6 +208,9 @@ Rounded design (`.rounded`) only for hero numbers and the flip-counter digits.
 | Streaks / consistency over weeks | Calendar heatmap, `surfaceSunken` cells, accent intensity by count |
 | Trend over time | Swift Charts line hosted in a `UIHostingController`, 2pt stroke in accent, bloom on last point, no gridlines, axis labels in `textTertiary` |
 | One value per Day over weeks (sleep, steps) | Swift Charts bars hosted the same way, one per Day that has a value, in the metric accent: latest bar saturated with bloom, earlier bars muted; Days without data are gaps, not zeros; no gridlines, axis labels in `textTertiary` |
+| A target on a chart (sleep, steps, Goal Weight) | A dashed 1pt `textTertiary` rule; no label beyond the card's own text |
+| Time in each sleep stage | One bar split by stage in sleep's teal at falling strengths (deep strongest, then core, REM), awake in `textTertiary`, over a row per stage with its time and share |
+| One Day by hour (steps) | The daily bars' vocabulary at hour scale: a muted bar per hour with steps, the busiest saturated with bloom, labels at 12 AM / 6 AM / 12 PM / 6 PM |
 | Distribution across categories | Radial sector chart (volume by muscle group) |
 | Single total for a period | `HeroCounter` |
 | Rest timer / in-progress | Mini-player bar in the bottom accessory slot |
@@ -242,7 +245,7 @@ Charts never show a legend when color already maps to a label on screen.
   `MetricRow` + `CheckToggle` / `AmountControl` per check-in Habit still to do; done ones,
   today or for the week, hide behind Show done, and a checked row leaves once its control
   settles; tracked Habits are not on Home; taps go to Habits), then one row of four compact
-  tiles (`radiusInner`): Sleep and Steps (push a 30-day detail in Home's own stack, or ask
+  tiles (`radiusInner`): Sleep and Steps (push their page in Home's own stack, or ask
   for Apple Health while it was never asked), Weight (Trend Weight, unit as caption; switches
   to Train and pushes Body Weight), and Training (days with a Workout this week, against the
   weekly workouts Habit's target when there is one; switches to Train).
@@ -296,6 +299,22 @@ Charts never show a legend when color already maps to a label on screen.
   in a sheet, and the `…` menu unlinks. Linked Workouts show their Effort ("🔥 318 cal ·
   118 bpm", a flame in `accentAmber`) on their cards in Recent workouts and a Day's list.
   Exercise detail: estimated-1RM progression chart plus recent sets.
+  Body Weight: a card with Trend Weight as the hero, a `UISegmentedControl` range (1M / 3M /
+  1Y / All, 3M first) and the chart, the Goal Weight as a dashed rule when the axis reaches
+  it; a Progress card (the trend's rate a week over four weeks, the Goal Weight, and "6.1
+  lbs to go · around Dec 27 at this pace"; Set goal / Change goal is a stock alert); a
+  Weigh-ins card with the latest five (Day, weight, change from the one before), each
+  opening the log sheet, and All weigh-ins pushing every one grouped by month, where a row
+  swipes left to delete. Deleting a weigh-in never confirms but shows Undo. The log sheet
+  has a Day (never a future one) and, on an existing weigh-in, Delete weigh-in.
+- **Sleep and Steps pages** (pushed from Home's tiles) — the overview card (hero for the
+  current Day, 30-day average, one bar per Day, the target as a dashed `textTertiary` rule);
+  tapping a bar picks that Day for the card that shows one Day. Sleep: then a Night card
+  (bedtime – wake time · Time Asleep, and the stages bar when a Watch recorded stages),
+  then Usual times (asleep around / up around ± a typical night's spread, over 14 nights)
+  with the target. Steps: then This week (last 7 full Days against the 7 before) with the
+  target, then By hour for the picked Day. The target is the user's tracked Sleep or Steps
+  Habit; with none, Set a target opens New Habit on that metric.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).
 - **Settings** — sheet from avatar button: targets, units (lbs default), HealthKit
   access, and the OpenRouter key (AI section: pasted once and checked before it is kept,

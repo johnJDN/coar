@@ -27,7 +27,9 @@ HealthKit, so the architecture favours the Watch).
   row of four small tiles: Sleep | Steps (push a 30-day detail in Home's stack) | Weight
   (switch to Train and push the screen) | Training (workout days this week; switch to Train).
 - Sleep: a night belongs to the day you woke; the number is time asleep (awake and
-  in-bed excluded), matching the Health app.
+  in-bed excluded), matching the Health app. Its page adds the night's bedtime, wake time
+  and stages, the usual bedtime and wake time, and the target from a tracked Sleep habit;
+  Steps adds this week against last and steps by hour.
 
 ### Habits
 
@@ -94,9 +96,10 @@ HealthKit, so the architecture favours the Watch).
   group), per-exercise default duration with a 120 s fallback, lives in the accessory bar.
 - **Exercise detail page**: progression as estimated 1RM (Epley) from each workout's best
   set, plus a list of recent sets.
-- **Body weight**: one per day (logging again replaces), written to HealthKit (not read
-  back in v1); chart shows
-  raw points and a smoothed trend weight as the hero.
+- **Body weight**: one per day (logging again replaces, any past Day can be logged or
+  deleted), written to HealthKit (not read back in v1); chart shows raw points and a
+  smoothed trend weight as the hero, over a chosen range; the trend's rate a week; an
+  optional Goal Weight with when it's reached at this pace; every weigh-in in a list.
 - **Progress photos**: camera or library, dated, not tied to a weight; grid plus a two-up
   compare captioned with date and nearest body weight.
 - Exercises and plans are archived, not deleted; the Archived lists can delete one

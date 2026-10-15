@@ -185,6 +185,11 @@ The smoothed Body Weight that filters out day-to-day water swings; the hero numb
 the weight screen.
 _Avoid_: Average weight, moving average, true weight
 
+**Goal Weight**:
+The Body Weight the user is working toward; one at a time. Trend Weight, not the latest
+Body Weight, is measured against it.
+_Avoid_: Target weight, goal (unqualified), Target (that is the macros')
+
 **Progress Photo**:
 A photo of the user's body taken on a date to compare against later ones.
 _Avoid_: Photo, progress pic, body photo

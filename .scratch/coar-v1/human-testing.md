@@ -571,3 +571,16 @@ Ticket: `.scratch/describe-qol/issues/03-rename-logged-entries.md`.
 ## Added after v1: Lookups find the full label (2026-10-14)
 
 - [ ] Describe "shin ramen": after the lookup, its page's Also recorded shows sodium (about 1,620 mg) and fiber, from Nongshim's US label (520 cal).
+
+## Added after v1: Fuller Sleep, Steps, and Body Weight pages (2026-10-14)
+
+Ticket: `.scratch/health-pages/issues/01-sleep-steps-weight-pages.md`. Needs the CloudKit schema deployed (Goal Weight) before this build.
+
+- [ ] Home → Sleep: last night's card shows bedtime – wake time and, if you wore the Watch, Awake / REM / Core / Deep with times. Usual times shows "Asleep around 11:40 PM ± 20 min" and "Up around".
+- [ ] Tap an older bar on the Sleep chart: the Night card switches to that night (its date top right). Tap it again: back to last night.
+- [ ] If you have a tracked Sleep habit, its target is a dashed line on the chart and "Met N of the last 7 nights". If not, Set a target opens New Habit already on Sleep; save it and the line appears.
+- [ ] Home → Steps: This week shows the last 7 days against the week before ("Down 11%…"); By hour shows today's steps per hour; tap a bar for another day's hours.
+- [ ] Train → Body Weight: 1M / 3M / 1Y / All change the chart. Progress shows the rate a week (needs two weeks of weigh-ins).
+- [ ] Set goal: type a weight; Progress says how far and "around <date> at this pace"; if close enough, a dashed line on the chart. Change goal → Remove goal clears it. It syncs to your other devices.
+- [ ] Weigh-ins: tap one, change the Day or the value, Save. Delete weigh-in: gone, with Undo (Undo brings it back, also in Apple Health). All weigh-ins: grouped by month; swipe left to delete.
+- [ ] Judgement calls: target comes from your tracked habit; goal line only when the chart reaches it; usual times ignore naps; steps' week leaves out today.
