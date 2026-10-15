@@ -588,3 +588,13 @@ Ticket: `.scratch/health-pages/issues/01-sleep-steps-weight-pages.md`. Needs the
 ## Added after v1: Brand names that are also non-foods (2026-10-15)
 
 - [ ] Describe "built puff bar": it fills in as a Built Puff protein bar (about 140–150 cal, looked up), not "not a food Coar knows". "went for a run" or "2 advil" still say it isn't a food.
+
+## Added after v1: Sleep Score, overnight readings, cardio fitness (2026-10-15)
+
+Ticket: `.scratch/health-pages/issues/02-sleep-score-overnight-cardio.md`.
+
+- [ ] Sleep page: the Overnight card has "Show overnight readings"; tap it and allow in the Health prompt. Resting heart rate, Recovery HRV, HRV, breathing rate and blood oxygen fill in, each with "usual N" once there are 5 nights.
+- [ ] After a hard day, a drink, or feeling ill: the readings that are off turn coral, and the line under them says so.
+- [ ] Night card: "84 Sleep score · Good" with Duration / Bedtime / Interruptions parts. Tap an older bar: its score and readings change too.
+- [ ] Steps page, bottom: Cardio fitness with your latest VO2 max and a year's line (or a note if the Watch hasn't measured one).
+- [ ] Judgement calls: the score is Coar's (Apple's can't be read); only the worrying direction is flagged; VO2 max lives on Steps.

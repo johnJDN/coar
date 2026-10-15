@@ -210,6 +210,18 @@ awake and in-bed excluded and hours two sources both recorded counted once. A Ni
 no asleep sample has no Time Asleep, shown as `No data`; it is never 0.
 _Avoid_: Sleep duration, sleep time, hours slept, in bed
 
+**Sleep Score**:
+Coar's own score for a Night, out of 100: duration against the sleep goal (50), how close
+to the usual bedtime sleep began (30), and how little the user woke (20). Not Apple's
+Sleep Score, which apps can't read.
+_Avoid_: Sleep quality, Apple's score
+
+**Overnight reading**:
+A Night's resting heart rate (the Day's), HRV, Recovery HRV, breathing rate, or blood
+oxygen (the average of what the Watch measured during the main sleep), set against the
+user's usual: the average of up to 30 earlier Nights, once there are 5.
+_Avoid_: Vitals (Apple's app name), biometrics, recovery score
+
 **Steps**:
 The step count Apple Health holds for a Day, its own sum across sources.
 _Avoid_: Step count, activity, walking

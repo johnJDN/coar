@@ -82,7 +82,14 @@ enum SleepNight {
         if !stages.isEmpty {
             stages[.awake] = duration(of: merged(clipped(samples.filter { $0.stage == .awake }, to: main)))
         }
-        return SleepNightDetail(timeAsleep: duration(of: asleep), fellAsleep: main.lowerBound, woke: main.upperBound, stages: stages)
+        // Waking inside the main sleep: the gaps between its asleep spans, those of 2 minutes
+        // or more counted as interruptions.
+        let inside = asleep.filter { main.contains($0.lowerBound) }
+        let gaps = zip(inside, inside.dropFirst()).map { $1.lowerBound.timeIntervalSince($0.upperBound) }
+        return SleepNightDetail(
+            timeAsleep: duration(of: asleep), fellAsleep: main.lowerBound, woke: main.upperBound, stages: stages,
+            interruptions: gaps.filter { $0 >= 120 }.count, awakeTime: gaps.reduce(0, +)
+        )
     }
 
     private static func clipped(_ samples: [SleepSample], to window: Range<Date>) -> [Range<Date>] {
@@ -125,13 +132,16 @@ enum SleepStage: CaseIterable, Hashable {
     }
 }
 
-/// One Night as its page shows it: Time Asleep, when the main sleep began and ended, and
-/// seconds per stage when a source recorded stages (empty otherwise).
+/// One Night as its page shows it: Time Asleep, when the main sleep began and ended, seconds
+/// per stage when a source recorded stages (empty otherwise), and how often and how long the
+/// user woke during the main sleep.
 struct SleepNightDetail: Equatable {
     let timeAsleep: TimeInterval
     let fellAsleep: Date
     let woke: Date
     let stages: [SleepStage: TimeInterval]
+    var interruptions = 0
+    var awakeTime: TimeInterval = 0
 }
 
 /// When the user usually falls asleep and wakes (a pure rule): the average of recent Nights'

@@ -180,6 +180,72 @@ extension HealthKitAccess: HealthReader {
     }
 }
 
+// MARK: - Overnight readings and VO2 max
+
+extension HealthKitAccess {
+
+    /// The overnight readings and VO2 max: their own prompt, like workouts (`workoutReadTypes`).
+    static var vitalsReadTypes: Set<HKObjectType> {
+        var types: Set<HKObjectType> = [
+            HKQuantityType(.restingHeartRate),
+            HKQuantityType(.heartRateVariabilitySDNN),
+            HKQuantityType(.respiratoryRate),
+            HKQuantityType(.oxygenSaturation),
+            HKQuantityType(.vo2Max),
+        ]
+        if #available(iOS 27.0, *) {
+            types.insert(HKQuantityType(.heartRateVariabilityRMSSD))
+        }
+        return types
+    }
+
+    func vitalsAccessNeeded() async -> Bool {
+        guard HKHealthStore.isHealthDataAvailable() else { return false }
+        return (try? await healthStore.statusForAuthorizationRequest(toShare: [], read: Self.vitalsReadTypes)) == .shouldRequest
+    }
+
+    func requestVitalsAccess() async throws {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        try await healthStore.requestAuthorization(toShare: [], read: Self.vitalsReadTypes)
+    }
+
+    func vitalSamples(from start: Date, to end: Date) async throws -> [VitalSample] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let perMinute = HKUnit.count().unitDivided(by: .minute())
+        var kinds: [(Vital, HKQuantityType, HKUnit, Double)] = [
+            (.restingHeartRate, HKQuantityType(.restingHeartRate), perMinute, 1),
+            (.hrv, HKQuantityType(.heartRateVariabilitySDNN), .secondUnit(with: .milli), 1),
+            (.respiratoryRate, HKQuantityType(.respiratoryRate), perMinute, 1),
+            (.bloodOxygen, HKQuantityType(.oxygenSaturation), .percent(), 100),
+        ]
+        if #available(iOS 27.0, *) {
+            kinds.append((.recoveryHRV, HKQuantityType(.heartRateVariabilityRMSSD), .secondUnit(with: .milli), 1))
+        }
+        var result: [VitalSample] = []
+        for (vital, type, unit, scale) in kinds {
+            for sample in try await quantitySamples(type, from: start, to: end) {
+                result.append(VitalSample(vital: vital, date: sample.startDate, value: sample.quantity.doubleValue(for: unit) * scale))
+            }
+        }
+        return result.sorted { $0.date < $1.date }
+    }
+
+    func cardioFitness(from start: Date, to end: Date) async throws -> [DatedValue] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let unit = HKUnit(from: "ml/kg*min")
+        return try await quantitySamples(HKQuantityType(.vo2Max), from: start, to: end)
+            .map { DatedValue(date: $0.startDate, value: $0.quantity.doubleValue(for: unit)) }
+    }
+
+    private func quantitySamples(_ type: HKQuantityType, from start: Date, to end: Date) async throws -> [HKQuantitySample] {
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: type, predicate: HKQuery.predicateForSamples(withStart: start, end: end))],
+            sortDescriptors: [SortDescriptor(\.startDate)]
+        )
+        return try await descriptor.result(for: healthStore)
+    }
+}
+
 private extension SleepSample {
     /// A HealthKit sleep-analysis sample as the rule sees it; nil for a value this build
     /// does not know.

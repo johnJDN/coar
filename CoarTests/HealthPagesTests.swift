@@ -134,4 +134,78 @@ final class HealthPagesTests: XCTestCase {
         XCTAssertEqual(draft.target.metric, .steps)
         XCTAssertEqual(draft.target.typedAmount, TrackedMetric.steps.defaults.amount)
     }
+
+    // MARK: Interruptions and Sleep Score
+
+    func test_night_countsWakingsOfTwoMinutesOrMore_insideTheMainSleep() throws {
+        let samples = [
+            sample(.asleepCore, at(sep12, 23), at(sep13, 1)),
+            sample(.awake, at(sep13, 1), at(sep13, 1, 10)),
+            sample(.asleepCore, at(sep13, 1, 10), at(sep13, 3)),
+            sample(.asleepCore, at(sep13, 3, 1), at(sep13, 7)), // a 1-minute stir isn't counted
+        ]
+
+        let night = try XCTUnwrap(SleepNight.detail(wakingOn: sep13, from: samples, in: Self.calendar))
+
+        XCTAssertEqual(night.interruptions, 1)
+        XCTAssertEqual(night.awakeTime, 11 * 60)
+    }
+
+    func test_sleepScore_fullMarks_forAGoalNightAtTheUsualTimeUnbroken() {
+        let night = SleepNightDetail(timeAsleep: 8 * 3_600, fellAsleep: at(sep12, 23, 30), woke: at(sep13, 7, 30), stages: [:])
+
+        let score = SleepScore.score(night, wakingOn: sep13, goal: 8 * 3_600, usualBedtime: 330, calendar: Self.calendar)
+
+        XCTAssertEqual(score, SleepScore(duration: 50, bedtime: 30, interruptions: 20))
+        XCTAssertEqual(score.label, "Excellent")
+    }
+
+    func test_sleepScore_losesPoints_forShortLateAndBrokenSleep() {
+        let night = SleepNightDetail(timeAsleep: 6 * 3_600, fellAsleep: at(sep13, 1, 30), woke: at(sep13, 7, 50), stages: [:], interruptions: 3, awakeTime: 30 * 60)
+
+        let score = SleepScore.score(night, wakingOn: sep13, goal: 8 * 3_600, usualBedtime: 330, calendar: Self.calendar)
+
+        XCTAssertEqual(score.duration, 32, "6 of 8 hours")
+        XCTAssertEqual(score.bedtime, 8, "two hours past the usual 11:30 PM: full marks within 30 minutes, none at 2½ hours")
+        XCTAssertEqual(score.interruptions, 4, "two wakings past the first and 20 minutes past the first 10")
+        XCTAssertEqual(score.label, "Low")
+    }
+
+    // MARK: Overnight readings
+
+    func test_vitals_averageTheReadingsDuringTheMainSleep_andTakeTheDaysRestingHeartRate() {
+        let night = SleepNightDetail(timeAsleep: 7 * 3_600, fellAsleep: at(sep12, 23), woke: at(sep13, 6), stages: [:])
+        let samples = [
+            VitalSample(vital: .hrv, date: at(sep13, 1), value: 40),
+            VitalSample(vital: .hrv, date: at(sep13, 4), value: 50),
+            VitalSample(vital: .hrv, date: at(sep13, 15), value: 20), // daytime: not counted
+            VitalSample(vital: .restingHeartRate, date: at(sep13, 9), value: 52),
+        ]
+
+        let values = OvernightVitals.values(nights: [sep13: night], samples: samples, calendar: Self.calendar)
+
+        XCTAssertEqual(values[sep13], [.hrv: 45, .restingHeartRate: 52])
+    }
+
+    func test_readings_compareWithTheAverageOfEarlierNights_onceThereAreFive() {
+        var values: [Day: [Vital: Double]] = [:]
+        for offset in 1...4 { values[sep13.advanced(by: -offset)] = [.restingHeartRate: 50, .hrv: 50] }
+        values[sep13] = [.restingHeartRate: 55, .hrv: 38]
+
+        XCTAssertNil(OvernightVitals.readings(on: sep13, values: values)[.restingHeartRate]?.usual, "four earlier nights aren't enough")
+
+        values[sep13.advanced(by: -5)] = [.restingHeartRate: 50, .hrv: 50]
+        let readings = OvernightVitals.readings(on: sep13, values: values)
+
+        XCTAssertEqual(readings[.restingHeartRate], OvernightVitals.Reading(value: 55, usual: 50, isOutside: true))
+        XCTAssertEqual(readings[.hrv], OvernightVitals.Reading(value: 38, usual: 50, isOutside: true))
+        XCTAssertEqual(OvernightVitals.summary(readings), "Resting heart rate higher and HRV lower than usual. Together that often means you're not recovered: a hard day, alcohol, or getting sick.")
+    }
+
+    func test_readings_onlyFlagTheSideThatMatters() {
+        XCTAssertFalse(Vital.restingHeartRate.isOutside(45, usual: 52), "a lower resting heart rate isn't a warning")
+        XCTAssertFalse(Vital.hrv.isOutside(70, usual: 50), "nor is a higher HRV")
+        XCTAssertTrue(Vital.bloodOxygen.isOutside(93, usual: 96))
+        XCTAssertTrue(Vital.respiratoryRate.isOutside(16, usual: 14.5))
+    }
 }

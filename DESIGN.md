@@ -310,10 +310,14 @@ Charts never show a legend when color already maps to a label on screen.
 - **Sleep and Steps pages** (pushed from Home's tiles) — the overview card (hero for the
   current Day, 30-day average, one bar per Day, the target as a dashed `textTertiary` rule);
   tapping a bar picks that Day for the card that shows one Day. Sleep: then a Night card
-  (bedtime – wake time · Time Asleep, and the stages bar when a Watch recorded stages),
-  then Usual times (asleep around / up around ± a typical night's spread, over 14 nights)
+  (bedtime – wake time · Time Asleep; the Sleep Score in sleep's teal with its label and
+  its three parts; the stages bar when a Watch recorded stages), then Overnight (resting
+  heart rate, Recovery HRV, HRV, breathing rate, blood oxygen, each with "usual N" in
+  `textTertiary`, coral icon and usual when outside the usual range, and one line saying
+  what's off; its own Apple Health ask behind "Show overnight readings"), then Usual times (asleep around / up around ± a typical night's spread, over 14 nights)
   with the target. Steps: then This week (last 7 full Days against the 7 before) with the
-  target, then By hour for the picked Day. The target is the user's tracked Sleep or Steps
+  target, then By hour for the picked Day, then Cardio fitness (latest VO2 max, its change
+  over 3 months, and the year as an amber trend line). The target is the user's tracked Sleep or Steps
   Habit; with none, Set a target opens New Habit on that metric.
 - **Coach** — lives in the bottom accessory bar, not a tab (future).
 - **Settings** — sheet from avatar button: targets, units (lbs default), HealthKit

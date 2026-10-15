@@ -32,6 +32,16 @@ protocol HealthReader: AnyObject {
     func steps(on days: [Day]) async throws -> [Day: Int]
     /// Steps per hour of a Day (0 is midnight to 1 AM), for the hours that have any.
     func hourlySteps(on day: Day) async throws -> [Int: Int]
+
+    /// Whether the overnight readings and VO2 max have never been asked for. Asked apart
+    /// from sleep and steps, so Home's tiles never go back to "Connect" for them.
+    func vitalsAccessNeeded() async -> Bool
+    func requestVitalsAccess() async throws
+    /// Resting heart rate, HRV, breathing rate, and blood oxygen readings between two
+    /// instants, oldest first.
+    func vitalSamples(from start: Date, to end: Date) async throws -> [VitalSample]
+    /// VO2 max estimates between two instants, oldest first.
+    func cardioFitness(from start: Date, to end: Date) async throws -> [DatedValue]
 }
 
 extension HealthReader {

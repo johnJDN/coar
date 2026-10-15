@@ -34,6 +34,46 @@ final class DebugHealthReader: HealthReader {
         hourly(day)
     }
 
+    func vitalsAccessNeeded() async -> Bool { false }
+
+    func requestVitalsAccess() async throws {}
+
+    /// A few readings each night (every 90 minutes from 1 AM) and a resting heart rate each
+    /// morning; the last night runs a little hot, as after a hard day.
+    func vitalSamples(from start: Date, to end: Date) async throws -> [VitalSample] {
+        var result: [VitalSample] = []
+        var day = Day(start, in: calendar)
+        while day <= Day(end, in: calendar), day <= .today() {
+            let strain = day == .today() ? 1.0 : 0.0
+            let midnight = day.start(in: calendar)
+            for hour in [1.0, 2.5, 4.0, 5.5] {
+                let at = midnight.addingTimeInterval(hour * 3_600)
+                result.append(VitalSample(vital: .hrv, date: at, value: 42 + noise(day, 20) * 14 - strain * 14))
+                result.append(VitalSample(vital: .recoveryHRV, date: at, value: 55 + noise(day, 21) * 16 - strain * 18))
+                result.append(VitalSample(vital: .respiratoryRate, date: at, value: 14 + noise(day, 22) * 1.2 + strain * 1.5))
+                result.append(VitalSample(vital: .bloodOxygen, date: at, value: 95.5 + noise(day, 23) * 2.5))
+            }
+            result.append(VitalSample(vital: .restingHeartRate, date: midnight.addingTimeInterval(9 * 3_600), value: 50 + noise(day, 24) * 4 + strain * 6))
+            day = day.advanced(by: 1)
+        }
+        return result.filter { $0.date >= start && $0.date <= end }
+    }
+
+    /// An estimate every week or so, creeping up over the year.
+    func cardioFitness(from start: Date, to end: Date) async throws -> [DatedValue] {
+        var result: [DatedValue] = []
+        var day = Day(start, in: calendar)
+        var index = 0.0
+        while day <= Day(end, in: calendar), day <= .today() {
+            if noise(day, 30) < 0.15 {
+                result.append(DatedValue(date: day.start(in: calendar).addingTimeInterval(8 * 3_600), value: 39 + index * 0.012 + noise(day, 31) * 1.2))
+            }
+            index += 1
+            day = day.advanced(by: 1)
+        }
+        return result
+    }
+
     /// A number from 0 to 1 that depends only on the Day and a salt.
     private func noise(_ day: Day, _ salt: Int) -> Double {
         var hash: UInt64 = 1_469_598_103_934_665_603
