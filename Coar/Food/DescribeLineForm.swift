@@ -10,13 +10,16 @@ struct DescribeLineForm: View {
     let problem: String?
     let onChange: (DescribeLineEdit) -> Void
     let onTryAgain: () -> Void
+    /// Sends the line again as this text ("Pho, 2 cups") for numbers for a new unit.
+    let onReestimate: (String) -> Void
 
     @State private var edit: DescribeLineEdit
 
-    init(edit: DescribeLineEdit, problem: String?, onChange: @escaping (DescribeLineEdit) -> Void, onTryAgain: @escaping () -> Void) {
+    init(edit: DescribeLineEdit, problem: String?, onChange: @escaping (DescribeLineEdit) -> Void, onTryAgain: @escaping () -> Void, onReestimate: @escaping (String) -> Void) {
         self.problem = problem
         self.onChange = onChange
         self.onTryAgain = onTryAgain
+        self.onReestimate = onReestimate
         _edit = State(initialValue: edit)
     }
 
@@ -49,14 +52,28 @@ struct DescribeLineForm: View {
                     .formRow()
                 HStack(spacing: Metrics.spaceInner) {
                     Text("Unit").foregroundStyle(Color.textPrimary)
-                    TextField("serving", text: $edit.unit)
+                    TextField("serving", text: Binding(get: { edit.unit }, set: { edit.setUnit($0) }))
                         .multilineTextAlignment(.trailing)
                         .foregroundStyle(Color.textSecondary)
                         .textInputAutocapitalization(.never)
+                        // Units are short words and abbreviations ("g", "oz", "cup"): autocorrect
+                        // turned "cup" into "so" as the field lost focus.
+                        .autocorrectionDisabled()
                 }
                 .formRow()
             } footer: {
-                Text("Changing the quantity scales the macros below.")
+                if edit.unitNeedsNumbers {
+                    VStack(alignment: .leading, spacing: Metrics.spaceTight) {
+                        Text("The macros below are still for \(edit.numbersPortion).")
+                        Button("Estimate again for \(FoodText.portion(edit.quantity ?? 1, of: edit.unit.trimmingCharacters(in: .whitespaces)))") {
+                            onReestimate(edit.reestimateText)
+                        }
+                        .font(Font.bodyText.weight(.semibold))
+                        .foregroundStyle(Color.accentGreen)
+                    }
+                } else {
+                    Text("Changing the quantity scales the macros below. Switching the unit to g or oz converts by weight when it's known.")
+                }
             }
 
             Section {
@@ -129,8 +146,8 @@ struct DescribeLineForm: View {
 /// Hosts `DescribeLineForm`, pushed from the Describe tab; the tab owns the line.
 final class DescribeLineViewController: UIHostingController<DescribeLineForm> {
 
-    init(line: DescribeLine, problem: String?, onChange: @escaping (DescribeLineEdit) -> Void, onTryAgain: @escaping () -> Void) {
-        super.init(rootView: DescribeLineForm(edit: DescribeLineEdit(line), problem: problem, onChange: onChange, onTryAgain: onTryAgain))
+    init(line: DescribeLine, problem: String?, onChange: @escaping (DescribeLineEdit) -> Void, onTryAgain: @escaping () -> Void, onReestimate: @escaping (String) -> Void) {
+        super.init(rootView: DescribeLineForm(edit: DescribeLineEdit(line), problem: problem, onChange: onChange, onTryAgain: onTryAgain, onReestimate: onReestimate))
         title = line.trimmedText
     }
 

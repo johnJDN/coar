@@ -261,7 +261,12 @@ Charts never show a legend when color already maps to a label on screen.
   prominent Add logs the filled lines, with their total in a row beneath. A camera button
   beside `…` (Take Photo / Choose Photo) adds a "Photo" line that becomes one line per food
   it shows ("From photo"), or one per label serving ("From label"). Tapping under a line
-  pushes its page: name, quantity, unit, `MacroStrip`, macro fields, Save as food. A line
+  pushes its page (a filled, failed or waiting line has a tertiary disclosure chevron): name,
+  quantity, unit, `MacroStrip`, macro fields, Save as food. Changing the quantity scales the
+  macros; changing the unit to g, oz, kg or lb converts by weight when the weight is known.
+  Any other unit change says the macros are still for the old portion, with a green "Estimate
+  again for 1 cup" action that re-sends the line as "name, 1 cup"; typing a macro instead
+  accepts the new unit. A line
   swipes left to Remove (or press and hold the numbers under it), with no confirmation. An
   "Add food" row under the last line adds an empty one while the last line has text. While
   a line is typed, your saved foods whose name starts with it show as glass capsules above

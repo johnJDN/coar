@@ -103,6 +103,16 @@ final class DescribeLineCell: UICollectionViewListCell {
         caption.attributedText = text
         caption.isHidden = text == nil
         captionGap.constant = text == nil ? 0 : 4
+        // A chevron on a line whose page has something to show, so it reads as tappable.
+        let opensPage: Bool
+        switch line.state {
+        case .filled, .failed, .waiting: opensPage = true
+        case .typing, .checking: opensPage = false
+        }
+        let hasChevron = !accessories.isEmpty
+        if hasChevron != opensPage {
+            accessories = opensPage ? [.disclosureIndicator(displayed: .always, options: .init(tintColor: UIColor.textTertiary))] : []
+        }
         let offersSave = Self.offersSaveAsFood(line)
         if saveButton.isHidden == offersSave { saveButton.isHidden = !offersSave }
         saveButton.isSelected = line.saveAsFood

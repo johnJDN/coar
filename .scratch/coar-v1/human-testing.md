@@ -546,3 +546,13 @@ Ticket: `.scratch/describe-qol/issues/01-sizes-splits-suggestions-notes.md`.
 - [ ] Type the first letters of a food you've saved ("ph"): it shows above the keyboard with its serving and calories. Tap it: the line fills in at once as "Your food". With "2 ph", it fills "2 Pho".
 - [ ] Add a photo: "Anything to add?" Type "I ate half": the foods come back halved and their notes mention it. Read photo with the field empty works as before.
 - [ ] Judgement calls: sizes scale by rule of thumb (large 1.5, small 0.75); the note is asked each time; suggestions from two letters, at most four.
+
+## Added after v1: Correcting a Describe line (2026-10-14)
+
+Ticket: `.scratch/describe-qol/issues/02-line-chevron-and-unit-changes.md`.
+
+- [ ] Describe "pho": the filled line has a small grey chevron on the right. Tap it: the line's page.
+- [ ] Change Unit from "bowl" (or "serving") to "g": the quantity becomes the weight in grams and the macros stay the same. Change it to "oz": converted again. Change Quantity: the macros scale.
+- [ ] Change Unit to "cup": a note says the macros are still for the old portion, with a green "Estimate again for 1 cup". Tap it: back on the list, the line re-estimates as "Pho, 1 cup".
+- [ ] Change Unit to "cup" and type a calories number instead: the note goes and the line keeps your numbers for 1 cup.
+- [ ] Judgement calls: only g / oz / kg / lb convert; any other unit asks the model again; going back without either leaves the line as it was (old portion, old macros).

@@ -387,8 +387,22 @@ final class DescribeViewController: UIViewController {
         }, onTryAgain: { [weak self] in
             self?.navigationController?.popViewController(animated: true)
             self?.send(id)
+        }, onReestimate: { [weak self] text in
+            self?.navigationController?.popViewController(animated: true)
+            self?.reestimate(id, as: text)
         })
         navigationController?.pushViewController(page, animated: true)
+    }
+
+    /// The page asked for numbers for a new unit: the line becomes that text ("Pho, 2 cups") and
+    /// is estimated again, as if typed.
+    private func reestimate(_ id: DescribeLine.ID, as text: String) {
+        timers[id]?.cancel()
+        guard draft.edit(id, text: text) else { return send(id) }
+        syncAddRow()
+        reconfigure(id)
+        onChange()
+        send(id)
     }
 
     /// The page writes into its line as it changes (DESIGN.md §7a). While it holds nothing
