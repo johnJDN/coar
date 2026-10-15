@@ -8,12 +8,9 @@ import Foundation
 struct DescribeLineEdit: Equatable {
 
     var name: String
-    /// As typed; set through `setUnit`, which keeps the numbers right where it can.
-    private(set) var unit: String
-    /// The unit the macros are for: the line's, or the weight unit a known portion was
-    /// re-expressed in. When `unit` differs, the numbers are for something else.
-    private var numbersUnit: String
-    /// Grams in one `numbersUnit`, when known: from the Estimate's weight, or the unit itself.
+    /// The unit as typed and the one the macros are for; set through `setUnit`, which keeps
+    /// the numbers right where it can.
+    private var portionUnit: PortionUnit
     /// As typed; nil while empty.
     private(set) var typedQuantity: Double?
     /// As typed; an empty field counts as 0.
@@ -27,21 +24,14 @@ struct DescribeLineEdit: Equatable {
     private(set) var macrosTyped = false
     /// The quantity the macros are for: the last valid one, kept while the field is empty.
     private var macrosQuantity: Double
-    private var gramsPerUnit: Double?
-
-    /// Grams in one of each weight unit a line may be counted in.
-    private static let gramsPer: [String: Double] = ["g": 1, "gram": 1, "grams": 1, "kg": 1_000, "oz": 28.3495, "lb": 453.592, "lbs": 453.592]
 
     init(_ line: DescribeLine) {
         let estimate = line.estimate
         original = estimate
         name = estimate?.name ?? line.trimmedText.prefix(1).uppercased() + line.trimmedText.dropFirst()
-        unit = estimate?.unit ?? "serving"
-        numbersUnit = unit
-        if let estimate {
-            gramsPerUnit = Self.gramsPer[estimate.unit.lowercased()]
-                ?? estimate.grams.flatMap { estimate.quantity > 0 ? $0 / estimate.quantity : nil }
-        }
+        portionUnit = PortionUnit(estimate?.unit ?? "serving", gramsInOne: estimate.flatMap { estimate in
+            estimate.grams.flatMap { estimate.quantity > 0 ? $0 / estimate.quantity : nil }
+        })
         typedQuantity = estimate?.quantity ?? 1
         typedMacros = Dictionary(uniqueKeysWithValues: Macro.allCases.map { macro in (macro, estimate?.macros[macro]) })
         typedExtras = Dictionary(uniqueKeysWithValues: Extra.allCases.map { extra in (extra, estimate?.extras[extra]) })
@@ -67,32 +57,28 @@ struct DescribeLineEdit: Equatable {
         macrosQuantity = current
     }
 
-    /// Sets the unit. To a weight unit when the portion's weight is known, the same portion is
-    /// re-expressed in it ("1 bowl" of 700 g becomes "700 g"), so the macros stay right and a
-    /// new amount scales them. Any other change leaves the numbers for the old unit, which
-    /// `unitNeedsNumbers` reports; partial typing ("o" on the way to "oz") changes nothing.
+    /// The unit as typed.
+    var unit: String {
+        portionUnit.typed
+    }
+
+    /// Sets the unit (`PortionUnit`): to a weight unit when the portion's weight is known, the
+    /// same portion is re-expressed in it, so the macros stay right and a new amount scales
+    /// them; any other change leaves the numbers for the old unit.
     mutating func setUnit(_ newValue: String) {
-        unit = newValue
-        let key = newValue.trimmingCharacters(in: .whitespaces).lowercased()
-        guard let factor = Self.gramsPer[key], let perUnit = gramsPerUnit, let current = quantity,
-              key != numbersUnit.lowercased() else { return }
-        let converted = current * perUnit / factor
-        let rounded = factor == 1 ? converted.rounded() : (converted * 10).rounded() / 10
-        typedQuantity = rounded
-        macrosQuantity = rounded
-        numbersUnit = newValue.trimmingCharacters(in: .whitespaces)
-        gramsPerUnit = factor
+        guard let converted = portionUnit.set(newValue, quantity: quantity) else { return }
+        typedQuantity = converted
+        macrosQuantity = converted
     }
 
     /// The unit was changed to one the numbers couldn't follow: they are still for the old one.
     var unitNeedsNumbers: Bool {
-        let typed = unit.trimmingCharacters(in: .whitespaces)
-        return !typed.isEmpty && typed.lowercased() != numbersUnit.lowercased()
+        portionUnit.needsNumbers
     }
 
     /// The unit the numbers are still for, while `unitNeedsNumbers`.
     var numbersPortion: String {
-        FoodText.portion(macrosQuantity, of: numbersUnit)
+        FoodText.portion(macrosQuantity, of: portionUnit.numbersUnit)
     }
 
     /// The line to send for a fresh estimate of the new portion: "Pho, 2 cups".
@@ -123,9 +109,8 @@ struct DescribeLineEdit: Equatable {
         typedMacros[macro] = value
         macrosTyped = true
         if unitNeedsNumbers {
-            numbersUnit = unit.trimmingCharacters(in: .whitespaces)
+            portionUnit.adopt()
             macrosQuantity = quantity ?? macrosQuantity
-            gramsPerUnit = Self.gramsPer[numbersUnit.lowercased()]
         }
     }
 
@@ -153,7 +138,7 @@ struct DescribeLineEdit: Equatable {
         let ownNumbers = macrosTyped || extrasTyped || original == nil
         let keepsMatch = !ownNumbers && !renamed
         var grams: Double?
-        if let factor = Self.gramsPer[trimmedUnit.lowercased()] {
+        if let factor = PortionUnit.gramsPer[trimmedUnit.lowercased()] {
             grams = quantity * factor
         } else if let original, let originalGrams = original.grams, original.quantity > 0, !renamed {
             grams = originalGrams * quantity / original.quantity

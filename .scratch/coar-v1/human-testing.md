@@ -556,3 +556,14 @@ Ticket: `.scratch/describe-qol/issues/02-line-chevron-and-unit-changes.md`.
 - [ ] Change Unit to "cup": a note says the macros are still for the old portion, with a green "Estimate again for 1 cup". Tap it: back on the list, the line re-estimates as "Pho, 1 cup".
 - [ ] Change Unit to "cup" and type a calories number instead: the note goes and the line keeps your numbers for 1 cup.
 - [ ] Judgement calls: only g / oz / kg / lb convert; any other unit asks the model again; going back without either leaves the line as it was (old portion, old macros).
+
+## Added after v1: Renaming a logged entry (2026-10-14)
+
+Ticket: `.scratch/describe-qol/issues/03-rename-logged-entries.md`.
+
+- [ ] Food: open an entry. Name and Unit are editable, above Time. Rename it: the sheet's title changes, and so does the timeline card after Done.
+- [ ] An entry in "100 g" (quantity 1.5): change Unit to "g": 150 g, same macros. To "oz": converted again.
+- [ ] Change Unit to something with no weight ("bowl"): a note says the macros are still for the old portion. Close and reopen: the new unit stayed, the macros didn't change. Type a calories number: the note goes.
+- [ ] A meal entry: Name is editable; there's no Unit row ("× meal" beside the quantity).
+- [ ] Rename an entry that came from the Describe tab to the name of a saved food: Save as food reads "Already in Foods".
+- [ ] Judgement calls: a unit change saves without new macros (with the warning); no "Estimate again" here; renaming never changes the saved food and the entry stays linked to it.

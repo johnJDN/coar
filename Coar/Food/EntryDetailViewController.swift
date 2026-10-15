@@ -4,8 +4,8 @@ import os
 
 /// The Entry detail sheet, presented from the timeline. Hosts `EntryForm`. Corrections save
 /// as they are made (`EditorSaving`; its Day never changes, ADR 0005) and Done closes; an
-/// incomplete quantity is left as it was saved. Save as food adds it to Foods as it stands
-/// now. Delete removes only the Entry.
+/// empty name, unit, or quantity is left as it was saved. Renaming retitles the sheet. Save
+/// as food adds it to Foods as it stands now. Delete removes only the Entry.
 final class EntryDetailViewController: UIHostingController<EntryForm> {
 
     private static let logger = Logger(category: "Food")
@@ -39,7 +39,7 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         saved = original
         self.entry = entry
         saveAsFood = Self.saveAsFood(for: entry, store: dependencies.store)
-        super.init(rootView: EntryForm(draft: original, servingName: entry.servingName, components: entry.components, onChange: { _ in }, onDelete: {}))
+        super.init(rootView: EntryForm(draft: original, components: entry.components, onChange: { _ in }, onDelete: {}))
         rootView = form()
         title = entry.name
         navigationItem.subtitle = FoodText.when(entry.loggedAt)
@@ -55,7 +55,6 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
     private func form() -> EntryForm {
         var form = EntryForm(
             draft: original,
-            servingName: entry.servingName,
             components: entry.components,
             onChange: { [weak self] in self?.draftChanged($0) },
             onDelete: { [weak self] in self.map { $0.confirmDelete($0.entry) } }
@@ -65,9 +64,9 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
         return form
     }
 
-    private static func saveAsFood(for entry: EntryRecord, store: Store) -> EntryForm.SaveAsFood {
+    private static func saveAsFood(for entry: EntryRecord, store: Store, named name: String? = nil) -> EntryForm.SaveAsFood {
         guard entry.foodItemID == nil, entry.mealID == nil else { return .notOffered }
-        return (try? store.foodItem(named: entry.name)) != nil ? .alreadyInFoods : .offered
+        return (try? store.foodItem(named: name ?? entry.name)) != nil ? .alreadyInFoods : .offered
     }
 
     /// The sheet the Food tab presents; nil when the Entry no longer exists.
@@ -94,9 +93,16 @@ final class EntryDetailViewController: UIHostingController<EntryForm> {
     // MARK: - Writing
 
     private func autosave() {
-        guard draft != saved, let quantity = draft.quantity, let macros = draft.macros, let extras = draft.extras else { return }
+        guard draft != saved, let name = draft.trimmedName, let servingName = draft.servingName,
+              let quantity = draft.quantity, let macros = draft.macros, let extras = draft.extras else { return }
         do {
-            try dependencies.store.updateEntry(entryID, loggedAt: draft.loggedAt, quantity: quantity, macros: macros, extras: extras)
+            try dependencies.store.updateEntry(entryID, loggedAt: draft.loggedAt, quantity: quantity, macros: macros, extras: extras, name: name, servingName: servingName)
+            if name != saved.trimmedName {
+                title = name
+                // Save as food goes by the name: a new one may or may not be in Foods.
+                saveAsFood = Self.saveAsFood(for: entry, store: dependencies.store, named: name)
+                rootView = form()
+            }
             saved = draft
             onChange()
         } catch {

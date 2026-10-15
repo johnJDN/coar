@@ -277,7 +277,10 @@ Charts never show a legend when color already maps to a label on screen.
   in whole grams. An Entry swipes
   left onto a coral Delete (a long swipe deletes at once), or press and hold for Save as food
   and Delete; deleting never confirms but shows an "Undo" toast on a glass capsule for 7
-  seconds, which puts the Entry back as it was. An Entry's page lists its Extras (fiber,
+  seconds, which puts the Entry back as it was. An Entry's page edits its name, quantity, unit (not
+  a Meal Entry's "meal"), time and macros, the same rows as a Describe line's page: a unit
+  change converts by weight when it can, and otherwise says the macros are still for the old
+  portion (no re-estimate here). It lists its Extras (fiber,
   sodium, caffeine, alcohol) under "Also recorded", only those it holds, as neutral-tiled
   rows with `textPrimary` numbers (not accents: they are not macros); nothing about them on
   the timeline, the day's summary, or Home. A saved food's serving editor lists all four,

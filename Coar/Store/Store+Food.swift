@@ -200,10 +200,13 @@ extension Store {
         try fetchEntry(id).flatMap(EntryRecord.init)
     }
 
-    /// Corrects the past on the past (ADR 0003): the instant, the quantity, and the
-    /// snapshotted macros. The Entry keeps the Day it was logged into (ADR 0005).
-    func updateEntry(_ id: EntryRecord.ID, loggedAt: Date, quantity: Double, macros: Macros, extras: Extras? = nil) throws {
+    /// Corrects the past on the past (ADR 0003): the instant, the quantity, the snapshotted
+    /// macros, and, when given, the name and Serving name. The Entry keeps the Day it was
+    /// logged into (ADR 0005) and its link to the Food Item or Meal it came from.
+    func updateEntry(_ id: EntryRecord.ID, loggedAt: Date, quantity: Double, macros: Macros, extras: Extras? = nil, name: String? = nil, servingName: String? = nil) throws {
         guard let entry = try fetchEntry(id) else { return }
+        if let name { entry.name = name }
+        if let servingName { entry.servingName = servingName }
         entry.loggedAt = loggedAt
         entry.quantity = quantity
         entry.macros = macros

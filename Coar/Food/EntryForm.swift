@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// The Entry detail's content (ADR 0001: SwiftUI leaf, values in, closures out): the time,
-/// the quantity, and the four snapshotted macros, all editable; a Meal Entry's breakdown,
+/// The Entry detail's content (ADR 0001: SwiftUI leaf, values in, closures out): the name,
+/// the quantity and its unit (a Meal Entry's stays "meal"), the time, and the four
+/// snapshotted macros, all editable; a Meal Entry's breakdown,
 /// read-only, scaled by the quantity; Save as food for an Entry that isn't from a Food Item or
 /// Meal; Delete at the bottom. Every edit reports the whole draft so the host can save it.
 struct EntryForm: View {
@@ -16,7 +17,6 @@ struct EntryForm: View {
         case saved
     }
 
-    let servingName: String
     var saveAsFood: SaveAsFood = .notOffered
     var onSaveAsFood: () -> Void = {}
     /// A Meal Entry's lines for one of the Meal; empty for a Food Item Entry.
@@ -26,8 +26,7 @@ struct EntryForm: View {
 
     @State private var draft: EntryDraft
 
-    init(draft: EntryDraft, servingName: String, components: [EntryComponentRecord], onChange: @escaping (EntryDraft) -> Void, onDelete: @escaping () -> Void) {
-        self.servingName = servingName
+    init(draft: EntryDraft, components: [EntryComponentRecord], onChange: @escaping (EntryDraft) -> Void, onDelete: @escaping () -> Void) {
         self.components = components
         self.onChange = onChange
         self.onDelete = onDelete
@@ -37,13 +36,38 @@ struct EntryForm: View {
     var body: some View {
         Form {
             Section {
-                QuantityRow(quantity: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }), unitName: servingName)
+                HStack(spacing: Metrics.spaceInner) {
+                    Text("Name").foregroundStyle(Color.textPrimary)
+                    TextField("Name", text: $draft.name)
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(Color.textPrimary)
+                }
+                .formRow()
+                QuantityRow(quantity: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }), unitName: draft.isMeal ? draft.unit : nil)
                     .formRow()
+                if !draft.isMeal {
+                    HStack(spacing: Metrics.spaceInner) {
+                        Text("Unit").foregroundStyle(Color.textPrimary)
+                        TextField("serving", text: Binding(get: { draft.unit }, set: { draft.setUnit($0) }))
+                            .multilineTextAlignment(.trailing)
+                            .foregroundStyle(Color.textSecondary)
+                            .textInputAutocapitalization(.never)
+                            // Short words and abbreviations ("g", "cup") that autocorrect mangles.
+                            .autocorrectionDisabled()
+                    }
+                    .formRow()
+                }
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)
                     .formRow()
             } footer: {
-                Text("Changing the quantity scales the macros below.")
+                if draft.unitNeedsNumbers {
+                    Text("The macros below are still for \(draft.numbersPortion). Change them if \(FoodText.portion(draft.quantity ?? 1, of: draft.servingName ?? draft.unit)) is different.")
+                } else if draft.isMeal {
+                    Text("Changing the quantity scales the macros below.")
+                } else {
+                    Text("Changing the quantity scales the macros below. Switching the unit to g or oz converts by weight when it's known.")
+                }
             }
 
             if !components.isEmpty {
@@ -65,7 +89,7 @@ struct EntryForm: View {
                         IconTile(systemImage: macro.systemImage, tint: macro.accent)
                         Text(macro.title).foregroundStyle(Color.textPrimary)
                         Spacer()
-                        TextField("0", value: Binding(get: { draft.typedMacros[macro] ?? nil }, set: { draft.typedMacros[macro] = $0 }), format: .number.precision(.fractionLength(0...1)))
+                        TextField("0", value: Binding(get: { draft.typedMacros[macro] ?? nil }, set: { draft.setMacro(macro, $0) }), format: .number.precision(.fractionLength(0...1)))
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .font(Font.metricNumber)
@@ -78,7 +102,7 @@ struct EntryForm: View {
             } header: {
                 Text("As logged")
             } footer: {
-                Text("This entry's own record. Editing it never changes the food item it came from.")
+                Text("This entry's own record. Editing it, its name or its unit never changes the food item it came from.")
             }
 
             if !draft.shownExtras.isEmpty {
