@@ -5,20 +5,22 @@ import Foundation
 /// no Watch: launch a debug build with `-FakeHealthData`. Each Night is a Watch-style night in
 /// stages (bedtime around 11:30 PM, up around 7 AM) and each Day has steps spread over the
 /// waking hours; both vary by Day but are the same on every launch. Never used by tests.
-final class DebugHealthReader: HealthReader {
+final class DebugHealthReader: HealthReader, SleepWriter {
 
     static var isRequested: Bool {
         ProcessInfo.processInfo.arguments.contains("-FakeHealthData")
     }
 
     private let calendar = Calendar.current
+    /// Sleep added with Add sleep, kept while the app runs.
+    private var added: [SleepSample] = []
 
     func timeAsleep(wakingOn days: [Day]) async throws -> [Day: TimeInterval] {
-        SleepNight.timeAsleep(wakingOn: days, from: days.flatMap(samples), in: calendar)
+        SleepNight.timeAsleep(wakingOn: days, from: days.flatMap(samples) + added, in: calendar)
     }
 
     func sleepNights(wakingOn days: [Day]) async throws -> [Day: SleepNightDetail] {
-        SleepNight.details(wakingOn: days, from: days.flatMap(samples), in: calendar)
+        SleepNight.details(wakingOn: days, from: days.flatMap(samples) + added, in: calendar)
     }
 
     func steps(on days: [Day]) async throws -> [Day: Int] {
@@ -35,6 +37,10 @@ final class DebugHealthReader: HealthReader {
     }
 
     func vitalsAccessNeeded() async -> Bool { false }
+
+    func addSleep(from start: Date, to end: Date) async throws {
+        added.append(SleepSample(start: start, end: end, stage: .asleepUnspecified))
+    }
 
     func aboutMe() async throws -> AboutMe {
         AboutMe(birthDate: Calendar.current.date(from: DateComponents(year: 2002, month: 3, day: 14)), sex: .male, heightCentimetres: 175.3)

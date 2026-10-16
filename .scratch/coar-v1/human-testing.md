@@ -632,3 +632,10 @@ Spec: `.scratch/day-page/spec.md`. Needs the CloudKit schema deployed first (Abo
 - [ ] Export again from the Mac after writing tonight's entry, open Coar: only the new entry is read.
 - [ ] Sleep page: Wrist temperature on the Overnight card (allow it in the Health prompt again), with its own chart.
 - [ ] Judgement calls: journal text never stored, only events; journal meals hidden on days with a food log; location asked only from "Show weather".
+
+## Added after v1: Add sleep (2026-10-16)
+
+Ticket: `.scratch/health-pages/issues/04-add-sleep.md`.
+
+- [ ] Sleep page → Add sleep: set this morning's 8:00 to 9:30. The first time, allow Coar to write Sleep in the Health prompt. Last night's total grows by 1h 30m; the wake time stays when you first woke.
+- [ ] The Health app shows the added sleep under Sleep → Show All Data, from Coar.

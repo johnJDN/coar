@@ -100,7 +100,13 @@ final class HealthDetailViewController: ScreenViewController {
             showHistory(metric == .sleep ? .timeAsleep : .steps)
         }
         overview.contentStack.setCustomSpacing(Metrics.spaceInner, after: chart.view)
-        overview.contentStack.addArrangedSubview(UIStackView(arrangedSubviews: [history, UIView()]))
+        let overviewActions = UIStackView(arrangedSubviews: [history])
+        overviewActions.spacing = Metrics.spaceTight
+        if metric == .sleep, dependencies.sleepWriter != nil {
+            overviewActions.addArrangedSubview(UIButton.inCardAction(title: "Add sleep", systemImage: "plus") { [weak self] in self?.addSleep() })
+        }
+        overviewActions.addArrangedSubview(UIView())
+        overview.contentStack.addArrangedSubview(overviewActions)
 
         let dayCard = CardView(title: metric == .sleep ? "Night" : "By hour", systemImage: metric == .sleep ? "moon.stars.fill" : "clock.fill", iconTint: metric.uiAccent, detail: dayDetailLabel)
         dayCard.contentStack.addArrangedSubview(dayLabel)
@@ -186,6 +192,11 @@ final class HealthDetailViewController: ScreenViewController {
         card.contentStack.setCustomSpacing(Metrics.spaceInner, after: fitnessCaption)
         host(fitnessChart, in: card.contentStack)
         return card
+    }
+
+    private func addSleep() {
+        guard let writer = dependencies.sleepWriter else { return }
+        present(AddSleepViewController.sheet(writer: writer) { [weak self] in self?.load() }, animated: true)
     }
 
     private func showHistory(_ history: HistoryMetric) {

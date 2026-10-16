@@ -25,6 +25,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         dependencies.weather = weatherProvider()
         dependencies.places = isTestHost ? nil : PlaceRecorder(store: store)
         dependencies.journal = isTestHost ? nil : JournalImporter(store: store, reader: OnDeviceJournalReader())
+        dependencies.sleepWriter = (dependencies.healthReader as? SleepWriter) ?? health
         return dependencies
     }()
 

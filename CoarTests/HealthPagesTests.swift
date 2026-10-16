@@ -218,4 +218,17 @@ final class HealthPagesTests: XCTestCase {
         XCTAssertFalse(Vital.wristTemperature.isOutside(35.8, usual: 35.4))
         XCTAssertFalse(Vital.wristTemperature.isOutside(34.9, usual: 35.4), "cooler isn't a warning")
     }
+
+    func test_aNapAddedAfterWaking_countsTowardTheNight_butKeepsTheWakeTime() throws {
+        // Woke at 5, awake until 8, slept again 8 to 9:30 (added by hand).
+        let samples = [sample(.asleepCore, at(sep12, 23), at(sep13, 5)), sample(.asleepUnspecified, at(sep13, 8), at(sep13, 9, 30))]
+
+        let night = try XCTUnwrap(SleepNight.detail(wakingOn: sep13, from: samples, in: Self.calendar))
+
+        XCTAssertEqual(night.timeAsleep, 7.5 * 3_600)
+        XCTAssertEqual(night.woke, at(sep13, 5), "three hours apart is a second sleep: the main one still ends at 5")
+        XCTAssertTrue(AddSleepForm.isValid(start: at(sep13, 8), end: at(sep13, 9, 30), now: at(sep13, 12)))
+        XCTAssertFalse(AddSleepForm.isValid(start: at(sep13, 9), end: at(sep13, 8), now: at(sep13, 12)), "ends before it starts")
+        XCTAssertFalse(AddSleepForm.isValid(start: at(sep13, 11), end: at(sep13, 13), now: at(sep13, 12)), "ends in the future")
+    }
 }

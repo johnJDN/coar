@@ -250,6 +250,23 @@ extension HealthKitAccess {
     }
 }
 
+// MARK: - Sleep write
+
+extension HealthKitAccess: SleepWriter {
+
+    /// Its own prompt, so the Home tiles never go back to Connect for it.
+    static let sleepShareTypes: Set<HKSampleType> = [HKCategoryType(.sleepAnalysis)]
+
+    func addSleep(from start: Date, to end: Date) async throws {
+        guard HKHealthStore.isHealthDataAvailable() else { return }
+        if try await healthStore.statusForAuthorizationRequest(toShare: Self.sleepShareTypes, read: []) == .shouldRequest {
+            try await healthStore.requestAuthorization(toShare: Self.sleepShareTypes, read: [])
+        }
+        let sample = HKCategorySample(type: HKCategoryType(.sleepAnalysis), value: HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue, start: start, end: end)
+        try await healthStore.save(sample)
+    }
+}
+
 // MARK: - About me
 
 extension HealthKitAccess {

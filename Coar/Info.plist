@@ -9,7 +9,7 @@
 	<key>NSHealthShareUsageDescription</key>
 	<string>Coar reads your sleep and steps from Health to show them on Home, your overnight heart rate, HRV, breathing rate, and blood oxygen beside your sleep, your VO2 max, and the calories and heart rate of a workout you link to one of yours.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Coar writes the Body Weight you log so the Health app agrees with it.</string>
+	<string>Coar writes the Body Weight you log, and sleep you add for a nap or a night the Watch missed, so the Health app agrees with it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Coar notes the city you're in once a day, to show that day's weather on its Day page.</string>
 	<key>UIBackgroundModes</key>

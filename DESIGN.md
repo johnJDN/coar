@@ -325,7 +325,9 @@ Charts never show a legend when color already maps to a label on screen.
   has a Day (never a future one) and, on an existing weigh-in, Delete weigh-in.
 - **Sleep and Steps pages** (pushed from Home's tiles) — the overview card (hero for the
   current Day, 30-day average, one bar per Day, the target as a dashed `textTertiary` rule);
-  tapping a bar picks that Day for the card that shows one Day. Sleep: then a Night card
+  tapping a bar picks that Day for the card that shows one Day. Sleep's overview card has
+  Add sleep beside History: a sheet with fell asleep and woke up, saved to Apple Health as
+  Asleep. Sleep: then a Night card
   (bedtime – wake time · Time Asleep; the Sleep Score in sleep's teal with its label and
   its three parts; the stages bar when a Watch recorded stages), then Overnight (resting
   heart rate, Recovery HRV, HRV, breathing rate, blood oxygen, each with "usual N" in

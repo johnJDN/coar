@@ -24,4 +24,6 @@ struct AppDependencies {
     var places: PlaceRecorder? = nil
     /// Reads Apple Journal exports; nil in tests.
     var journal: JournalImporter? = nil
+    /// Adds a nap or missed sleep to Apple Health; nil in tests.
+    var sleepWriter: SleepWriter? = nil
 }
