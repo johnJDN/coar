@@ -53,6 +53,11 @@ event: a short title in John's words ("Lunch with Sam"), a time if the entry giv
 a part of the day, and the category. A food or exercise event that matches something Coar
 already logged that day is linked to it rather than shown twice.
 
+**Only the last month for now** (John, 2026-10-16): entries older than 30 days in an export are
+skipped, not read. Five years is about 1,800 entries, an hour or more of on-device work; if he
+wants more later, the backlog is read newest first while the phone charges overnight
+(`BGProcessingTask` with external power), a chunk a night, with progress in Settings.
+
 On device, with `FoundationModels` (`LanguageModelSession`, guided generation into a
 `@Generable` type). When Apple Intelligence isn't available, entries wait and are read later.
 The iOS 27 SDK also has a Private Cloud Compute model: a later step up if on-device reading
