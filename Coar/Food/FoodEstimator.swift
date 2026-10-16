@@ -59,6 +59,7 @@ enum FoodEstimatePrompt {
     Rules:
     - One line is one food as eaten, even if it has parts ("toast with butter" is one food).
     - Give macros for the whole portion described. If no amount is given, assume one typical serving and say what you assumed.
+    - Use every detail the line gives: counts of each ingredient, a stated weight ("about 450 g before broth"), how much broth or sauce was had, a share of something shared ("split a pizza with 2 friends" is a third), "most of" (about three quarters). When the line counts what went into a dish, add those up rather than estimating a typical dish, and say what you assumed for anything not given (the broth, the oil).
     - name: what the food is, short and capitalised, without the amount ("Toast with butter", "Eggs").
     - quantity and unit: the portion as the person counts it. The unit is singular and describes one ("large egg", "slice", "cup", "g"). "2 eggs" is quantity 2, unit "large egg". "150g chicken" is quantity 150, unit "g".
     - grams: the whole portion's weight in grams if you can reasonably tell, else null.
@@ -67,7 +68,7 @@ enum FoodEstimatePrompt {
     - assumption: one short sentence on what you assumed, or "" if nothing.
     - is_food: false only if the line cannot be something eaten or drunk (a sentence that isn't a food, an activity, a medicine, a vape); then the numbers are 0. This is a food log: when a name could be a food or something else ("Built Puff bar" is a protein bar, not a Puff Bar vape), it's the food.
     - match: null, unless a list of the person's saved foods follows.
-    - parts: when the line lists separate foods eaten together ("eggs, toast and coffee", "burger and fries", "2 eggs + bacon"), each food as its own short line with its amount, as the person wrote it ("2 eggs", "toast", "coffee"); otherwise []. One food with parts is one food: "toast with butter", "chicken burrito bowl", "coffee with milk", "pho with extra noodles" are []. When parts has two or more, fill the other fields for the whole line anyway.
+    - parts: when the line lists separate foods eaten together ("eggs, toast and coffee", "burger and fries", "2 eggs + bacon"), each food as its own short line with its amount, as the person wrote it ("2 eggs", "toast", "coffee"); otherwise []. One food with parts is one food: "toast with butter", "chicken burrito bowl", "coffee with milk", "pho with extra noodles" are []. So is a dish listed with its ingredients: "malatang bowl with tomato broth, 4 shrimp, 4 slices of beef", "salad with chicken, avocado and ranch", "burrito with rice, beans and steak" are []. When parts has two or more, fill the other fields for the whole line anyway.
     \(FoodExtrasPrompt.rules)
     """
 
@@ -183,6 +184,7 @@ enum FoodLookupPrompt {
     - fiber_g (grams), sodium_mg (milligrams), caffeine_mg (milligrams) and alcohol_drinks (US standard drinks of 14 g pure alcohol, from the published strength and size): from the same published source, null for any it doesn't give. Never estimate these. A brand that doesn't publish caffeine gets null.
     - assumption: one short sentence naming where the numbers come from and anything assumed.
     - is_food is false only if the line cannot be something eaten or drunk. This is a food log: when a name could be a food or something else, it's the food.
+    - Only when the line says they shared it or had part of it ("shared a large fries with my sister", "most of a burrito"): after finding the published numbers, scale them and the extras to their share (shared with one other person: half; with two others: a third; "most of": three quarters), set quantity to their share, and say so in the assumption. Otherwise give the published numbers as they are.
     """
 
     static let schema: [String: Any] = [

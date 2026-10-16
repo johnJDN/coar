@@ -608,3 +608,12 @@ Ticket: `.scratch/health-pages/issues/03-history-charts.md`.
 - [ ] Tap the Sleep Score: its own chart. Tap any Overnight row: its chart with a shaded band for your usual range.
 - [ ] Steps page → History; Cardio fitness card → its chart.
 - [ ] Body Weight: drag across the chart: a capsule shows that weigh-in, its trend, and the date.
+
+## Added after v1: Awkward typed lines (2026-10-15)
+
+Report: `.scratch/typed-lines/report.md`.
+
+- [ ] Describe your malatang line (all the ingredients): it stays one line, about 600–650 cal. Add "about 450 g before broth": the note says it used that.
+- [ ] "shared a large mcdonalds fries with my sister": about 250 cal, quantity 0.5. "most of a chipotle chicken burrito": about three quarters of the burrito.
+- [ ] "split a large pepperoni pizza with 2 friends": a third of a large pizza.
+- [ ] "eggs, toast and coffee" still becomes three lines.

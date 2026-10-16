@@ -1,0 +1,1377 @@
+[
+ {
+  "line": "quest cookie dough bar",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "Quest Cookie Dough Protein Bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 60,
+   "calories": 200,
+   "protein": 21,
+   "fat": 9,
+   "carbs": 22,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 60g Quest chocolate chip cookie dough protein bar.",
+   "match": null,
+   "fiber_g": 14,
+   "sodium_mg": 200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009136,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Chocolate Chip Cookie Dough Protein Bars",
+   "source_url": "https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar",
+   "name": "Quest Chocolate Chip Cookie Dough Protein Bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 60,
+   "calories": 190,
+   "protein": 21,
+   "fat": 9,
+   "carbs": 22,
+   "assumption": "Nutrition values are sourced from the official [questnutrition.com](https://www.questnutrition.com/products/chocolate-chip-cookie-dough-protein-bar) website for one standard bar.",
+   "fiber_g": 12,
+   "sodium_mg": 220,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 12,
+   "sodium": 220,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 12,
+   "sodium": 220,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "rxbar chocolate sea salt",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "RXBAR Chocolate Sea Salt Protein Bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 52,
+   "calories": 210,
+   "protein": 12,
+   "fat": 7,
+   "carbs": 23,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 52g package.",
+   "match": null,
+   "fiber_g": 5,
+   "sodium_mg": 240,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0091821,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Chocolate Sea Salt Protein Bar",
+   "source_url": "https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html",
+   "name": "RXBAR Chocolate Sea Salt Protein Bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 52,
+   "calories": 200,
+   "protein": 12,
+   "fat": 8,
+   "carbs": 23,
+   "assumption": "Nutrition facts are sourced from the official [rxbar.com](https://shop.rxbar.com/shop/chocolate-sea-salt-box-of-12-bars.html) website for one standard bar (52 g).",
+   "fiber_g": 5,
+   "sodium_mg": 190,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 5,
+   "sodium": 190,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 5,
+   "sodium": 190,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "clif bar chocolate chip",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "Clif bar chocolate chip",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 68,
+   "calories": 250,
+   "protein": 10,
+   "fat": 5,
+   "carbs": 42,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 68g Clif energy bar.",
+   "match": null,
+   "fiber_g": 5,
+   "sodium_mg": 200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009032300000000002,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Clif Bar - Chocolate Chip Energy Bar",
+   "source_url": "https://www.qfc.com/p/clif-bar-chocolate-chip-energy-bars/0072225231322",
+   "name": "Clif Bar Chocolate Chip",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 68,
+   "calories": 250,
+   "protein": 10,
+   "fat": 6,
+   "carbs": 43,
+   "assumption": "Nutrition values obtained from the official QFC product page for one 68g bar [qfc.com].",
+   "fiber_g": 5,
+   "sodium_mg": 130,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 5,
+   "sodium": 130,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 5,
+   "sodium": 130,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "chobani plain greek yogurt",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "Chobani Plain Greek Yogurt",
+   "quantity": 1,
+   "unit": "cup",
+   "grams": 227,
+   "calories": 150,
+   "protein": 24,
+   "fat": 0,
+   "carbs": 8,
+   "needs_lookup": true,
+   "assumption": "Assumed one typical 1-cup serving of non-fat plain Greek yogurt.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 65,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0089469,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Chobani - Plain Nonfat Greek Yogurt, Plain",
+   "source_url": "https://tools.myfooddata.com/nutrition-facts/2671157/wt1",
+   "name": "Chobani Plain Nonfat Greek Yogurt",
+   "quantity": 0.75,
+   "unit": "cup",
+   "grams": 170,
+   "calories": 90,
+   "protein": 16,
+   "fat": 0,
+   "carbs": 6,
+   "assumption": "Nutrition facts for 3/4 cup (170g) serving from [myfooddata.com](https://tools.myfooddata.com/nutrition-facts/2671157/wt1).",
+   "fiber_g": 0,
+   "sodium_mg": 64.6,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 0,
+   "sodium": 64.6,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 55,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "premier protein chocolate shake",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "Premier Protein Chocolate Shake",
+   "quantity": 1,
+   "unit": "shake",
+   "grams": 325,
+   "calories": 160,
+   "protein": 30,
+   "fat": 3,
+   "carbs": 4,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 11 fl oz ready-to-drink bottle.",
+   "match": null,
+   "fiber_g": 1,
+   "sodium_mg": 180,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009544700000000001,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Chocolate Protein Shake",
+   "source_url": "https://www.premierprotein.com/products/chocolate-protein-shake",
+   "name": "Premier Protein Chocolate Protein Shake",
+   "quantity": 1,
+   "unit": "shake",
+   "grams": null,
+   "calories": 160,
+   "protein": 30,
+   "fat": 3,
+   "carbs": 4,
+   "assumption": "Numbers come from the official Premier Protein site for 1 shake (11.5 fl oz).",
+   "fiber_g": 2,
+   "sodium_mg": 230,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 2,
+   "sodium": 230,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 2,
+   "sodium": 230,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "kind protein max raspberry cocoa bar",
+  "kind": "packaged",
+  "text_reply": {
+   "is_food": true,
+   "name": "Kind Protein Max Raspberry Cocoa Bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 60,
+   "calories": 220,
+   "protein": 15,
+   "fat": 12,
+   "carbs": 21,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 60g Kind Protein Max bar.",
+   "match": null,
+   "fiber_g": 5,
+   "sodium_mg": 150,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0091321,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "KIND Protein MAX Raspberry Cocoa Crisp",
+   "source_url": "https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp",
+   "name": "KIND Protein MAX Raspberry Cocoa Crisp bar",
+   "quantity": 1,
+   "unit": "bar",
+   "grams": 62,
+   "calories": 240,
+   "protein": 20,
+   "fat": 13,
+   "carbs": 24,
+   "assumption": "Nutrition facts are sourced from [kindsnacks.com](https://www.kindsnacks.com/products/protein-max/raspberry-cocoa-crisp) for 1 bar (62g).",
+   "fiber_g": 10,
+   "sodium_mg": 180,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 10,
+   "sodium": 180,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 10,
+   "sodium": 180,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "big mac",
+  "kind": "restaurant",
+  "text_reply": {
+   "is_food": true,
+   "name": "Big Mac",
+   "quantity": 1,
+   "unit": "burger",
+   "grams": 219,
+   "calories": 590,
+   "protein": 25,
+   "fat": 34,
+   "carbs": 46,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard McDonald's Big Mac.",
+   "match": null,
+   "fiber_g": 3,
+   "sodium_mg": 1050,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0088325,
+  "error": null,
+  "path": "text (lookup found nothing)",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Big Mac\u00ae",
+   "source_url": "https://www.mcdonalds.com/us/en-us/product/big-mac.html",
+   "name": "McDonald's Big Mac",
+   "quantity": 1,
+   "unit": "burger",
+   "grams": null,
+   "calories": 580,
+   "protein": null,
+   "fat": null,
+   "carbs": null,
+   "assumption": "Numbers are from the official [mcdonalds.com](https://www.mcdonalds.com/us/en-us/product/big-mac.html) US nutrition information for a standard Big Mac.",
+   "fiber_g": null,
+   "sodium_mg": null,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "missing",
+   "sodium": "missing",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 3,
+   "sodium": 1060,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "chick-fil-a chicken sandwich",
+  "kind": "restaurant",
+  "text_reply": {
+   "is_food": true,
+   "name": "Chicken sandwich",
+   "quantity": 1,
+   "unit": "sandwich",
+   "grams": 171,
+   "calories": 440,
+   "protein": 28,
+   "fat": 19,
+   "carbs": 40,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard Chick-fil-A Chicken Sandwich.",
+   "match": null,
+   "fiber_g": 2,
+   "sodium_mg": 1350,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0094093,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Chick-fil-A\u00ae Chicken Sandwich",
+   "source_url": "https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich",
+   "name": "Chick-fil-A Chicken Sandwich",
+   "quantity": 1,
+   "unit": "sandwich",
+   "grams": 183,
+   "calories": 420,
+   "protein": 29,
+   "fat": 16,
+   "carbs": 41,
+   "assumption": "Nutrition values are sourced from the official [chick-fil-a.com](https://www.chick-fil-a.com/menu/entrees/chick-fil-a-chicken-sandwich) website for one standard Chick-fil-A Chicken Sandwich.",
+   "fiber_g": 1,
+   "sodium_mg": 1470,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 1,
+   "sodium": 1470,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 1,
+   "sodium": 1470,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "taco bell crunchwrap supreme",
+  "kind": "restaurant",
+  "text_reply": {
+   "is_food": true,
+   "name": "Crunchwrap Supreme",
+   "quantity": 1,
+   "unit": "item",
+   "grams": 232,
+   "calories": 530,
+   "protein": 16,
+   "fat": 21,
+   "carbs": 70,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard Taco Bell Crunchwrap Supreme based on official nutrition data.",
+   "match": null,
+   "fiber_g": 5,
+   "sodium_mg": 1200,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009066099999999999,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Crunchwrap Supreme\u00ae",
+   "source_url": "https://www.tacobell.com/food/specialties/crunchwrap-supreme",
+   "name": "Taco Bell Crunchwrap Supreme",
+   "quantity": 1,
+   "unit": "crunchwrap",
+   "grams": null,
+   "calories": 530,
+   "protein": 15,
+   "fat": 20,
+   "carbs": 74,
+   "assumption": "Nutrition values obtained from [prufapp.com](https://www.prufapp.com/restaurants/taco-bell/menu/2d41f1a9-bab2-5559-9165-4f9cde8c7f2e) based on Taco Bell's official nutrition data for one Crunchwrap Supreme.",
+   "fiber_g": 6,
+   "sodium_mg": 1210,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 6,
+   "sodium": 1210,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 6,
+   "sodium": 1210,
+   "caffeine": null,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "red bull",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Red Bull",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 250,
+   "calories": 110,
+   "protein": 1,
+   "fat": 0,
+   "carbs": 28,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 8.4 fl oz (250 ml) regular Red Bull can.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 105,
+   "caffeine_mg": 80,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0092417,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Red Bull Energy Drink",
+   "source_url": "https://www.redbull.com/us-en/energydrink/products/red-bull-energy-drink-ingredients-list",
+   "name": "Red Bull Energy Drink",
+   "quantity": 1,
+   "unit": "can",
+   "grams": null,
+   "calories": 110,
+   "protein": 0,
+   "fat": 0,
+   "carbs": 29,
+   "assumption": "Nutrition facts are sourced from the official [redbull.com](https://www.redbull.com/us-en/energydrink/products/red-bull-energy-drink-ingredients-list) website for one standard 8.4 fl oz can.",
+   "fiber_g": null,
+   "sodium_mg": 105,
+   "caffeine_mg": 80,
+   "alcohol_drinks": 0
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": null,
+   "sodium": 105,
+   "caffeine": 80,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "missing",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 105,
+   "caffeine": 80,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "celsius",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Celsius Energy Drink",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 355.0,
+   "calories": 10.0,
+   "protein": 0.0,
+   "fat": 0.0,
+   "carbs": 2.0,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 12 fl oz can of Celsius energy drink.",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 15.0,
+   "caffeine_mg": 200.0,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0094445,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "CELSIUS\u00ae Sparkling Lemon Lime Energy Drink Can",
+   "source_url": "https://www.foodsco.net/p/celsius-sparkling-lemon-lime-energy-drink-can/0088939200075",
+   "name": "Celsius Energy Drink",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 355,
+   "calories": 10,
+   "protein": 0,
+   "fat": 0,
+   "carbs": 0,
+   "assumption": "Nutrition facts are sourced from [foodsco.net](https://www.foodsco.net/p/celsius-sparkling-lemon-lime-energy-drink-can/0088939200075) for a standard 12 fl oz can.",
+   "fiber_g": 0,
+   "sodium_mg": 5,
+   "caffeine_mg": 200,
+   "alcohol_drinks": 0
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 0,
+   "sodium": 5,
+   "caffeine": 200,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 5,
+   "caffeine": 200,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "monster energy",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Monster Energy",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 473.0,
+   "calories": 210.0,
+   "protein": 0.0,
+   "fat": 0.0,
+   "carbs": 54.0,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 16 oz can of Original Monster Energy.",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 370.0,
+   "caffeine_mg": 160.0,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009537,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Monster Energy Original Energy Drink Can",
+   "source_url": "https://www.kroger.com/p/monster-energy-original-energy-drink-can/0007084781116",
+   "name": "Monster Energy Original Energy Drink",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 473,
+   "calories": 230,
+   "protein": 0,
+   "fat": 0,
+   "carbs": 58,
+   "assumption": "Nutrition values for one 16 fl oz can of Monster Energy Original obtained from [kroger.com](https://www.kroger.com/p/monster-energy-original-energy-drink-can/0007084781116) and [hannaford.com](https://www.hannaford.com/groceries/product/monster-energy-drink-16-oz-can/160643).",
+   "fiber_g": null,
+   "sodium_mg": 370,
+   "caffeine_mg": 160,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": null,
+   "sodium": 370,
+   "caffeine": 160,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "n/a",
+   "sodium": "unverifiable",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": 160,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "starbucks latte grande",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Starbucks Latte Grande",
+   "quantity": 1,
+   "unit": "grande",
+   "grams": 473,
+   "calories": 190,
+   "protein": 12,
+   "fat": 7,
+   "carbs": 19,
+   "needs_lookup": true,
+   "assumption": "Assumed standard Starbucks Grande latte with 2% milk.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 170,
+   "caffeine_mg": 150,
+   "alcohol_drinks": null
+  },
+  "cost": 0.009773800000000001,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Caff\u00e8 Latte",
+   "source_url": "https://www.starbucks.com/menu/product/407/hot/nutrition",
+   "name": "Starbucks Caff\u00e8 Latte Grande",
+   "quantity": 1,
+   "unit": "grande",
+   "grams": null,
+   "calories": 190,
+   "protein": 13,
+   "fat": 7,
+   "carbs": 19,
+   "assumption": "Numbers are from [starbucks.com](https://www.starbucks.com/menu/product/407/hot/nutrition) for a standard Grande Caff\u00e8 Latte with 2% milk.",
+   "fiber_g": 0,
+   "sodium_mg": 170,
+   "caffeine_mg": 150,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 0,
+   "sodium": 170,
+   "caffeine": 150,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 170,
+   "caffeine": 150,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "starbucks pike place grande",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Pike Place Roast Coffee",
+   "quantity": 1,
+   "unit": "grande",
+   "grams": 473.0,
+   "calories": 5.0,
+   "protein": 0.3,
+   "fat": 0.1,
+   "carbs": 0.0,
+   "needs_lookup": true,
+   "assumption": "Assumed a grande (16 fl oz) brewed coffee with no added milk or sugar.",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 10.0,
+   "caffeine_mg": 310.0,
+   "alcohol_drinks": null
+  },
+  "cost": 0.008884,
+  "error": null,
+  "path": "lookup",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Medium Roast - Pike Place\u00ae Roast",
+   "source_url": "https://www.starbucks.com/menu/product/480/hot/nutrition",
+   "name": "Starbucks Grande Pike Place Roast",
+   "quantity": 1,
+   "unit": "cup",
+   "grams": null,
+   "calories": 5,
+   "protein": 1,
+   "fat": 0,
+   "carbs": 0,
+   "assumption": "Numbers come from the Starbucks official nutrition page for a Grande (16 fl oz) Pike Place Roast.",
+   "fiber_g": 0,
+   "sodium_mg": 10,
+   "caffeine_mg": 352.5,
+   "alcohol_drinks": null
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": 0,
+   "sodium": 10,
+   "caffeine": 352.5,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 10,
+   "caffeine": 352.5,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "coke",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Coca-Cola",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 355,
+   "calories": 140,
+   "protein": 0,
+   "fat": 0,
+   "carbs": 39,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard 12 fl oz can of regular Coca-Cola.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 45,
+   "caffeine_mg": 34,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006574,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0,
+   "sodium": 45,
+   "caffeine": 34,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 45,
+   "caffeine": 34,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "diet coke",
+  "kind": "drink",
+  "text_reply": {
+   "is_food": true,
+   "name": "Diet Coke",
+   "quantity": 1,
+   "unit": "can",
+   "grams": 355.0,
+   "calories": 0.0,
+   "protein": 0.0,
+   "fat": 0.0,
+   "carbs": 0.0,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard 12 oz can (355 ml).",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 40.0,
+   "caffeine_mg": 46.0,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006874,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0.0,
+   "sodium": 40.0,
+   "caffeine": 46.0,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 40,
+   "caffeine": 46,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "2 hard boiled eggs",
+  "kind": "plain",
+  "text_reply": {
+   "is_food": true,
+   "name": "Hard boiled eggs",
+   "quantity": 2,
+   "unit": "large egg",
+   "grams": 100,
+   "calories": 140,
+   "protein": 12.6,
+   "fat": 9.6,
+   "carbs": 0.8,
+   "needs_lookup": false,
+   "assumption": "Assumed 2 standard large hard boiled eggs without added salt.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 124,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006655,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0,
+   "sodium": 124,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0.0,
+   "sodium": 124,
+   "caffeine": 0,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "banana",
+  "kind": "plain",
+  "text_reply": {
+   "is_food": true,
+   "name": "Banana",
+   "quantity": 1,
+   "unit": "medium banana",
+   "grams": 118,
+   "calories": 105,
+   "protein": 1.3,
+   "fat": 0.3,
+   "carbs": 27.0,
+   "needs_lookup": false,
+   "assumption": "Assumed one medium raw banana (118g).",
+   "match": null,
+   "fiber_g": 3.1,
+   "sodium_mg": 1,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006596,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 3.1,
+   "sodium": 1,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 3.1,
+   "sodium": 1,
+   "caffeine": 0,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "cup of oatmeal",
+  "kind": "plain",
+  "text_reply": {
+   "is_food": true,
+   "name": "Oatmeal",
+   "quantity": 1,
+   "unit": "cup",
+   "grams": 234,
+   "calories": 166,
+   "protein": 6,
+   "fat": 3,
+   "carbs": 28,
+   "needs_lookup": false,
+   "assumption": "Assumed cooked plain rolled oats made with water.",
+   "match": null,
+   "fiber_g": 4,
+   "sodium_mg": 2,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006352,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 4,
+   "sodium": 2,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 4.0,
+   "sodium": 9.4,
+   "caffeine": 0,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "cup of white rice",
+  "kind": "plain",
+  "text_reply": {
+   "is_food": true,
+   "name": "White rice",
+   "quantity": 1,
+   "unit": "cup",
+   "grams": 158.0,
+   "calories": 205.0,
+   "protein": 4.2,
+   "fat": 0.4,
+   "carbs": 44.5,
+   "needs_lookup": false,
+   "assumption": "Assumed cooked long-grain white rice.",
+   "match": null,
+   "fiber_g": 0.6,
+   "sodium_mg": 0.0,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006655,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0.6,
+   "sodium": 0.0,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0.6,
+   "sodium": 1.6,
+   "caffeine": 0,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "6 oz grilled chicken breast",
+  "kind": "plain",
+  "text_reply": {
+   "is_food": true,
+   "name": "Grilled Chicken Breast",
+   "quantity": 6,
+   "unit": "oz",
+   "grams": 170,
+   "calories": 265,
+   "protein": 50,
+   "fat": 5.5,
+   "carbs": 0,
+   "needs_lookup": false,
+   "assumption": "Assumed skinless chicken breast grilled with minimal oil.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 120,
+   "caffeine_mg": null,
+   "alcohol_drinks": null
+  },
+  "cost": 0.0006483,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0,
+   "sodium": 120,
+   "caffeine": null,
+   "alcohol": null
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "wrong",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 88.4,
+   "caffeine": 0,
+   "alcohol": 0
+  }
+ },
+ {
+  "line": "bud light",
+  "kind": "alcohol",
+  "text_reply": {
+   "is_food": true,
+   "name": "Bud Light",
+   "quantity": 1,
+   "unit": "bottle",
+   "grams": 355.0,
+   "calories": 110,
+   "protein": 0.9,
+   "fat": 0.0,
+   "carbs": 6.6,
+   "needs_lookup": true,
+   "assumption": "Assumed one standard 12 oz bottle at 4.2% ABV.",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 10.0,
+   "caffeine_mg": null,
+   "alcohol_drinks": 1.0
+  },
+  "cost": 0.0090793,
+  "error": null,
+  "path": "text (lookup found nothing)",
+  "lookup_reply": {
+   "is_food": true,
+   "found": true,
+   "product": "Bud Light",
+   "source_url": "https://www.budlight.com/beers/budlight",
+   "name": "Bud Light beer",
+   "quantity": 12,
+   "unit": "fl oz",
+   "grams": null,
+   "calories": 110,
+   "protein": null,
+   "fat": 0,
+   "carbs": 6.6,
+   "assumption": "Nutrition facts are sourced from [budlight.com](https://www.budlight.com/beers/budlight) per 12 fl oz serving.",
+   "fiber_g": null,
+   "sodium_mg": null,
+   "caffeine_mg": null,
+   "alcohol_drinks": 0.6
+  },
+  "lookup_error": null,
+  "final": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": null,
+   "alcohol": 1.0
+  },
+  "grades": {
+   "fiber": "n/a",
+   "sodium": "n/a",
+   "caffeine": "n/a",
+   "alcohol": "wrong"
+  },
+  "truth": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": null,
+   "alcohol": 0.84
+  }
+ },
+ {
+  "line": "guinness",
+  "kind": "alcohol",
+  "text_reply": {
+   "is_food": true,
+   "name": "Guinness",
+   "quantity": 1,
+   "unit": "pint",
+   "grams": 568,
+   "calories": 125,
+   "protein": 1,
+   "fat": 0,
+   "carbs": 10,
+   "needs_lookup": false,
+   "assumption": "Assumed one imperial pint (568 ml) of Guinness Draught at 4.2% ABV.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 20,
+   "caffeine_mg": null,
+   "alcohol_drinks": 1.1
+  },
+  "cost": 0.0006749,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0,
+   "sodium": 20,
+   "caffeine": null,
+   "alcohol": 1.1
+  },
+  "grades": {
+   "fiber": "unverifiable",
+   "sodium": "unverifiable",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": null,
+   "alcohol": 1.04
+  }
+ },
+ {
+  "line": "glass of red wine",
+  "kind": "alcohol",
+  "text_reply": {
+   "is_food": true,
+   "name": "Red wine",
+   "quantity": 1,
+   "unit": "glass",
+   "grams": 150,
+   "calories": 125,
+   "protein": 0.1,
+   "fat": 0.0,
+   "carbs": 3.8,
+   "needs_lookup": false,
+   "assumption": "Assumed one standard 5 oz (150 ml) glass of red wine at 12% ABV.",
+   "match": null,
+   "fiber_g": 0.0,
+   "sodium_mg": 5,
+   "caffeine_mg": null,
+   "alcohol_drinks": 1.0
+  },
+  "cost": 0.000608,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0.0,
+   "sodium": 5,
+   "caffeine": null,
+   "alcohol": 1.0
+  },
+  "grades": {
+   "fiber": "unverifiable",
+   "sodium": "unverifiable",
+   "caffeine": "n/a",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": null,
+   "sodium": null,
+   "caffeine": null,
+   "alcohol": 1.13
+  }
+ },
+ {
+  "line": "shot of vodka",
+  "kind": "alcohol",
+  "text_reply": {
+   "is_food": true,
+   "name": "Shot of vodka",
+   "quantity": 1,
+   "unit": "shot",
+   "grams": 44,
+   "calories": 97,
+   "protein": 0,
+   "fat": 0,
+   "carbs": 0,
+   "needs_lookup": false,
+   "assumption": "Assumed a standard 1.5 oz (44 ml) shot of 80-proof (40%) vodka.",
+   "match": null,
+   "fiber_g": 0,
+   "sodium_mg": 0,
+   "caffeine_mg": null,
+   "alcohol_drinks": 1.0
+  },
+  "cost": 0.0006777,
+  "error": null,
+  "path": "text",
+  "final": {
+   "fiber": 0,
+   "sodium": 0,
+   "caffeine": null,
+   "alcohol": 1.0
+  },
+  "grades": {
+   "fiber": "right",
+   "sodium": "right",
+   "caffeine": "right",
+   "alcohol": "right"
+  },
+  "truth": {
+   "fiber": 0,
+   "sodium": 0,
+   "caffeine": 0,
+   "alcohol": 1.0
+  }
+ }
+]
