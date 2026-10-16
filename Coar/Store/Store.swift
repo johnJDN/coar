@@ -362,4 +362,9 @@ extension WorkoutExercise: ModifiedAtStamped {}
 extension LoggedSet: ModifiedAtStamped {}
 extension BodyWeight: ModifiedAtStamped {}
 extension GoalWeight: ModifiedAtStamped {}
+extension Profile: ModifiedAtStamped {}
+extension DayMood: ModifiedAtStamped {}
+extension DayPlace: ModifiedAtStamped {}
+extension JournalEntry: ModifiedAtStamped {}
+extension JournalEvent: ModifiedAtStamped {}
 extension ProgressPhoto: ModifiedAtStamped {}

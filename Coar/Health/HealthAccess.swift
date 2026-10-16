@@ -192,6 +192,7 @@ extension HealthKitAccess {
             HKQuantityType(.respiratoryRate),
             HKQuantityType(.oxygenSaturation),
             HKQuantityType(.vo2Max),
+            HKQuantityType(.appleSleepingWristTemperature),
         ]
         if #available(iOS 27.0, *) {
             types.insert(HKQuantityType(.heartRateVariabilityRMSSD))
@@ -221,10 +222,13 @@ extension HealthKitAccess {
         if #available(iOS 27.0, *) {
             kinds.append((.recoveryHRV, HKQuantityType(.heartRateVariabilityRMSSD), .secondUnit(with: .milli), 1))
         }
+        kinds.append((.wristTemperature, HKQuantityType(.appleSleepingWristTemperature), .degreeCelsius(), 1))
         var result: [VitalSample] = []
         for (vital, type, unit, scale) in kinds {
             for sample in try await quantitySamples(type, from: start, to: end) {
-                result.append(VitalSample(vital: vital, date: sample.startDate, value: sample.quantity.doubleValue(for: unit) * scale))
+                // A Night's wrist temperature spans the sleep: it belongs to the morning it ends.
+                let date = vital == .wristTemperature ? sample.endDate : sample.startDate
+                result.append(VitalSample(vital: vital, date: date, value: sample.quantity.doubleValue(for: unit) * scale))
             }
         }
         return result.sorted { $0.date < $1.date }
@@ -243,6 +247,42 @@ extension HealthKitAccess {
             sortDescriptors: [SortDescriptor(\.startDate)]
         )
         return try await descriptor.result(for: healthStore)
+    }
+}
+
+// MARK: - About me
+
+extension HealthKitAccess {
+
+    /// Its own prompt, shown when Settings fills About me from Health.
+    static let aboutMeReadTypes: Set<HKObjectType> = [
+        HKCharacteristicType(.dateOfBirth),
+        HKCharacteristicType(.biologicalSex),
+        HKQuantityType(.height),
+    ]
+
+    func aboutMe() async throws -> AboutMe {
+        guard HKHealthStore.isHealthDataAvailable() else { return AboutMe() }
+        if try await healthStore.statusForAuthorizationRequest(toShare: [], read: Self.aboutMeReadTypes) == .shouldRequest {
+            try await healthStore.requestAuthorization(toShare: [], read: Self.aboutMeReadTypes)
+        }
+        var me = AboutMe()
+        if let components = try? healthStore.dateOfBirthComponents() {
+            me.birthDate = Calendar.current.date(from: components)
+        }
+        switch (try? healthStore.biologicalSex())?.biologicalSex {
+        case .female: me.sex = .female
+        case .male: me.sex = .male
+        case .other: me.sex = .other
+        default: break
+        }
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(.height))],
+            sortDescriptors: [SortDescriptor(\.startDate, order: .reverse)],
+            limit: 1
+        )
+        me.heightCentimetres = try await descriptor.result(for: healthStore).first?.quantity.doubleValue(for: .meterUnit(with: .centi))
+        return me
     }
 }
 

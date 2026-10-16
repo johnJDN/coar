@@ -617,3 +617,18 @@ Report: `.scratch/typed-lines/report.md`.
 - [ ] "shared a large mcdonalds fries with my sister": about 250 cal, quantity 0.5. "most of a chipotle chicken burrito": about three quarters of the burrito.
 - [ ] "split a large pepperoni pizza with 2 friends": a third of a large pizza.
 - [ ] "eggs, toast and coffee" still becomes three lines.
+
+## Added after v1: The Day page and its context (2026-10-16)
+
+Spec: `.scratch/day-page/spec.md`. Needs the CloudKit schema deployed first (About me, mood, place, journal records).
+
+- [ ] Home: "How's today?" under the macros. Tap a face and a bolt count: after a beat the card leaves. Tomorrow it's back.
+- [ ] Home's top-left timeline button: the Day page. ‹ › move by day (› stops at today).
+- [ ] Day page header: "Show weather" asks for location once; then "your city · condition, high, low" with Apple's Weather mark. Mood and energy can be changed here.
+- [ ] Timeline: woke up, meals, workouts (Watch ones too, with calories and heart rate), the weigh-in, journal events ("Morning" when untimed), fell asleep. Tapping a meal opens it; a workout opens it; sleep opens the Sleep page.
+- [ ] Summary: calories against target, habits done, steps, sleep score.
+- [ ] Settings → About me → Fill from Apple Health: birthday, sex, height fill in (only empty ones). Edit any.
+- [ ] Settings → Journal → Choose export folder → iCloud Drive → Coar. "N entries read from the last 30 days" after a minute or two. The Day pages from the last month show their events; older Days with an entry show its city and weather.
+- [ ] Export again from the Mac after writing tonight's entry, open Coar: only the new entry is read.
+- [ ] Sleep page: Wrist temperature on the Overnight card (allow it in the Health prompt again), with its own chart.
+- [ ] Judgement calls: journal text never stored, only events; journal meals hidden on days with a food log; location asked only from "Show weather".

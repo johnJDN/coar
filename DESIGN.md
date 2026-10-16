@@ -232,8 +232,9 @@ Charts never show a legend when color already maps to a label on screen.
 - **Don't** draw borders, dividers, or cell separators (`showsSeparators = false` on list layouts; `separatorStyle = .none` on any table view).
 - **Don't** use pure `#000000` or `#FFFFFF` for backgrounds.
 - **Don't** put more than one hero number on a Home card.
-- **Don't** add weather, stress, biology, referrals, paywalls, or any card that is not
-  one of: sleep, steps, weight, macros, habits, training.
+- **Don't** add stress, biology, referrals, paywalls, or any card that is not one of:
+  sleep, steps, weight, macros, habits, training, or the Day page's context (weather, mood,
+  journal).
 - **Don't** rebuild the tab bar, navigation bar, or sheets.
 
 ## 11. Screen map (settled 2026-09-13)
@@ -250,6 +251,20 @@ Charts never show a legend when color already maps to a label on screen.
   for Apple Health while it was never asked), Weight (Trend Weight, unit as caption; switches
   to Train and pushes Body Weight), and Training (days with a Workout this week, against the
   weekly workouts Habit's target when there is one; switches to Train).
+- **Day page** (pushed from Home's `calendar.day.timeline.left` button, top left; ‹ › in
+  the bar move a Day, never past today) — a header card: the Day's place and weather (the
+  condition's SF Symbol in `accentBlue`, "Portland, OR · Light rain, high 61°, low 48°";
+  Apple's Weather mark linking to its legal page, as WeatherKit requires; "Show weather"
+  asks for location when today has none) and the mood and energy check-in; a Timeline card,
+  one `DayItemRow` per thing in time order: the time in a fixed 76pt column (`textTertiary`
+  "Morning" for an approximate one), the thing's icon in its tint, title and detail; meals,
+  workouts and sleep open; journal events in a neutral tint (food amber, exercise green,
+  social lavender); then a Summary card of `MetricRow`s (calories against the Target, habits
+  done, steps, Sleep Score).
+- **Mood and energy check-in** — five faces (the pick full, the rest dimmed) and five bolts
+  in `accentAmber` filled to the pick, with the word for the pick in `textTertiary`. On
+  Home as "How's today?" under the macros until both are set, then it steps aside; on the
+  Day page always.
 - **Habits** — a system segmented control (`UISegmentedControl`), Check in / Tracked,
   pinned under the title (+ on Tracked starts a tracked habit); then one card per habit
   of that tab: emoji, name, `CheckToggle` or amount, streak as the hero number, 7-row

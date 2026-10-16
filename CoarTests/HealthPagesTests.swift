@@ -208,4 +208,14 @@ final class HealthPagesTests: XCTestCase {
         XCTAssertTrue(Vital.bloodOxygen.isOutside(93, usual: 96))
         XCTAssertTrue(Vital.respiratoryRate.isOutside(16, usual: 14.5))
     }
+
+    func test_wristTemperature_isTheWakeDaysValue_andFlagsHalfADegreeAboveUsual() {
+        let night = SleepNightDetail(timeAsleep: 7 * 3_600, fellAsleep: at(sep12, 23), woke: at(sep13, 6), stages: [:])
+        let values = OvernightVitals.values(nights: [sep13: night], samples: [VitalSample(vital: .wristTemperature, date: at(sep13, 6, 30), value: 35.9)], calendar: Self.calendar)
+
+        XCTAssertEqual(values[sep13]?[.wristTemperature], 35.9, "dated when the Night ended, just after waking")
+        XCTAssertTrue(Vital.wristTemperature.isOutside(36.0, usual: 35.4))
+        XCTAssertFalse(Vital.wristTemperature.isOutside(35.8, usual: 35.4))
+        XCTAssertFalse(Vital.wristTemperature.isOutside(34.9, usual: 35.4), "cooler isn't a warning")
+    }
 }

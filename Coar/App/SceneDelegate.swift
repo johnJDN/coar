@@ -13,4 +13,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         self.window = window
     }
+
+    /// Each time Coar comes forward: today's place (once a Day) and new journal entries.
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        Task {
+            await appDelegate.dependencies.places?.recordToday()
+            await appDelegate.dependencies.journal?.run()
+        }
+    }
 }

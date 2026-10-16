@@ -24,7 +24,9 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             target: Self.targetToday(in: dependencies.store),
             massUnit: dependencies.preferences.massUnit,
             healthStatus: nil,
-            aiKey: dependencies.openRouter.keys.lastFour.map { .saved(lastFour: $0, spend: nil, problem: nil) } ?? .missing(problem: nil)
+            aiKey: dependencies.openRouter.keys.lastFour.map { .saved(lastFour: $0, spend: nil, problem: nil) } ?? .missing(problem: nil),
+            aboutMe: (try? dependencies.store.aboutMe()) ?? AboutMe(),
+            journal: dependencies.journal?.status
         )
         super.init(rootView: SettingsForm(model: model, onTargetsChanged: { _ in }, onChangeMassUnit: { _ in }, onConnectHealth: {}))
         title = "Settings"
@@ -79,6 +81,50 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
     private func changeMassUnit(_ unit: MassUnit) {
         dependencies.preferences.massUnit = unit
         model.massUnit = unit
+        render()
+    }
+
+    private func setAboutMe(_ aboutMe: AboutMe) {
+        do {
+            try dependencies.store.setAboutMe(aboutMe)
+            model.aboutMe = aboutMe
+        } catch {
+            Self.logger.error("Failed to save About me: \(error, privacy: .public)")
+        }
+        render()
+    }
+
+    /// Adds what Apple Health knows to the fields still empty.
+    private func fillAboutMe() {
+        Task {
+            do {
+                setAboutMe(model.aboutMe.filling(from: try await dependencies.healthReader.aboutMe()))
+            } catch {
+                Self.logger.error("Failed to read About me from Apple Health: \(error, privacy: .public)")
+            }
+        }
+    }
+
+    private func chooseJournalFolder() {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
+        picker.delegate = self
+        picker.directoryURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)
+        present(picker, animated: true)
+    }
+
+    private func readJournal(folder: URL? = nil) {
+        guard let journal = dependencies.journal else { return }
+        Task {
+            if let folder {
+                await journal.setFolder(folder)
+            } else {
+                await journal.run(force: true)
+            }
+            model.journal = journal.status
+            render()
+        }
+        // Show "checking" right away; the pass can take a minute or two.
+        model.journal?.problem = nil
         render()
     }
 
@@ -155,7 +201,7 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
     // MARK: - Rendering
 
     private func render() {
-        rootView = SettingsForm(
+        var form = SettingsForm(
             model: model,
             onTargetsChanged: { [weak self] in self?.pendingTargets = $0 },
             onChangeMassUnit: { [weak self] in self?.changeMassUnit($0) },
@@ -163,6 +209,11 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             onSaveKey: { [weak self] in self?.saveKey($0) },
             onRemoveKey: { [weak self] in self?.removeKey() }
         )
+        form.onAboutMeChanged = { [weak self] in self?.setAboutMe($0) }
+        form.onFillAboutMe = { [weak self] in self?.fillAboutMe() }
+        form.onChooseJournalFolder = { [weak self] in self?.chooseJournalFolder() }
+        form.onReadJournal = { [weak self] in self?.readJournal() }
+        rootView = form
     }
 
     private static func targetToday(in store: Store) -> Macros? {
@@ -172,5 +223,12 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             logger.error("Failed to read Target: \(error, privacy: .public)")
             return nil
         }
+    }
+}
+
+extension SettingsViewController: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let folder = urls.first else { return }
+        readJournal(folder: folder)
     }
 }

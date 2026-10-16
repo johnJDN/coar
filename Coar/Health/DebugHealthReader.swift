@@ -36,6 +36,10 @@ final class DebugHealthReader: HealthReader {
 
     func vitalsAccessNeeded() async -> Bool { false }
 
+    func aboutMe() async throws -> AboutMe {
+        AboutMe(birthDate: Calendar.current.date(from: DateComponents(year: 2002, month: 3, day: 14)), sex: .male, heightCentimetres: 175.3)
+    }
+
     func requestVitalsAccess() async throws {}
 
     /// A few readings each night (every 90 minutes from 1 AM) and a resting heart rate each
@@ -54,6 +58,7 @@ final class DebugHealthReader: HealthReader {
                 result.append(VitalSample(vital: .bloodOxygen, date: at, value: 95.5 + noise(day, 23) * 2.5))
             }
             result.append(VitalSample(vital: .restingHeartRate, date: midnight.addingTimeInterval(9 * 3_600), value: 50 + noise(day, 24) * 4 + strain * 6))
+            result.append(VitalSample(vital: .wristTemperature, date: midnight.addingTimeInterval(7 * 3_600), value: 35.4 + noise(day, 25) * 0.4 + strain * 0.7))
             day = day.advanced(by: 1)
         }
         return result.filter { $0.date >= start && $0.date <= end }

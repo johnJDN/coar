@@ -18,4 +18,10 @@ struct AppDependencies {
     let openRouter: OpenRouterClient
     /// Fills in the Describe tab's lines (`.scratch/ai-food-logging/`).
     let foodEstimator: FoodEstimator
+    /// A Day's weather (`.scratch/day-page/`).
+    var weather: WeatherProviding = NoWeather()
+    /// Records where the user is, once a Day; nil in tests.
+    var places: PlaceRecorder? = nil
+    /// Reads Apple Journal exports; nil in tests.
+    var journal: JournalImporter? = nil
 }

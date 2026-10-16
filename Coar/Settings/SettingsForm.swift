@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// The Settings sheet's content (ADR 0001: SwiftUI leaf, values in, closures out). Exactly
-/// four things: macro Targets, the weight unit, Apple Health access, and the OpenRouter key
-/// (ADR 0007). No iCloud toggle, no name field. There is no Save button for the Targets:
+/// The Settings sheet's content (ADR 0001: SwiftUI leaf, values in, closures out): macro
+/// Targets, About me, the weight unit, Apple Health access, the journal folder, and the
+/// OpenRouter key (ADR 0007). No iCloud toggle, no name field. There is no Save button for the Targets:
 /// every edit reports the draft, and the host saves it when the sheet closes, as iOS
 /// Settings does. The key has its own Save, because it is checked with OpenRouter first.
 struct SettingsForm: View {
@@ -14,6 +14,9 @@ struct SettingsForm: View {
         /// Nil while the status is being read.
         var healthStatus: HealthAccessStatus?
         var aiKey: AIKey = .missing(problem: nil)
+        var aboutMe = AboutMe()
+        /// Nil where there's no journal import (tests).
+        var journal: JournalImporter.Status?
     }
 
     /// The OpenRouter key's rows. The key itself never reaches the form after it is typed.
@@ -33,6 +36,10 @@ struct SettingsForm: View {
     let onConnectHealth: () -> Void
     let onSaveKey: (String) -> Void
     let onRemoveKey: () -> Void
+    var onAboutMeChanged: (AboutMe) -> Void = { _ in }
+    var onFillAboutMe: () -> Void = {}
+    var onChooseJournalFolder: () -> Void = {}
+    var onReadJournal: () -> Void = {}
 
     /// The key as it is being pasted; cleared once it is sent to be checked.
     @State private var typedKey = ""
@@ -80,6 +87,8 @@ struct SettingsForm: View {
                 Text("Saved when you close Settings. Changes apply from today; past days keep the targets that applied then. Leave a macro empty for no target.")
             }
 
+            aboutMeSection
+
             Section("Units") {
                 HStack(spacing: Metrics.spaceInner) {
                     IconTile(systemImage: "scalemass.fill", tint: Color.accentTeal)
@@ -113,7 +122,11 @@ struct SettingsForm: View {
             } header: {
                 Text("Apple Health")
             } footer: {
-                Text("Coar reads sleep and steps and writes Body Weight. Change access any time in the Health app.")
+                Text("Coar reads sleep, steps, workouts, overnight heart readings, and About me, and writes Body Weight. Change access any time in the Health app.")
+            }
+
+            if let journal = model.journal {
+                journalSection(journal)
             }
 
             Section {
@@ -130,6 +143,134 @@ struct SettingsForm: View {
         .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: fields) { _, fields in onTargetsChanged(Self.draft(from: fields)) }
+    }
+
+    // MARK: - Journal
+
+    private func journalSection(_ journal: JournalImporter.Status) -> some View {
+        Section {
+            HStack(spacing: Metrics.spaceInner) {
+                IconTile(systemImage: "book.closed.fill", tint: Color.accentLavender)
+                Text("Export folder").foregroundStyle(Color.textPrimary)
+                Spacer()
+                Text(journal.folderName ?? "Not chosen")
+                    .foregroundStyle(journal.folderName == nil ? Color.textTertiary : Color.textSecondary)
+            }
+            .formRow()
+            if journal.folderName != nil {
+                Text(Self.journalSummary(journal))
+                    .font(Font.label)
+                    .foregroundStyle(Color.textSecondary)
+                    .formRow()
+            }
+            if let problem = journal.problem {
+                problemRow(problem)
+            }
+            Button(journal.folderName == nil ? "Choose export folder" : "Choose another folder", action: onChooseJournalFolder)
+                .formRow()
+            if journal.folderName != nil {
+                Button("Read now", action: onReadJournal)
+                    .formRow()
+            }
+        } header: {
+            Text("Journal")
+        } footer: {
+            Text("Export from Journal on your Mac (File → Export) into this iCloud Drive folder whenever you like; each export can replace the last. Coar reads entries from the last \(JournalImporter.days) days on this iPhone, with Apple Intelligence, and keeps only the events for the Day page, not what you wrote.")
+        }
+    }
+
+    static func journalSummary(_ status: JournalImporter.Status) -> String {
+        var parts = ["\(status.read) \(status.read == 1 ? "entry" : "entries") read from the last \(JournalImporter.days) days"]
+        if status.waiting > 0 { parts.append("\(status.waiting) waiting") }
+        if let checked = status.lastChecked { parts.append("checked \(checked.formatted(.relative(presentation: .named)))") }
+        return parts.joined(separator: " · ")
+    }
+
+    // MARK: - About me
+
+    private var aboutMeSection: some View {
+        Section {
+            HStack(spacing: Metrics.spaceInner) {
+                IconTile(systemImage: "person.fill", tint: Color.accentBlue)
+                if let birth = model.aboutMe.birthDate {
+                    DatePicker("Birthday", selection: Binding(get: { birth }, set: { change { $0.birthDate = $1 }($0) }), in: ...Date(), displayedComponents: .date)
+                        .foregroundStyle(Color.textPrimary)
+                } else {
+                    Text("Birthday").foregroundStyle(Color.textPrimary)
+                    Spacer()
+                    Button("Add") { change { me, _ in me.birthDate = Calendar.current.date(byAdding: .year, value: -30, to: Date()) }(()) }
+                }
+            }
+            .formRow()
+            HStack(spacing: Metrics.spaceInner) {
+                IconTile(systemImage: "figure.stand", tint: Color.accentBlue)
+                Picker("Sex", selection: Binding(get: { model.aboutMe.sex }, set: { change { $0.sex = $1 }($0) })) {
+                    Text("Not set").tag(AboutMe.Sex?.none)
+                    ForEach(AboutMe.Sex.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
+                }
+                .foregroundStyle(Color.textPrimary)
+            }
+            .formRow()
+            HStack(spacing: Metrics.spaceInner) {
+                IconTile(systemImage: "ruler.fill", tint: Color.accentBlue)
+                Text("Height").foregroundStyle(Color.textPrimary)
+                Spacer()
+                heightFields
+            }
+            .formRow()
+            Button("Fill from Apple Health", action: onFillAboutMe)
+                .formRow()
+        } header: {
+            Text("About me")
+        } footer: {
+            Text(aboutMeFooter)
+        }
+    }
+
+    private var aboutMeFooter: String {
+        let age = model.aboutMe.age().map { "\($0) years old. " } ?? ""
+        return age + "Used to estimate what you burn, for the coach and for maintenance calories. Filling from Apple Health only adds what's missing."
+    }
+
+    /// Feet and inches with pounds, centimetres with kilograms.
+    @ViewBuilder private var heightFields: some View {
+        let centimetres = model.aboutMe.heightCentimetres
+        if model.massUnit == .pounds {
+            let inchesTotal = centimetres.map { $0 / 2.54 }
+            let feet = inchesTotal.map { Double(Int($0 / 12)) }
+            let inches = inchesTotal.map { ($0 - (feet ?? 0) * 12).rounded() }
+            HStack(spacing: 4) {
+                numberField("ft", value: feet) { newFeet in change { me, _ in me.heightCentimetres = ((newFeet ?? 0) * 12 + (inches ?? 0)) * 2.54 }(()) }
+                Text("ft").foregroundStyle(Color.textSecondary).fixedSize()
+                numberField("in", value: inches) { newInches in change { me, _ in me.heightCentimetres = ((feet ?? 0) * 12 + (newInches ?? 0)) * 2.54 }(()) }
+                Text("in").foregroundStyle(Color.textSecondary).fixedSize()
+            }
+        } else {
+            HStack(spacing: 4) {
+                numberField("cm", value: centimetres.map { $0.rounded() }) { value in change { me, _ in me.heightCentimetres = value }(()) }
+                Text("cm").foregroundStyle(Color.textSecondary).fixedSize()
+            }
+        }
+    }
+
+    private func numberField(_ placeholder: String, value: Double?, set: @escaping (Double?) -> Void) -> some View {
+        TextField("—", value: Binding(get: { value }, set: set), format: .number)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.trailing)
+            .font(Font.metricNumber)
+            .foregroundStyle(Color.accentBlue)
+            .frame(minWidth: 28)
+            .fixedSize()
+            .accessibilityLabel(placeholder)
+    }
+
+    /// Applies one change to About me and reports the whole of it.
+    private func change<Value>(_ apply: @escaping (inout AboutMe, Value) -> Void) -> (Value) -> Void {
+        { value in
+            var me = model.aboutMe
+            apply(&me, value)
+            onAboutMeChanged(me)
+        }
     }
 
     private var healthStatusText: String {

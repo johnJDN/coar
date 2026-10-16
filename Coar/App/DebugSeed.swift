@@ -50,6 +50,20 @@ enum DebugSeed {
                 MealComponentDraft(foodItemID: rice.id, servingID: rice.servings[0].id, quantity: 1),
             ])
 
+            // A week of places, and a journal entry for yesterday and today, for the Day page.
+            for offset in -6...0 {
+                try store.setPlace(on: today.advanced(by: offset), latitude: 45.52, longitude: -122.68, name: "Portland, OR", fromJournal: false)
+            }
+            for (offset, file) in [(-1, "yesterday.html"), (0, "today.html")] {
+                let day = today.advanced(by: offset)
+                try store.saveJournalRead(JournalEntryRead(fileName: file, day: day, textHash: file), events: [
+                    JournalEventRecord(day: day, title: "Worked at the office", category: .work, minuteOfDay: nil, partOfDay: .morning, order: 0),
+                    JournalEventRecord(day: day, title: "Lunch with Neil", category: .social, minuteOfDay: 12 * 60 + 30, partOfDay: nil, order: 1),
+                    JournalEventRecord(day: day, title: "Blazers preseason game", category: .social, minuteOfDay: 19 * 60, partOfDay: nil, order: 2),
+                    JournalEventRecord(day: day, title: "Called Michelle", category: .social, minuteOfDay: nil, partOfDay: .night, order: 3),
+                ])
+            }
+
             // Four months of most-days weigh-ins drifting from 88 to 84 kg, with water swings.
             for offset in stride(from: -120, through: -1, by: 1) where offset % 7 != -3 && offset % 11 != -5 {
                 let swing = sin(Double(offset) * 1.7) * 0.6 + cos(Double(offset) * 0.6) * 0.3

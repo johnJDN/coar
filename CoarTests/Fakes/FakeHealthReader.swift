@@ -12,6 +12,7 @@ final class FakeHealthReader: HealthReader {
     var vitals: [VitalSample] = []
     var vo2Max: [DatedValue] = []
     var vitalsAsked = false
+    var healthAboutMe = AboutMe()
     var failure: Error?
     let calendar: Calendar
 
@@ -30,6 +31,8 @@ final class FakeHealthReader: HealthReader {
     }
 
     func vitalsAccessNeeded() async -> Bool { !vitalsAsked }
+
+    func aboutMe() async throws -> AboutMe { healthAboutMe }
 
     func requestVitalsAccess() async throws { vitalsAsked = true }
 

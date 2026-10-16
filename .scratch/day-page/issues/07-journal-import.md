@@ -2,7 +2,7 @@
 
 **Spec:** `../spec.md`
 
-**Status:** ready-for-agent
+**Status:** done
 
 Option 1 in `../spec.md`: a folder John picks once (security-scoped bookmark, device-local; iCloud Drive files may need downloading first); on each open, read the export folder, read entries not yet seen, split each into events on device (`FoundationModels`), store the events (not the text). Only entries from the last 30 days; older ones are skipped for now. Blocked on a real export to read its format.
 
@@ -40,3 +40,12 @@ Option 1 in `../spec.md`: a folder John picks once (security-scoped bookmark, de
   Day rule is: a weekday title wins, as the date within one day of the header that falls on
   it (a mismatch means the date wasn't moved back); with no weekday title, the header date.
   Ignore the file name's date and the entry's time of writing.
+- 2026-10-16 (agent): Done. `JournalExport` (parser), `OnDeviceJournalReader` (Foundation
+  Models, guided generation), `JournalImporter` (bookmark, iCloud download, last 30 Days,
+  skip unchanged by hash, re-read edited), Settings → Journal. Tried on John's real export
+  on the Mac: all 2,413 entries parse, 2,241 with a place (city names right); the 29
+  last-month entries read in 107 s with no failures, ~7 events each. Instructions went through
+  three rounds: examples in them were copied into other days, so they have none now.
+  Left as deliberate: titles are sometimes long or lower-case lines (capitalised in code);
+  categories are rough; few times (John rarely writes them); the larger Private Cloud
+  Compute model is the step up if needed.

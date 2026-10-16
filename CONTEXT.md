@@ -190,6 +190,10 @@ The Body Weight the user is working toward; one at a time. Trend Weight, not the
 Body Weight, is measured against it.
 _Avoid_: Target weight, goal (unqualified), Target (that is the macros')
 
+**About me**:
+The user's birthday, sex, and height, kept in Coar and filled from Apple Health on request.
+_Avoid_: Profile (as a user-facing word), bio
+
 **Progress Photo**:
 A photo of the user's body taken on a date to compare against later ones.
 _Avoid_: Photo, progress pic, body photo
@@ -221,6 +225,20 @@ A Night's resting heart rate (the Day's), HRV, Recovery HRV, breathing rate, or 
 oxygen (the average of what the Watch measured during the main sleep), set against the
 user's usual: the average of up to 30 earlier Nights, once there are 5.
 _Avoid_: Vitals (Apple's app name), biometrics, recovery score
+
+**Mood and energy**:
+How a Day felt, each from 1 to 5, set once a Day or changed later. Not Apple's State of Mind.
+_Avoid_: Check-in (that is a Habit's), rating, wellbeing score
+
+**Place**:
+Where the user was on a Day: a rounded location and its city, recorded by the iPhone once a
+Day, or read from a journal entry's "Written at". The device's wins.
+_Avoid_: Location history, check-in
+
+**Journal event**:
+One thing that happened, read on device from an Apple Journal entry: a short title, a
+category, and a time or part of the Day. The entry's text isn't kept.
+_Avoid_: Journal entry (the source), note, activity (that is a Workout's)
 
 **Steps**:
 The step count Apple Health holds for a Day, its own sum across sources.

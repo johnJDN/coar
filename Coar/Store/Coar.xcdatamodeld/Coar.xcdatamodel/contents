@@ -222,6 +222,47 @@
         <attribute name="kilograms" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
+    <!-- About me: one at a time, like GoalWeight. -->
+    <entity name="Profile" representedClassName="Profile" syncable="YES" codeGenerationType="class">
+        <attribute name="birthDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="heightCentimetres" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="sex" optional="YES" attributeType="String"/>
+    </entity>
+
+    <!-- The Day page's context (.scratch/day-page/). Day-keyed, one per Day where noted. -->
+    <entity name="DayMood" representedClassName="DayMood" syncable="YES" codeGenerationType="class">
+        <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="energy" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="mood" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="DayPlace" representedClassName="DayPlace" syncable="YES" codeGenerationType="class">
+        <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="fromJournal" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="JournalEntry" representedClassName="JournalEntry" syncable="YES" codeGenerationType="class">
+        <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="fileName" optional="YES" attributeType="String"/>
+        <attribute name="readID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="textHash" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="JournalEvent" representedClassName="JournalEvent" syncable="YES" codeGenerationType="class">
+        <attribute name="category" optional="YES" attributeType="String"/>
+        <attribute name="day" optional="YES" attributeType="String"/>
+        <attribute name="fileName" optional="YES" attributeType="String"/>
+        <attribute name="minuteOfDay" optional="YES" attributeType="Integer 32" usesScalarValueType="NO"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="partOfDay" optional="YES" attributeType="String"/>
+        <attribute name="readID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+    </entity>
     <entity name="ProgressPhoto" representedClassName="ProgressPhoto" syncable="YES" codeGenerationType="class">
         <attribute name="caption" optional="YES" attributeType="String"/>
         <attribute name="day" optional="YES" attributeType="String"/>

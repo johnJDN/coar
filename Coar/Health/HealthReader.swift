@@ -42,6 +42,8 @@ protocol HealthReader: AnyObject {
     func vitalSamples(from start: Date, to end: Date) async throws -> [VitalSample]
     /// VO2 max estimates between two instants, oldest first.
     func cardioFitness(from start: Date, to end: Date) async throws -> [DatedValue]
+    /// Birthday, sex, and the latest height Health holds, asking first if it never has.
+    func aboutMe() async throws -> AboutMe
 }
 
 extension HealthReader {

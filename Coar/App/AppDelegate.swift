@@ -10,8 +10,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     let dependencies: AppDependencies = {
         let health = HealthKitAccess()
         let openRouter = OpenRouterClient(keys: keyStore())
-        return AppDependencies(
-            store: isTestHost ? Store.inMemory() : AppDelegate.liveStore(),
+        let store = isTestHost ? Store.inMemory() : AppDelegate.liveStore()
+        var dependencies = AppDependencies(
+            store: store,
             preferences: Preferences(),
             health: health,
             healthReader: healthReader(health),
@@ -21,7 +22,19 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             openRouter: openRouter,
             foodEstimator: foodEstimator(openRouter)
         )
+        dependencies.weather = weatherProvider()
+        dependencies.places = isTestHost ? nil : PlaceRecorder(store: store)
+        dependencies.journal = isTestHost ? nil : JournalImporter(store: store, reader: OnDeviceJournalReader())
+        return dependencies
     }()
+
+    /// WeatherKit, or canned weather while a debug build fakes Health.
+    private static func weatherProvider() -> WeatherProviding {
+        #if DEBUG
+        if DebugHealthReader.isRequested { return DebugWeather() }
+        #endif
+        return WeatherKitProvider()
+    }
 
     /// Apple Health's sleep and steps, or canned ones while a debug build looks at their pages.
     private static func healthReader(_ health: HealthKitAccess) -> HealthReader {

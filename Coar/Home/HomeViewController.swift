@@ -1,8 +1,9 @@
 import UIKit
 import os
 
-/// Home (DESIGN.md §11): today's date as the title with a greeting under it, then the
-/// macros card, the habits card, and a row of four small tiles: Sleep, Steps, Weight, and
+/// Home (DESIGN.md §11): today's date as the title with a greeting under it and a button to
+/// the Day page beside it, then the macros card, "How's today?" until mood and energy are
+/// both set, the habits card, and a row of four small tiles: Sleep, Steps, Weight, and
 /// Training. Everything is one `HomeSnapshot` read through the façade and Apple Health on
 /// every appearance, after every check-in from here, and when the unit changes; nothing is
 /// stored. Home is a launcher: the macros card opens Food on today, the habits card opens
@@ -16,6 +17,7 @@ final class HomeViewController: ScreenViewController {
     private let dependencies: AppDependencies
     private let habitsCard = HabitsCardControl()
     private let macrosCard = MacrosCardControl()
+    private let moodCard = MoodCardView()
     private let sleepTile = HomeTileControl(name: HealthMetric.sleep.title, systemImage: "moon.fill", accent: HealthMetric.sleep.uiAccent)
     private let stepsTile = HomeTileControl(name: HealthMetric.steps.title, systemImage: HealthMetric.steps.systemImage, accent: HealthMetric.steps.uiAccent)
     private let bodyWeightTile = HomeTileControl(name: "Weight", systemImage: "scalemass.fill", accent: UIColor.accentTeal)
@@ -45,6 +47,14 @@ final class HomeViewController: ScreenViewController {
         )
         avatar.accessibilityLabel = "Settings"
         navigationItem.rightBarButtonItem = avatar
+        let day = UIBarButtonItem(
+            image: UIImage(systemName: "calendar.day.timeline.left"),
+            primaryAction: UIAction { [weak self] _ in self?.showDay() }
+        )
+        day.accessibilityLabel = "Today's timeline"
+        navigationItem.leftBarButtonItem = day
+        moodCard.onMood = { [weak self] in self?.setMood(mood: $0) }
+        moodCard.onEnergy = { [weak self] in self?.setMood(energy: $0) }
 
         habitsCard.onToggle = { [weak self] id, done in self?.setCheckedIn(id, done: done) }
         habitsCard.onAmountTap = { [weak self] id in self?.presentAmount(id) }
@@ -60,6 +70,7 @@ final class HomeViewController: ScreenViewController {
         trainingTile.addAction(UIAction { [weak self] _ in self?.openTrain() }, for: .touchUpInside)
 
         contentStack.addArrangedSubview(macrosCard)
+        contentStack.addArrangedSubview(moodCard)
         contentStack.addArrangedSubview(habitsCard)
         contentStack.addArrangedSubview(Self.tileRow([sleepTile, stepsTile, bodyWeightTile, trainingTile]))
 
@@ -127,6 +138,34 @@ final class HomeViewController: ScreenViewController {
         stepsTile.render(snapshot.steps)
         bodyWeightTile.render(snapshot.bodyWeight)
         trainingTile.render(snapshot.training)
+        renderMood()
+    }
+
+    /// The check-in stays until both are set for today, then steps aside.
+    private func renderMood() {
+        let record = (try? dependencies.store.mood(on: .today())) ?? nil
+        moodCard.render(record)
+        let done = record?.mood != nil && record?.energy != nil
+        guard moodCard.isHidden != done else { return }
+        UIView.animate(springDuration: 0.5, bounce: 0) {
+            self.moodCard.isHidden = done
+            self.moodCard.alpha = done ? 0 : 1
+            self.scrollView.layoutIfNeeded()
+        }
+    }
+
+    private func setMood(mood: Int? = nil, energy: Int? = nil) {
+        do {
+            try dependencies.store.setMood(on: .today(), mood: mood, energy: energy)
+        } catch {
+            Self.logger.error("Failed to save mood: \(error, privacy: .public)")
+        }
+        // Let the pick show before the card leaves.
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            renderMood()
+        }
+        moodCard.render((try? dependencies.store.mood(on: .today())) ?? nil)
     }
 
     // MARK: - Check-ins
@@ -183,6 +222,10 @@ final class HomeViewController: ScreenViewController {
         guard let navigation = root?.select(.train) else { return }
         navigation.popToRootViewController(animated: false)
         navigation.pushViewController(screen, animated: true)
+    }
+
+    private func showDay() {
+        navigationController?.pushViewController(DayViewController(dependencies: dependencies, day: .today()), animated: true)
     }
 
     private func showDetail(_ metric: HealthMetric) {

@@ -10,6 +10,8 @@ enum Vital: CaseIterable, Hashable {
     case hrv
     case respiratoryRate
     case bloodOxygen
+    /// Apple's sleeping wrist temperature, one a Night, kept in °C and shown in the locale's unit.
+    case wristTemperature
 
     var title: String {
         switch self {
@@ -18,6 +20,7 @@ enum Vital: CaseIterable, Hashable {
         case .hrv: return "HRV"
         case .respiratoryRate: return "Breathing rate"
         case .bloodOxygen: return "Blood oxygen"
+        case .wristTemperature: return "Wrist temperature"
         }
     }
 
@@ -27,6 +30,7 @@ enum Vital: CaseIterable, Hashable {
         case .recoveryHRV, .hrv: return "waveform.path.ecg"
         case .respiratoryRate: return "lungs.fill"
         case .bloodOxygen: return "drop.fill"
+        case .wristTemperature: return "thermometer.medium"
         }
     }
 
@@ -37,12 +41,25 @@ enum Vital: CaseIterable, Hashable {
         case .recoveryHRV, .hrv: return "\(Int(value.rounded())) ms"
         case .respiratoryRate: return "\(value.formatted(.number.precision(.fractionLength(1)))) /min"
         case .bloodOxygen: return "\(Int(value.rounded()))%"
+        case .wristTemperature: return Self.temperature(value) + (Self.usesFahrenheit ? "°F" : "°C")
         }
     }
 
     /// The bare number, for "usual 48".
     func number(_ value: Double) -> String {
-        self == .respiratoryRate ? value.formatted(.number.precision(.fractionLength(1))) : "\(Int(value.rounded()))"
+        switch self {
+        case .respiratoryRate: return value.formatted(.number.precision(.fractionLength(1)))
+        case .wristTemperature: return Self.temperature(value) + "°"
+        default: return "\(Int(value.rounded()))"
+        }
+    }
+
+    /// Fahrenheit where the locale measures in US units (John's), else Celsius.
+    static var usesFahrenheit: Bool { Locale.current.measurementSystem == .us }
+
+    /// °C to the shown unit, to two decimals: wrist temperature moves by tenths.
+    private static func temperature(_ celsius: Double) -> String {
+        (usesFahrenheit ? celsius * 9 / 5 + 32 : celsius).formatted(.number.precision(.fractionLength(2)))
     }
 
     /// Whether a value is outside the usual range, on the side that matters: a higher resting
@@ -54,16 +71,22 @@ enum Vital: CaseIterable, Hashable {
         case .recoveryHRV, .hrv: return value < usual * 0.8
         case .respiratoryRate: return value - usual > 1
         case .bloodOxygen: return usual - value > 2
+        case .wristTemperature: return value - usual > 0.5
         }
     }
 
     /// How an outside value reads in the summary: "higher", "lower".
     var outsideWord: String {
         switch self {
-        case .restingHeartRate, .respiratoryRate: return "higher"
+        case .restingHeartRate, .respiratoryRate, .wristTemperature: return "higher"
         case .recoveryHRV, .hrv, .bloodOxygen: return "lower"
         }
     }
+}
+
+extension Vital {
+    /// One value a Day rather than readings through the Night.
+    var isDaily: Bool { self == .restingHeartRate || self == .wristTemperature }
 }
 
 /// One reading from Apple Health, in the unit the page shows (blood oxygen as a percentage).
@@ -88,18 +111,18 @@ enum OvernightVitals {
     static let usualNights = 30
 
     /// Each Night's value per vital: the average of the readings taken during its main sleep
-    /// (`SleepNightDetail.fellAsleep` to `woke`). Resting heart rate is a daily value Apple
-    /// works out, so it's the one dated on the wake Day.
+    /// (`SleepNightDetail.fellAsleep` to `woke`). Resting heart rate and wrist temperature are
+    /// one value a Day that Apple works out, so they're the ones dated on the wake Day.
     static func values(nights: [Day: SleepNightDetail], samples: [VitalSample], calendar: Calendar) -> [Day: [Vital: Double]] {
         var result: [Day: [Vital: Double]] = [:]
         for (day, night) in nights {
-            let during = samples.filter { $0.vital != .restingHeartRate && $0.date >= night.fellAsleep && $0.date <= night.woke }
+            let during = samples.filter { !$0.vital.isDaily && $0.date >= night.fellAsleep && $0.date <= night.woke }
             for (vital, readings) in Dictionary(grouping: during, by: \.vital) {
                 result[day, default: [:]][vital] = readings.map(\.value).reduce(0, +) / Double(readings.count)
             }
         }
-        for sample in samples where sample.vital == .restingHeartRate {
-            result[Day(sample.date, in: calendar), default: [:]][.restingHeartRate] = sample.value
+        for sample in samples where sample.vital.isDaily {
+            result[Day(sample.date, in: calendar), default: [:]][sample.vital] = sample.value
         }
         return result
     }
