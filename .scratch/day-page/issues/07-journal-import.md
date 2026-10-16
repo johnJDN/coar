@@ -35,3 +35,8 @@ Option 1 in `../spec.md`: a folder John picks once (security-scoped bookmark, de
     Tuesday). Use the header's date; when the title is a weekday one day away, use the title's.
   - Meals: shown as journal meal events only on Days without a Coar food log; where Coar has
     Entries, those win and the journal's meal lines aren't shown twice.
+- 2026-10-16 (John): writing after midnight, he moves the entry's date back to the day it's
+  about (the time still shows ~1 AM) and titles it with that day's weekday ("MONDAY"). So the
+  Day rule is: a weekday title wins, as the date within one day of the header that falls on
+  it (a mismatch means the date wasn't moved back); with no weekday title, the header date.
+  Ignore the file name's date and the entry's time of writing.
