@@ -18,3 +18,20 @@ Option 1 in `../spec.md`: a folder John picks once (security-scoped bookmark, de
   name, re-read it when its text changes (keep a hash), take the Day from the file name, and
   times only from what the text says. John exports from the Mac, the same way each time, and
   each export is the whole journal: Coar skips what it has read.
+- 2026-10-16 (agent): At John's request, read 14 entries (two a year, 2020–2026, varied months)
+  to learn how they're written. Structure only recorded here:
+  - The header reads "Weekday, Month D, YYYY" followed by the title in the same line. One line
+    per thing done, in order, blank lines between groups. Times are sparse and loose ("at
+    2:30", "around 9", "til like 4"); order lets untimed lines sit between timed ones.
+  - "Writing this at 1:46" is when it was written: skip it.
+  - 2020–22: title "Woke up at..." continuing into the first line; meals under `######
+    Breakfast` / `Lunch` / `Dinner`. 2023: "BREAKFAST" / "DINNER". 2024 on: the title is the
+    weekday ("WEDNESDAY"); 2025–26 fewer meal headings, shorter.
+  - Up to about 2025, entries end with "Written at:", an address, an Apple Maps link with
+    `ll=lat,lon`, and often a weather sentence. Parse the place (and the coordinates) for a
+    Day's place; drop the block from what the model reads. Newest entries (Oct 2026) lack it.
+  - The Day can be off by one: the file name can be the day after the header (written after
+    midnight), and a weekday title can disagree with the header by a day ("WEDNESDAY" on a
+    Tuesday). Use the header's date; when the title is a weekday one day away, use the title's.
+  - Meals: shown as journal meal events only on Days without a Coar food log; where Coar has
+    Entries, those win and the journal's meal lines aren't shown twice.
