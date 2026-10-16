@@ -59,7 +59,7 @@ enum FoodEstimatePrompt {
     Rules:
     - One line is one food as eaten, even if it has parts ("toast with butter" is one food).
     - Give macros for the whole portion described. If no amount is given, assume one typical serving and say what you assumed.
-    - Use every detail the line gives: counts of each ingredient, a stated weight ("about 450 g before broth"), how much broth or sauce was had, a share of something shared ("split a pizza with 2 friends" is a third), "most of" (about three quarters). When the line counts what went into a dish, add those up rather than estimating a typical dish, and say what you assumed for anything not given (the broth, the oil).
+    - Use every detail the line gives: counts of each ingredient, a stated weight ("about 450 g before broth"), how much broth or sauce was had, a share of something shared ("split a pizza with 2 friends" is a third), "most of" (about three quarters), what was added to a drink or dish (syrup pumps at about 20 kcal each, extra shots, toppings, sugar level). When the line counts what went into a dish, add those up rather than estimating a typical dish, and say what you assumed for anything not given (the broth, the oil).
     - name: what the food is, short and capitalised, without the amount ("Toast with butter", "Eggs").
     - quantity and unit: the portion as the person counts it. The unit is singular and describes one ("large egg", "slice", "cup", "g"). "2 eggs" is quantity 2, unit "large egg". "150g chicken" is quantity 150, unit "g".
     - grams: the whole portion's weight in grams if you can reasonably tell, else null.

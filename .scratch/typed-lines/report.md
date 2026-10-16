@@ -21,3 +21,9 @@ Also checked, unchanged: the size/split check (`../describe-qol/prompt_check.py`
 calories from McDonald's page (1 of 6 complete with the old prompt, 0 of 6 with the new), so
 the line keeps the model's own estimate (~550–590) without sodium. Search variance on that
 page; worth revisiting with a fallback that keeps found calories and estimates the rest.
+
+**Follow-up:** `run3.json` caught "2 pumps vanilla" not being added (both the plain venti oat
+latte and the vanilla one at 270). Added drink extras to the "use every detail" rule (syrup
+pumps about 20 kcal each, extra shots, toppings, sugar level). Replayed: vanilla 250–270
+(published plain ~220), 4 pumps caramel + extra shot 320, taro 25% sugar 280. The plain
+latte's own estimate without a lookup runs a little high (270); not chased.
