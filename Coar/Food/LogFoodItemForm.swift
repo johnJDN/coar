@@ -10,6 +10,8 @@ struct LogFoodItemForm: View {
         /// As typed; nil while empty.
         var typedQuantity: Double? = 1
         var loggedAt: Date
+        /// The amount is in grams of the Serving's weight (`.scratch/food-logging/`).
+        var inGrams = false
 
         /// The valid quantity, or nil while the field is empty or not positive.
         var quantity: Double? {
@@ -35,7 +37,22 @@ struct LogFoodItemForm: View {
     /// What the Entry will carry: the Serving's macros for the quantity; nil until both exist.
     private var preview: Macros? {
         guard let serving, let quantity = draft.quantity else { return nil }
-        return serving.macros.scaled(by: quantity)
+        return serving.macros.scaled(by: Self.servings(quantity, of: serving, inGrams: draft.inGrams))
+    }
+
+    /// How many of the Serving an amount is: grams over its weight when given in grams.
+    static func servings(_ quantity: Double, of serving: ServingRecord, inGrams: Bool) -> Double {
+        guard inGrams, let grams = serving.grams, grams > 0 else { return quantity }
+        return quantity / grams
+    }
+
+    /// Switches the amount between servings and grams, keeping what it weighs.
+    private func setInGrams(_ on: Bool) {
+        guard on != draft.inGrams, let grams = serving?.grams, grams > 0 else { return }
+        if let quantity = draft.typedQuantity {
+            draft.typedQuantity = on ? (quantity * grams).rounded() : ((quantity / grams) * 100).rounded() / 100
+        }
+        draft.inGrams = on
     }
 
     var body: some View {
@@ -57,7 +74,11 @@ struct LogFoodItemForm: View {
             }
 
             Section {
-                QuantityRow(quantity: $draft.typedQuantity, unitName: serving?.name)
+                QuantityRow(
+                    quantity: $draft.typedQuantity,
+                    unitName: serving?.name,
+                    inGrams: serving?.grams == nil ? nil : Binding(get: { draft.inGrams }, set: { setInGrams($0) })
+                )
                     .formRow()
                 DatePicker("Time", selection: $draft.loggedAt, displayedComponents: .hourAndMinute)
                     .foregroundStyle(Color.textPrimary)

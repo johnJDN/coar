@@ -69,7 +69,7 @@ final class FoodLibraryTests: XCTestCase {
     func test_theModelSeesHandles_notIds_andArchivedFoodsAreLeftOut() throws {
         let (_, _, _, library) = try catalogue()
         XCTAssertEqual(library.promptListing, """
-        f1 Eggs: s1 "1 egg", s2 "100 g"
+        f1 Eggs: s1 "1 egg" (50 g), s2 "100 g"
         f2 Toast: s1 "1 slice"
         m1 Overnight oats (meal)
         """)

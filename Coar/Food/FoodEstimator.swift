@@ -76,7 +76,7 @@ enum FoodEstimatePrompt {
     static func library(_ listing: String) -> String {
         """
 
-        The person's saved foods and meals, by handle. If the line clearly means one of them, set match: food is its handle, serving is the handle of the serving that fits what they said (null for a meal, or when they don't say), and quantity is how many of that serving (or of the meal). Match only when it is the same food as saved: not when the line adds something the saved food doesn't include ("with milk", "and fries", "with extra noodles"); an addition is not a size. If the line asks for a size and one of the servings is named for that size ("large" for "large fries"), use that serving, quantity 1. Only if none is ("large pho" against a single "bowl", "half a sandwich"), still match it, with quantity scaled from the serving that fits: large about 1.5, small about 0.75, half 0.5, double 2. A product's standard size is not a portion size: "2 large eggs" against a "1 egg" serving is quantity 2. Otherwise match is null. Fill in the estimate fields either way.
+        The person's saved foods and meals, by handle. If the line clearly means one of them, set match: food is its handle, serving is the handle of the serving that fits what they said (null for a meal, or when they don't say), and quantity is how many of that serving (or of the meal). Match only when it is the same food as saved: not when the line adds something the saved food doesn't include ("with milk", "and fries", "with extra noodles"); an addition is not a size. If the line asks for a size and one of the servings is named for that size ("large" for "large fries"), use that serving, quantity 1. Only if none is ("large pho" against a single "bowl", "half a sandwich"), still match it, with quantity scaled from the serving that fits: large about 1.5, small about 0.75, half 0.5, double 2. A product's standard size is not a portion size: "2 large eggs" against a "1 egg" serving is quantity 2. A weight in grams of a saved food ("45 g of granola") uses a serving whose weight is shown, with quantity the grams over that weight (45 g of a 28 g serving is 1.61). Otherwise match is null. Fill in the estimate fields either way.
         \(listing)
         """
     }
@@ -136,6 +136,7 @@ enum FoodPhotoPrompt {
     For a label item, read fiber, sodium, caffeine and alcohol exactly from the label when it prints them, and use null for any it doesn't.
     \(FoodExtrasPrompt.rules)
     The person may send a short note with the photo. Trust it over what you see: it can say how much they ate ("I ate half", "only the chicken"), what a food is ("it's turkey, not chicken"), or what was added that you can't see ("cooked in butter"). Apply it to the items and say so in their assumption.
+    A weight eaten in the note for a label's food ("45 g", "I had 45 grams", "1.5 oz") makes that item the weight: quantity the grams, unit "g", grams the same, and every number, extras too, scaled from the label's serving weight. A share of the serving ("half a serving") keeps the serving as the unit with that quantity.
     If there is no food or label in the photo, return no items.
     """
 

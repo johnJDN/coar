@@ -43,7 +43,11 @@ struct EntryForm: View {
                         .foregroundStyle(Color.textPrimary)
                 }
                 .formRow()
-                QuantityRow(quantity: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }), unitName: draft.isMeal ? draft.unit : nil)
+                QuantityRow(
+                    quantity: Binding(get: { draft.typedQuantity }, set: { draft.setQuantity($0) }),
+                    unitName: draft.isMeal ? draft.unit : (draft.offersGrams ? draft.servingUnit : nil),
+                    inGrams: !draft.isMeal && draft.offersGrams ? Binding(get: { draft.isInGrams }, set: { draft.setInGrams($0) }) : nil
+                )
                     .formRow()
                 if !draft.isMeal {
                     HStack(spacing: Metrics.spaceInner) {

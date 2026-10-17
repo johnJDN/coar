@@ -33,6 +33,7 @@ struct FoodLibrary {
     /// The line when it is a Food Item's or Meal's name, optionally after a quantity ("2 eggs",
     /// "½ overnight oats", "1.5x protein shake"): its default Serving (or the Meal) times that.
     func exactMatch(_ line: String) -> Estimate? {
+        if let byWeight = weightMatch(line) { return byWeight }
         let (quantity, name) = Self.leadingQuantity(FoodText.normalised(line))
         let wanted = Self.variants(name)
         if let item = foodItems.first(where: { !Self.variants(FoodText.normalised($0.name)).isDisjoint(with: wanted) }),
@@ -41,6 +42,42 @@ struct FoodLibrary {
         }
         if let meal = meals.first(where: { !Self.variants(FoodText.normalised($0.name)).isDisjoint(with: wanted) }) {
             return estimate(meal, quantity: quantity)
+        }
+        return nil
+    }
+
+    // MARK: Grams of a saved food
+
+    /// "45g granola", "45 grams of granola", "granola 45 g": a saved food by its name and a
+    /// weight in grams, worked out from a Serving whose weight is known (the label's), with no
+    /// model. Logged in grams.
+    func weightMatch(_ line: String) -> Estimate? {
+        guard let (grams, name) = Self.weightAndName(FoodText.normalised(line)), grams > 0 else { return nil }
+        let wanted = Self.variants(name)
+        guard let item = foodItems.first(where: { !Self.variants(FoodText.normalised($0.name)).isDisjoint(with: wanted) }),
+              let serving = ([item.defaultServing].compactMap { $0 } + item.servings).first(where: { ($0.grams ?? 0) > 0 }),
+              let weight = serving.grams else { return nil }
+        let share = grams / weight
+        return Estimate(
+            name: item.name, quantity: grams, unit: "g", grams: grams,
+            macros: serving.macros.scaled(by: share), source: .food, assumption: "",
+            match: .foodItem(item.id, serving: serving.id),
+            extras: serving.extras.scaled(by: share)
+        )
+    }
+
+    /// A weight in grams before or after the name: "45g granola", "45 g of granola",
+    /// "granola, 45 grams".
+    static func weightAndName(_ normalised: String) -> (Double, String)? {
+        let unit = #"(?:g|gr|gram|grams)"#
+        let patterns = [#"^(\d+(?:\.\d+)?)\s*\#(unit)\s+(?:of\s+)?(.+)$"#, #"^(.+?),?\s+(\d+(?:\.\d+)?)\s*\#(unit)$"#]
+        for (index, pattern) in patterns.enumerated() {
+            guard let regex = try? NSRegularExpression(pattern: pattern),
+                  let match = regex.firstMatch(in: normalised, range: NSRange(normalised.startIndex..., in: normalised)),
+                  let first = Range(match.range(at: 1), in: normalised), let second = Range(match.range(at: 2), in: normalised) else { continue }
+            let (number, name) = index == 0 ? (normalised[first], normalised[second]) : (normalised[second], normalised[first])
+            guard let grams = Double(number) else { continue }
+            return (grams, name.trimmingCharacters(in: .whitespaces))
         }
         return nil
     }
@@ -99,19 +136,9 @@ struct FoodLibrary {
         return (amount, words.joined(separator: " "))
     }
 
-    private static let fractions: [Character: Double] = ["¼": 0.25, "½": 0.5, "¾": 0.75, "⅓": 1.0 / 3, "⅔": 2.0 / 3]
-
     /// "2", "1.5", "1/2", "½", "1½".
     private static func number(_ text: String) -> Double? {
-        if let value = Double(text) { return value }
-        let parts = text.split(separator: "/")
-        if parts.count == 2, let top = Double(parts[0]), let bottom = Double(parts[1]), bottom > 0 { return top / bottom }
-        if let last = text.last, let fraction = fractions[last] {
-            let whole = text.dropLast()
-            if whole.isEmpty { return fraction }
-            return Double(whole).map { $0 + fraction }
-        }
-        return nil
+        FoodText.parseAmount(text)
     }
 
     /// A name with and without a plural ending, so "egg" and "eggs" meet.
@@ -129,7 +156,12 @@ struct FoodLibrary {
     var promptListing: String? {
         guard !isEmpty else { return nil }
         let items = foodItems.enumerated().map { index, item in
-            let servings = item.servings.enumerated().map { "s\($0.offset + 1) \"\($0.element.name)\"" }.joined(separator: ", ")
+            // A Serving's weight, when known and not already in its name, so "45 g of it" can be
+            // worked out against it.
+            let servings = item.servings.enumerated().map { offset, serving in
+                let weight = serving.grams.flatMap { grams in serving.name.contains(" g") || serving.name.hasSuffix("g)") ? nil : " (\(FoodText.amount(grams)) g)" } ?? ""
+                return "s\(offset + 1) \"\(serving.name)\"\(weight)"
+            }.joined(separator: ", ")
             return "f\(index + 1) \(item.name): \(servings)"
         }
         let meals = meals.enumerated().map { "m\($0.offset + 1) \($0.element.name) (meal)" }

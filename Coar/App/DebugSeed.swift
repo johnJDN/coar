@@ -41,6 +41,8 @@ enum DebugSeed {
             )
 
             try store.setTarget(Macros(calories: 2_100, protein: 180, fat: 60, carbs: 210), effectiveFrom: today.advanced(by: -10))
+            // A label food, saved as a nutrition-label photo would save it: a serving with its weight.
+            try store.createFoodItem(name: "Granola", servings: [ServingDraft(name: "serving (55 g)", macros: Macros(calories: 240, protein: 5, fat: 9, carbs: 36), grams: 55, isDefault: true, extras: Extras(fiber: 4, sodium: 120))])
             let eggs = try store.createFoodItem(name: "Eggs", servings: [ServingDraft(name: "1 egg", macros: Macros(calories: 70, protein: 6, fat: 5, carbs: 0), isDefault: true)])
             let rice = try store.createFoodItem(name: "Rice", servings: [ServingDraft(name: "1 cup", macros: Macros(calories: 200, protein: 4, fat: 0, carbs: 44), isDefault: true)])
             try store.logEntry(foodItem: eggs.id, serving: eggs.servings[0].id, quantity: 4, at: at(today, 8, 0))

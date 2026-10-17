@@ -12,7 +12,10 @@ struct PortionUnit: Equatable {
     /// The unit the macros are for. When `typed` differs, the numbers are for something else.
     private(set) var numbersUnit: String
     /// Grams in one `numbersUnit`, when known.
-    private var gramsPerUnit: Double?
+    private(set) var gramsPerUnit: Double?
+    /// The unit it started in and its weight, so switching to grams can switch back.
+    let originalUnit: String
+    private let originalGrams: Double?
 
     /// Grams in one of each weight unit a portion may be counted in.
     static let gramsPer: [String: Double] = ["g": 1, "gram": 1, "grams": 1, "kg": 1_000, "oz": 28.3495, "lb": 453.592, "lbs": 453.592]
@@ -23,7 +26,12 @@ struct PortionUnit: Equatable {
         typed = unit
         numbersUnit = unit
         gramsPerUnit = Self.grams(inOne: unit) ?? gramsInOne
+        originalUnit = unit
+        originalGrams = gramsPerUnit
     }
+
+    /// Whether the portion's weight is known, so it can be given in grams.
+    var knowsWeight: Bool { gramsPerUnit != nil }
 
     var trimmed: String {
         typed.trimmingCharacters(in: .whitespaces)
@@ -34,17 +42,18 @@ struct PortionUnit: Equatable {
         !trimmed.isEmpty && trimmed.lowercased() != numbersUnit.lowercased()
     }
 
-    /// Sets the unit, and returns the quantity re-expressed in it when it's a weight unit and
-    /// the weight is known: whole grams, other weights to one decimal.
+    /// Sets the unit, and returns the quantity re-expressed in it when both weights are known:
+    /// a weight unit ("g", "oz"), a unit that says its weight ("serving (28 g)"), or the one it
+    /// started in. Whole grams, anything else to two decimals.
     mutating func set(_ newValue: String, quantity: Double?) -> Double? {
         typed = newValue
         let key = trimmed.lowercased()
-        guard let factor = Self.gramsPer[key], let perUnit = gramsPerUnit, let quantity,
-              key != numbersUnit.lowercased() else { return nil }
+        let factor = Self.gramsPer[key] ?? Self.grams(inOne: trimmed) ?? (key == originalUnit.lowercased() ? originalGrams : nil)
+        guard let factor, let perUnit = gramsPerUnit, let quantity, key != numbersUnit.lowercased() else { return nil }
         let converted = quantity * perUnit / factor
         numbersUnit = trimmed
         gramsPerUnit = factor
-        return factor == 1 ? converted.rounded() : (converted * 10).rounded() / 10
+        return factor == 1 ? converted.rounded() : (converted * 100).rounded() / 100
     }
 
     /// Numbers were typed for the unit as it reads: it's the one they're for now.

@@ -750,7 +750,9 @@ extension Store {
         do {
             switch estimate.match {
             case .foodItem(let id, let serving):
-                try logEntry(foodItem: id, serving: serving, quantity: estimate.quantity, at: instant, in: calendar)
+                // A line in grams of a saved food ("45g granola") logs in grams.
+                let grams = estimate.unit.lowercased() == "g" ? estimate.quantity : nil
+                try logEntry(foodItem: id, serving: serving, quantity: estimate.quantity, grams: grams, at: instant, in: calendar)
                 return
             case .meal(let id):
                 try logEntry(meal: id, quantity: estimate.quantity, at: instant, in: calendar)

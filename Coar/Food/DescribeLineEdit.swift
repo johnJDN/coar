@@ -76,6 +76,22 @@ struct DescribeLineEdit: Equatable {
         portionUnit.needsNumbers
     }
 
+    /// Whether the servings | g switch shows: the weight is known and it didn't start in grams.
+    var offersGrams: Bool {
+        portionUnit.knowsWeight && PortionUnit.gramsPer[portionUnit.originalUnit.lowercased()] == nil
+    }
+
+    /// The unit the switch names opposite grams: the one it started in.
+    var servingUnit: String { portionUnit.originalUnit }
+
+    var isInGrams: Bool { portionUnit.trimmed.lowercased() == "g" }
+
+    /// Gives the amount in grams, or back in the unit it started in; the macros stay right.
+    mutating func setInGrams(_ on: Bool) {
+        setUnit(on ? "g" : portionUnit.originalUnit)
+    }
+
+
     /// The unit the numbers are still for, while `unitNeedsNumbers`.
     var numbersPortion: String {
         FoodText.portion(macrosQuantity, of: portionUnit.numbersUnit)

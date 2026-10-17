@@ -639,3 +639,13 @@ Ticket: `.scratch/health-pages/issues/04-add-sleep.md`.
 
 - [ ] Sleep page → Add sleep: set this morning's 8:00 to 9:30. The first time, allow Coar to write Sleep in the Health prompt. Last night's total grows by 1h 30m; the wake time stays when you first woke.
 - [ ] The Health app shows the added sleep under Sleep → Show All Data, from Coar.
+
+## Added after v1: Log by grams and by fractions (2026-10-16)
+
+Ticket: `.scratch/food-logging/issues/01-grams-and-fractions.md`.
+
+- [ ] Photograph a nutrition label; at "Anything to add?" type "45 g": the line comes back as 45 g with the macros scaled from the label's serving.
+- [ ] Photograph a label with no note: open the line: Quantity has serving | g; tap g, type your grams: the macros follow. Tap serving: back to servings, same food.
+- [ ] Quantity anywhere: type "1/3" or tap ½: the macros scale.
+- [ ] With that label food saved to Foods: Describe "45g <name>" (or "<name> 45 g"): fills in at once as Your food, "45 g". Add it: the entry reads "45 g".
+- [ ] Foods → the label food: serving | g; g → type grams → Add: the entry reads "45 g" with the right macros.

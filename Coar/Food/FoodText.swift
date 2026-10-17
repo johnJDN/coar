@@ -8,9 +8,11 @@ enum FoodText {
         value.formatted(.number.precision(.fractionLength(0...1)))
     }
 
-    /// "2 × 1 egg": how much of which Serving.
+    /// "2 × 1 egg": how much of which Serving; "45 g" for a weight.
     static func quantity(_ quantity: Double, of servingName: String) -> String {
-        "\(amount(quantity)) × \(servingName)"
+        measures.contains(servingName.trimmingCharacters(in: .whitespaces).lowercased())
+            ? "\(amount(quantity)) \(servingName)"
+            : "\(amount(quantity)) × \(servingName)"
     }
 
     /// The portion as a person says it, for a timeline card's second row: "1 medium banana",
@@ -86,5 +88,23 @@ enum FoodText {
     /// "Today at 8:00 AM" / "Monday, September 7 at 12:00 PM".
     static func when(_ instant: Date) -> String {
         "\(Day(instant).title()) at \(instant.formatted(.dateTime.hour().minute()))"
+    }
+
+    private static let fractions: [Character: Double] = ["¼": 0.25, "½": 0.5, "¾": 0.75, "⅓": 1.0 / 3, "⅔": 2.0 / 3]
+
+    /// An amount as typed: "2", "1.5", "1/3", "½", "1½", "1 1/2"; nil for anything else.
+    static func parseAmount(_ text: String) -> Double? {
+        let text = text.trimmingCharacters(in: .whitespaces)
+        if let value = Double(text) { return value }
+        let words = text.split(separator: " ")
+        if words.count == 2, let whole = Double(words[0]), let part = parseAmount(String(words[1])), part < 1 { return whole + part }
+        let parts = text.split(separator: "/")
+        if parts.count == 2, let top = Double(parts[0]), let bottom = Double(parts[1]), bottom > 0 { return top / bottom }
+        if let last = text.last, let fraction = fractions[last] {
+            let whole = text.dropLast()
+            if whole.isEmpty { return fraction }
+            return Double(whole).map { $0 + fraction }
+        }
+        return nil
     }
 }

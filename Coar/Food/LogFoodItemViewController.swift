@@ -75,7 +75,8 @@ final class LogFoodItemViewController: UIHostingController<LogFoodItemForm> {
     private func add() {
         guard let quantity = draft.quantity else { return }
         do {
-            try dependencies.store.logEntry(foodItem: foodItemID, serving: draft.servingID, quantity: quantity, at: draft.loggedAt)
+            let grams = draft.inGrams && servings.first(where: { $0.id == draft.servingID })?.grams != nil ? quantity : nil
+            try dependencies.store.logEntry(foodItem: foodItemID, serving: draft.servingID, quantity: quantity, grams: grams, at: draft.loggedAt)
             onLogged()
         } catch {
             Self.logger.error("Failed to log Entry: \(error, privacy: .public)")

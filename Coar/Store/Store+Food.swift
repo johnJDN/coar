@@ -110,11 +110,21 @@ extension Store {
         foodItem foodItemID: FoodItemRecord.ID,
         serving servingID: ServingRecord.ID,
         quantity: Double,
+        grams: Double? = nil,
         at instant: Date,
         in calendar: Calendar = .current
     ) throws -> EntryRecord {
         guard let item = try fetchFoodItem(foodItemID), let record = FoodItemRecord(item) else { throw NotFound(what: "Food Item") }
         guard let serving = record.serving(servingID) else { throw NotFound(what: "Serving") }
+        // By weight ("45 g" of a 28 g serving) when the Serving's weight is known: the Entry
+        // reads in grams, its macros scaled by grams over the weight.
+        if let grams, let weight = serving.grams, weight > 0 {
+            let share = grams / weight
+            let entry = makeEntry(name: record.name, servingName: "g", quantity: grams, macros: serving.macros.scaled(by: share), extras: serving.extras.scaled(by: share), at: instant, in: calendar)
+            entry.foodItem = item
+            try save()
+            return EntryRecord(entry)!
+        }
         let entry = makeEntry(name: record.name, servingName: serving.name, quantity: quantity, macros: serving.macros.scaled(by: quantity), extras: serving.extras.scaled(by: quantity), at: instant, in: calendar)
         entry.foodItem = item
         try save()

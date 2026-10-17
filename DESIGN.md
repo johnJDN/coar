@@ -261,6 +261,10 @@ Charts never show a legend when color already maps to a label on screen.
   workouts and sleep open; journal events in a neutral tint (food amber, exercise green,
   social lavender); then a Summary card of `MetricRow`s (calories against the Target, habits
   done, steps, Sleep Score).
+- **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
+  or a fraction ("1/3", "1 1/2", "½"), then "× serving" or, where the portion's weight is known,
+  a system segmented servings | g; under it quick amounts ¼ ½ ¾ 1 1½ 2 as capsules
+  (`surfaceSunken`, the picked one `accentGreen`), hidden in grams.
 - **Mood and energy check-in** — five faces (the pick full, the rest dimmed) and five bolts
   in `accentAmber` filled to the pick, with the word for the pick in `textTertiary`. On
   Home as "How's today?" under the macros until both are set, then it steps aside; on the

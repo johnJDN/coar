@@ -48,7 +48,11 @@ struct DescribeLineForm: View {
                         .foregroundStyle(Color.textPrimary)
                 }
                 .formRow()
-                QuantityRow(quantity: Binding(get: { edit.typedQuantity }, set: { edit.setQuantity($0) }), unitName: nil)
+                QuantityRow(
+                    quantity: Binding(get: { edit.typedQuantity }, set: { edit.setQuantity($0) }),
+                    unitName: edit.offersGrams ? edit.servingUnit : nil,
+                    inGrams: edit.offersGrams ? Binding(get: { edit.isInGrams }, set: { edit.setInGrams($0) }) : nil
+                )
                     .formRow()
                 HStack(spacing: Metrics.spaceInner) {
                     Text("Unit").foregroundStyle(Color.textPrimary)
