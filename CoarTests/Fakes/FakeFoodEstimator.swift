@@ -11,8 +11,8 @@ final class FakeFoodEstimator: FoodEstimator {
     private(set) var photosSent: [Data] = []
     private(set) var notesSent: [String?] = []
 
-    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
-        photosSent.append(jpeg)
+    func estimate(photos jpegs: [Data], note: String?, library: FoodLibrary) async throws -> [Estimate] {
+        photosSent.append(contentsOf: jpegs)
         notesSent.append(note)
         return try photoReply.get()
     }

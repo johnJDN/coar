@@ -109,8 +109,8 @@ final class CachingFoodEstimator: FoodEstimator {
     }
 
     /// Photos are never cached: each one is new.
-    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
-        try await wrapped.estimate(photo: jpeg, note: note, library: library)
+    func estimate(photos jpegs: [Data], note: String?, library: FoodLibrary) async throws -> [Estimate] {
+        try await wrapped.estimate(photos: jpegs, note: note, library: library)
     }
 
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate {

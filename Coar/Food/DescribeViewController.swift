@@ -45,7 +45,11 @@ final class DescribeViewController: UIViewController {
     private var timers: [DescribeLine.ID: Task<Void, Never>] = [:]
     /// Photos being read, by their placeholder line: kept in memory until read, so a failed
     /// one can be tried again, and never written anywhere.
-    private var photos: [DescribeLine.ID: Data] = [:]
+    private var photos: [DescribeLine.ID: [Data]] = [:]
+    /// Photos taken or chosen for the next read, before "Anything to add?" sends them.
+    private var pendingPhotos: [Data] = []
+    /// Up to this many photos are read together (a label wrapping around a package).
+    static let maximumPhotos = 3
     /// What the user said about each photo, sent with it (and again on a retry).
     private var photoNotes: [DescribeLine.ID: String] = [:]
     private var collectionView: UICollectionView!
@@ -222,8 +226,8 @@ final class DescribeViewController: UIViewController {
     private func send(_ id: DescribeLine.ID) {
         timers[id]?.cancel()
         timers[id] = nil
-        if let jpeg = photos[id] {
-            sendPhoto(id, jpeg: jpeg)
+        if let jpegs = photos[id] {
+            sendPhoto(id, jpegs: jpegs)
             return
         }
         guard let line = draft.line(id), !line.isPhoto else { return }
@@ -257,6 +261,11 @@ final class DescribeViewController: UIViewController {
 
     func takePhoto() {
         view.endEditing(true)
+        pendingPhotos = []
+        presentCamera()
+    }
+
+    private func presentCamera() {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.delegate = self
@@ -265,47 +274,62 @@ final class DescribeViewController: UIViewController {
 
     func choosePhoto() {
         view.endEditing(true)
+        pendingPhotos = []
         var configuration = PHPickerConfiguration()
         configuration.filter = .images
-        configuration.selectionLimit = 1
+        configuration.selectionLimit = Self.maximumPhotos
+        configuration.selection = .ordered
         let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = self
         present(picker, animated: true)
     }
 
-    /// Asks for an optional note before the photo is read ("I ate half", "it's turkey"): what
-    /// the model can't see, it is told. Read photo with the field empty sends it as it is.
-    private func add(_ image: UIImage) {
-        guard let jpeg = FoodPhoto.jpeg(from: image) else {
+    /// Asks for an optional note before the photos are read ("I ate half", "45 g", "it's
+    /// turkey"): what the model can't see, it is told. From the camera, Add another photo takes
+    /// the next part of a label that wraps around (up to three, read together). Read with the
+    /// field empty sends them as they are.
+    private func add(_ images: [UIImage], fromCamera: Bool) {
+        pendingPhotos += images.compactMap(FoodPhoto.jpeg)
+        guard !pendingPhotos.isEmpty else {
             Self.logger.error("Couldn't encode the photo")
             return
         }
-        let alert = UIAlertController(title: "Anything to add?", message: "How much you ate, or what something is. Leave it empty to just read the photo.", preferredStyle: .alert)
+        let count = pendingPhotos.count
+        let message = count > 1
+            ? "\(count) photos, read together as one label or one meal. How much you ate, or what something is."
+            : "How much you ate, or what something is. Leave it empty to just read the photo."
+        let alert = UIAlertController(title: "Anything to add?", message: message, preferredStyle: .alert)
         alert.addTextField { field in
             field.placeholder = "I ate half"
             field.autocapitalizationType = .sentences
             field.returnKeyType = .done
         }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Read photo", style: .default) { [weak self, weak alert] _ in
-            self?.read(jpeg, note: alert?.textFields?.first?.text)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in self?.pendingPhotos = [] })
+        if fromCamera, count < Self.maximumPhotos {
+            alert.addAction(UIAlertAction(title: "Add another photo", style: .default) { [weak self] _ in self?.presentCamera() })
+        }
+        alert.addAction(UIAlertAction(title: count > 1 ? "Read \(count) photos" : "Read photo", style: .default) { [weak self, weak alert] _ in
+            guard let self else { return }
+            let jpegs = pendingPhotos
+            pendingPhotos = []
+            read(jpegs, note: alert?.textFields?.first?.text)
         })
         alert.preferredAction = alert.actions.last
         present(alert, animated: true)
     }
 
     /// A placeholder line reads "Photo" while the photo model looks at it.
-    private func read(_ jpeg: Data, note: String?) {
+    private func read(_ jpegs: [Data], note: String?) {
         let id = draft.addPhoto()
-        photos[id] = jpeg
+        photos[id] = jpegs
         let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if !trimmed.isEmpty { photoNotes[id] = trimmed }
         render()
         onChange()
-        sendPhoto(id, jpeg: jpeg)
+        sendPhoto(id, jpegs: jpegs)
     }
 
-    private func sendPhoto(_ id: DescribeLine.ID, jpeg: Data) {
+    private func sendPhoto(_ id: DescribeLine.ID, jpegs: [Data]) {
         guard problem == nil, draft.begin(id) != nil else { return }
         reconfigure(id)
         let estimator = dependencies.foodEstimator
@@ -314,7 +338,7 @@ final class DescribeViewController: UIViewController {
         Task { [weak self] in
             let result: Result<[Estimate], Error>
             do {
-                result = .success(try await estimator.estimate(photo: jpeg, note: note, library: library))
+                result = .success(try await estimator.estimate(photos: jpegs, note: note, library: library))
             } catch {
                 result = .failure(error)
             }
@@ -709,7 +733,7 @@ extension DescribeViewController: UIImagePickerControllerDelegate, UINavigationC
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true)
         if let image = info[.originalImage] as? UIImage {
-            add(image)
+            add([image], fromCamera: true)
         }
     }
 
@@ -722,15 +746,22 @@ extension DescribeViewController: PHPickerViewControllerDelegate {
 
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
-        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
-        provider.loadObject(ofClass: UIImage.self) { [weak self] object, error in
-            DispatchQueue.main.async {
-                guard let image = object as? UIImage else {
-                    Self.logger.error("Couldn't load the chosen photo: \(String(describing: error), privacy: .public)")
-                    return
+        let providers = results.map(\.itemProvider).filter { $0.canLoadObject(ofClass: UIImage.self) }
+        guard !providers.isEmpty else { return }
+        // Loaded in the order picked, then read together.
+        Task { @MainActor [weak self] in
+            var images: [UIImage] = []
+            for provider in providers {
+                let image: UIImage? = await withCheckedContinuation { continuation in
+                    provider.loadObject(ofClass: UIImage.self) { object, error in
+                        if object == nil { Self.logger.error("Couldn't load a chosen photo: \(String(describing: error), privacy: .public)") }
+                        continuation.resume(returning: object as? UIImage)
+                    }
                 }
-                self?.add(image)
+                if let image { images.append(image) }
             }
+            guard !images.isEmpty else { return }
+            self?.add(images, fromCamera: false)
         }
     }
 }
@@ -742,6 +773,11 @@ extension Store {
     /// and no Food Item has its name, else on its own.
     func logDescribed(_ estimate: Estimate, typed: String, savingAsFood: Bool, at instant: Date, in calendar: Calendar = .current) throws {
         let name = estimate.name.isEmpty ? typed : estimate.name
+        if savingAsFood, estimate.match == nil, try foodItem(named: name) == nil, let servings = estimate.naturalServings {
+            try logEntrySavingFood(name: name, servings: servings, entryServingName: estimate.unit, quantity: estimate.quantity,
+                                   macros: estimate.macros, extras: estimate.extras, at: instant, in: calendar)
+            return
+        }
         if savingAsFood, estimate.match == nil, try foodItem(named: name) == nil {
             let (serving, quantity) = estimate.servingToSave
             try logEntrySavingFood(name: name, serving: serving, quantity: quantity, at: instant, in: calendar)

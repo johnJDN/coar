@@ -34,16 +34,30 @@ struct FoodLibrary {
     /// "½ overnight oats", "1.5x protein shake"): its default Serving (or the Meal) times that.
     func exactMatch(_ line: String) -> Estimate? {
         if let byWeight = weightMatch(line) { return byWeight }
-        let (quantity, name) = Self.leadingQuantity(FoodText.normalised(line))
+        let normalised = FoodText.normalised(line)
+        let (quantity, name) = Self.leadingQuantity(normalised)
         let wanted = Self.variants(name)
         if let item = foodItems.first(where: { !Self.variants(FoodText.normalised($0.name)).isDisjoint(with: wanted) }),
            let serving = item.defaultServing {
+            // "8 ritz crackers" against "5 crackers" and "cracker": a count means pieces.
+            if name != normalised, let piece = Self.pieceServing(of: item) {
+                return estimate(item, piece, quantity: quantity)
+            }
             return estimate(item, serving, quantity: quantity)
         }
         if let meal = meals.first(where: { !Self.variants(FoodText.normalised($0.name)).isDisjoint(with: wanted) }) {
             return estimate(meal, quantity: quantity)
         }
         return nil
+    }
+
+    /// The one-piece Serving of a food whose default counts several ("cracker" beside "5
+    /// crackers"): a Serving with no number in its name, while the default starts with one
+    /// above 1.
+    static func pieceServing(of item: FoodItemRecord) -> ServingRecord? {
+        guard let main = item.defaultServing,
+              let count = main.name.split(separator: " ").first.flatMap({ FoodText.parseAmount(String($0)) }), count > 1 else { return nil }
+        return item.servings.first { $0.id != main.id && !$0.name.contains(where: \.isNumber) }
     }
 
     // MARK: Grams of a saved food

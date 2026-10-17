@@ -44,6 +44,9 @@ struct Estimate: Equatable {
     /// Fiber, sodium, caffeine, and alcohol for the whole portion, only those the source
     /// knew (CONTEXT.md "Extra"); never guessed for a brand or restaurant food.
     var extras = Extras()
+    /// The food's natural serving and its weight, apart from how much was eaten ("5 crackers",
+    /// 16 g); what Save to Foods keeps (`naturalServings`).
+    var servingSize: ServingSize? = nil
 
     /// "2 × large egg".
     var portion: String {
@@ -58,7 +61,7 @@ struct Estimate: Equatable {
 extension Estimate: Codable {
 
     private enum CodingKeys: String, CodingKey {
-        case name, quantity, unit, grams, macros, source, assumption, needsLookup, match, extras
+        case name, quantity, unit, grams, macros, source, assumption, needsLookup, match, extras, servingSize
     }
 
     init(from decoder: Decoder) throws {
@@ -73,6 +76,7 @@ extension Estimate: Codable {
         needsLookup = try container.decodeIfPresent(Bool.self, forKey: .needsLookup) ?? false
         match = try container.decodeIfPresent(LibraryMatch.self, forKey: .match)
         extras = try container.decodeIfPresent(Extras.self, forKey: .extras) ?? Extras()
+        servingSize = try container.decodeIfPresent(ServingSize.self, forKey: .servingSize)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -87,6 +91,7 @@ extension Estimate: Codable {
         try container.encode(needsLookup, forKey: .needsLookup)
         try container.encodeIfPresent(match, forKey: .match)
         if !extras.isEmpty { try container.encode(extras, forKey: .extras) }
+        try container.encodeIfPresent(servingSize, forKey: .servingSize)
     }
 }
 
@@ -164,6 +169,9 @@ extension Estimate {
                 let sodium_mg: Double?
                 let caffeine_mg: Double?
                 let alcohol_drinks: Double?
+                let serving_name: String?
+                let serving_grams: Double?
+                let piece_name: String?
             }
             let items: [Item]
         }
@@ -178,7 +186,8 @@ extension Estimate {
                 macros: Macros(calories: item.calories, protein: item.protein, fat: item.fat, carbs: item.carbs),
                 source: item.source == "label" ? .label : .photo,
                 assumption: item.assumption?.trimmingCharacters(in: .whitespaces) ?? "",
-                extras: Extras(fiber: item.fiber_g, sodium: item.sodium_mg, caffeine: item.caffeine_mg, alcohol: item.alcohol_drinks).normalised()
+                extras: Extras(fiber: item.fiber_g, sodium: item.sodium_mg, caffeine: item.caffeine_mg, alcohol: item.alcohol_drinks).normalised(),
+                servingSize: ServingSize(reply: item.serving_name, grams: item.serving_grams, piece: item.piece_name)
             )
             return (estimate, item.match)
         }
@@ -209,6 +218,9 @@ extension Estimate {
             let caffeine_mg: Double?
             let alcohol_drinks: Double?
             let parts: [String]?
+            let serving_name: String?
+            let serving_grams: Double?
+            let piece_name: String?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw ReplyError.unreadable }
         guard reply.is_food else { throw ReplyError.notFood }
@@ -224,8 +236,63 @@ extension Estimate {
             source: source,
             assumption: reply.assumption?.trimmingCharacters(in: .whitespaces) ?? "",
             needsLookup: reply.needs_lookup ?? false,
-            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised()
+            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised(),
+            servingSize: ServingSize(reply: reply.serving_name, grams: reply.serving_grams, piece: reply.piece_name)
         )
         return (estimate, reply.match)
+    }
+}
+
+/// A food's natural serving as a person counts it, with its weight ("5 crackers", 16 g;
+/// "1 breast", 172 g), and one piece when it counts several ("cracker").
+struct ServingSize: Codable, Equatable {
+    var name: String
+    var grams: Double
+    var piece: String?
+
+    init(name: String, grams: Double, piece: String? = nil) {
+        self.name = name
+        self.grams = grams
+        self.piece = piece
+    }
+
+    /// From a reply's fields; nil without a name or a weight.
+    init?(reply name: String?, grams: Double?, piece: String?) {
+        // A model sometimes writes "None" or a bare weight where it has no serving.
+        func meaningful(_ text: String?) -> String {
+            let trimmed = text?.trimmingCharacters(in: .whitespaces) ?? ""
+            return ["none", "null", "n/a", "na", "-"].contains(trimmed.lowercased()) ? "" : trimmed
+        }
+        let name = meaningful(name)
+        guard !name.isEmpty, PortionUnit.grams(inOne: name) == nil, let grams, grams > 0, grams.isFinite else { return nil }
+        let piece = meaningful(piece)
+        self.init(name: name, grams: grams, piece: piece.isEmpty ? nil : piece)
+    }
+
+    /// How many pieces the serving is: 5 for "5 crackers", 15 for "about 15 chips"; nil for
+    /// "2/3 cup"-like servings that aren't counted in pieces.
+    var pieceCount: Double? {
+        guard piece != nil else { return nil }
+        let words = name.lowercased().split(separator: " ").map(String.init).filter { !["about", "approx", "approx.", "around", "~"].contains($0) }
+        return words.first.flatMap(FoodText.parseAmount)
+    }
+}
+
+extension Estimate {
+
+    /// What Save to Foods keeps when the food's natural serving is known: that serving with its
+    /// weight (the default), and one piece when it counts several, each scaled from what was
+    /// eaten by weight. Nil without a natural serving or without the line's weight to scale by.
+    var naturalServings: [ServingDraft]? {
+        guard let size = servingSize else { return nil }
+        let lineGrams = grams ?? PortionUnit.gramsPer[unit.lowercased()].map { $0 * quantity }
+        guard let lineGrams, lineGrams > 0 else { return nil }
+        let share = size.grams / lineGrams
+        let serving = ServingDraft(name: size.name, macros: macros.scaled(by: share), grams: size.grams, isDefault: true, extras: extras.scaled(by: share))
+        var servings = [serving]
+        if let piece = size.piece, let count = size.pieceCount, count > 1, piece.lowercased() != size.name.lowercased() {
+            servings.append(ServingDraft(name: piece, macros: serving.macros.scaled(by: 1 / count), grams: size.grams / count, extras: serving.extras.scaled(by: 1 / count)))
+        }
+        return servings
     }
 }

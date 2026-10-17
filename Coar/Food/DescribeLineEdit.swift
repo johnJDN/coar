@@ -168,7 +168,8 @@ struct DescribeLineEdit: Equatable {
             source: ownNumbers || (renamed && original?.match != nil) ? .typed : (original?.source ?? .typed),
             assumption: ownNumbers ? "" : (original?.assumption ?? ""),
             match: keepsMatch ? original?.match : nil,
-            extras: (Extras(typed: typedExtras) ?? Extras()).normalised()
+            extras: (Extras(typed: typedExtras) ?? Extras()).normalised(),
+            servingSize: original?.servingSize
         )
     }
 }

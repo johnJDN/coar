@@ -649,3 +649,12 @@ Ticket: `.scratch/food-logging/issues/01-grams-and-fractions.md`.
 - [ ] Quantity anywhere: type "1/3" or tap ½: the macros scale.
 - [ ] With that label food saved to Foods: Describe "45g <name>" (or "<name> 45 g"): fills in at once as Your food, "45 g". Add it: the entry reads "45 g".
 - [ ] Foods → the label food: serving | g; g → type grams → Add: the entry reads "45 g" with the right macros.
+
+## Added after v1: Natural servings, and labels across several photos (2026-10-16)
+
+Ticket: `.scratch/food-logging/issues/02-natural-servings-and-wraparound-labels.md`.
+
+- [ ] Describe "45g ritz crackers" (Save to Foods on) and add it: the entry reads "45 g". Foods → Ritz crackers now has "5 crackers" and "cracker". Describe "8 ritz crackers": 8 × cracker, filled in at once.
+- [ ] Describe "150g cooked chicken breast" and add it: Foods → its serving is "1 breast" (about 170 g); the g switch works there.
+- [ ] A label that wraps around a bag: Take Photo → photograph the left part → Add another photo → the right part → Read 2 photos: one line with everything from both parts.
+- [ ] Choose Photo: pick two screenshots of one label (in order): "2 photos, read together…" → one line.

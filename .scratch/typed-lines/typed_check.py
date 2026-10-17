@@ -23,14 +23,15 @@ def block(enum, name="system"):
 
 
 RULES = block("FoodExtrasPrompt", "rules")
-SYSTEM = block("FoodEstimatePrompt").replace("\\(FoodExtrasPrompt.rules)", RULES)
+SERVING_RULES = block("ServingSizePrompt", "rules")
+SYSTEM = block("FoodEstimatePrompt").replace("\\(FoodExtrasPrompt.rules)", RULES).replace("\\(ServingSizePrompt.rules)", SERVING_RULES)
 i = SRC.index("static func library(_ listing: String) -> String", SRC.index("enum FoodEstimatePrompt"))
 LIB = re.search(r'"""\n(.*?)\n        """', SRC[i:], re.S).group(1)
 LIB = "\n".join(l[8:] if l.startswith("        ") else l for l in LIB.split("\n"))
-LOOKUP = block("FoodLookupPrompt")
+LOOKUP = block("FoodLookupPrompt").replace("\\(ServingSizePrompt.rules)", SERVING_RULES)
 LISTING = 'f1 Pho: s1 "bowl"\nf2 Eggs: s1 "1 egg", s2 "100 g"\nf3 Fries: s1 "small", s2 "medium", s3 "large"\nf4 Iced latte: s1 "grande"\nf5 Usual smoothie: s1 "cup"'
 NUM = {"type": ["number", "null"]}
-EXTRAS = {"fiber_g": NUM, "sodium_mg": NUM, "caffeine_mg": NUM, "alcohol_drinks": NUM}
+EXTRAS = {"fiber_g": NUM, "sodium_mg": NUM, "caffeine_mg": NUM, "alcohol_drinks": NUM, "serving_name": {"type": "string"}, "serving_grams": NUM, "piece_name": {"type": "string"}}
 TEXT_SCHEMA = {"type": "object", "additionalProperties": False,
                "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts"] + list(EXTRAS),
                "properties": {"is_food": {"type": "boolean"}, "parts": {"type": "array", "items": {"type": "string"}}, "name": {"type": "string"}, "quantity": {"type": "number"}, "unit": {"type": "string"},

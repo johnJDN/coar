@@ -19,19 +19,20 @@ def block(enum, name="system"):
 
 
 RULES = block("FoodExtrasPrompt", "rules")
-SYSTEM = block("FoodEstimatePrompt").replace("\\(FoodExtrasPrompt.rules)", RULES)
+SERVING_RULES = block("ServingSizePrompt", "rules")
+SYSTEM = block("FoodEstimatePrompt").replace("\\(FoodExtrasPrompt.rules)", RULES).replace("\\(ServingSizePrompt.rules)", SERVING_RULES)
 i = SRC.index("static func library(_ listing: String) -> String", SRC.index("enum FoodEstimatePrompt"))
 LIB = re.search(r'"""\n(.*?)\n        """', SRC[i:], re.S).group(1)
 LIB = "\n".join(l[8:] if l.startswith("        ") else l for l in LIB.split("\n"))
 LISTING = 'f1 Pho: s1 "bowl"\nf2 Eggs: s1 "1 egg", s2 "100 g"\nf3 Fries: s1 "small", s2 "medium", s3 "large"\nf4 Iced latte: s1 "grande"'
 NUM = {"type": ["number", "null"]}
 SCHEMA = {"type": "object", "additionalProperties": False,
-          "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts", "fiber_g", "sodium_mg", "caffeine_mg", "alcohol_drinks"],
+          "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts", "fiber_g", "sodium_mg", "caffeine_mg", "alcohol_drinks", "serving_name", "serving_grams", "piece_name"],
           "properties": {"is_food": {"type": "boolean"}, "parts": {"type": "array", "items": {"type": "string"}}, "name": {"type": "string"}, "quantity": {"type": "number"}, "unit": {"type": "string"},
                          "grams": NUM, "calories": {"type": "number"}, "protein": {"type": "number"}, "fat": {"type": "number"}, "carbs": {"type": "number"},
                          "needs_lookup": {"type": "boolean"}, "assumption": {"type": "string"},
                          "match": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": False, "required": ["food", "serving", "quantity"], "properties": {"food": {"type": "string"}, "serving": {"type": ["string", "null"]}, "quantity": {"type": "number"}}}]},
-                         "fiber_g": NUM, "sodium_mg": NUM, "caffeine_mg": NUM, "alcohol_drinks": NUM}}
+                         "fiber_g": NUM, "sodium_mg": NUM, "caffeine_mg": NUM, "alcohol_drinks": NUM, "serving_name": {"type": "string"}, "serving_grams": NUM, "piece_name": {"type": "string"}}}
 
 # line -> what we expect: ("match", food, serving, quantity) or ("parts", n) or ("none",)
 CASES = [

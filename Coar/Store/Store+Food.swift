@@ -170,6 +170,30 @@ extension Store {
         return EntryRecord(entry)!
     }
 
+    /// Save as food with the food's natural Servings (`Estimate.naturalServings`): a new Food
+    /// Item with them, and the Entry exactly as the line was logged ("45 g", "10 crackers"),
+    /// linked to it.
+    @discardableResult
+    func logEntrySavingFood(
+        name: String,
+        servings: [ServingDraft],
+        entryServingName: String,
+        quantity: Double,
+        macros: Macros,
+        extras: Extras,
+        at instant: Date,
+        in calendar: Calendar = .current
+    ) throws -> EntryRecord {
+        let item = FoodItem(context: context)
+        item.id = UUID()
+        item.isArchived = false
+        apply(name: name, servings: servings, to: item)
+        let entry = makeEntry(name: name, servingName: entryServingName, quantity: quantity, macros: macros, extras: extras, at: instant, in: calendar)
+        entry.foodItem = item
+        try save()
+        return EntryRecord(entry)!
+    }
+
     /// A new Entry with its snapshot filled in (ADR 0003) and its Day fixed (ADR 0005); the
     /// caller sets the reference and saves. For the `Store+<Domain>` extensions only.
     func makeEntry(name: String, servingName: String, quantity: Double, macros: Macros, extras: Extras = Extras(), at instant: Date, in calendar: Calendar) -> Entry {

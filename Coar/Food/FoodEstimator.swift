@@ -7,10 +7,17 @@ import os
 /// `Estimate.ReplyError` when the reply is not a food.
 protocol FoodEstimator {
     func estimate(_ line: String, library: FoodLibrary) async throws -> Estimate
-    /// Every food in a photo, or the one food a nutrition label is for (ticket 07); none when
-    /// the photo shows neither. `jpeg` is sent and never kept. `note` is what the user said
-    /// about it ("I ate half"), sent with it; nil for none.
-    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate]
+    /// Every food in the photos, or the one food a nutrition label is for (ticket 07); none
+    /// when they show neither. Several photos are read together: parts of one label that wraps
+    /// around a package, or views of one meal. The photos are sent and never kept. `note` is
+    /// what the user said about them ("I ate half", "45 g"), sent with them; nil for none.
+    func estimate(photos jpegs: [Data], note: String?, library: FoodLibrary) async throws -> [Estimate]
+}
+
+extension FoodEstimator {
+    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
+        try await estimate(photos: [jpeg], note: note, library: library)
+    }
 }
 
 /// The models, one constant each, so swapping one is a one-line change (ADR 0007).
@@ -49,6 +56,24 @@ enum FoodExtrasPrompt {
     static let required = ["fiber_g", "sodium_mg", "caffeine_mg", "alcohol_drinks"]
 }
 
+/// The food's natural serving (`ServingSize`), asked of every model alongside how much was
+/// eaten, so Save to Foods keeps "5 crackers (16 g)" or "1 breast" even for a line in grams.
+enum ServingSizePrompt {
+
+    static let rules = """
+    - serving_name, serving_grams, piece_name: the product's usual serving as printed or as people count it, kept for the person's saved foods. They don't affect anything else in the reply: quantity, unit, grams, the numbers, match and parts stay exactly as the rules above say. A dish listed with its ingredients is still one food, its serving the dish ("1 bowl").
+      serving_name: the label's or menu's household measure without its weight ("5 crackers", "2/3 cup", "about 15 chips"), else the natural single item ("1 breast", "1 slice") or a typical portion ("1 cup", "1 bowl"); never a weight like "100 g", even when the line is in grams. serving_grams: its weight in grams, or null. piece_name: one piece when serving_name counts several ("cracker"), else "".
+      Examples: "10 crackers" of a "5 crackers" (16 g) serving: quantity 10, unit "cracker", grams 32, numbers for 10; serving_name "5 crackers", serving_grams 16, piece_name "cracker". "150g chicken breast": quantity 150, unit "g", numbers for 150 g; serving_name "1 breast", serving_grams about 170.
+    """
+
+    static let properties: [String: Any] = [
+        "serving_name": ["type": "string"],
+        "serving_grams": ["type": ["number", "null"]],
+        "piece_name": ["type": "string"],
+    ]
+    static let required = ["serving_name", "serving_grams", "piece_name"]
+}
+
 /// What the text model is told, and the JSON it must reply with. Every field is required
 /// (strict schemas allow no optional ones); `grams` is null when unknown.
 enum FoodEstimatePrompt {
@@ -70,6 +95,7 @@ enum FoodEstimatePrompt {
     - match: null, unless a list of the person's saved foods follows.
     - parts: when the line lists separate foods eaten together ("eggs, toast and coffee", "burger and fries", "2 eggs + bacon"), each food as its own short line with its amount, as the person wrote it ("2 eggs", "toast", "coffee"); otherwise []. One food with parts is one food: "toast with butter", "chicken burrito bowl", "coffee with milk", "pho with extra noodles" are []. So is a dish listed with its ingredients: "malatang bowl with tomato broth, 4 shrimp, 4 slices of beef", "salad with chicken, avocado and ranch", "burrito with rice, beans and steak" are []. When parts has two or more, fill the other fields for the whole line anyway.
     \(FoodExtrasPrompt.rules)
+    \(ServingSizePrompt.rules)
     """
 
     /// The catalogue section, added after the rules when the user has saved foods.
@@ -84,7 +110,7 @@ enum FoodEstimatePrompt {
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts"] + FoodExtrasPrompt.required,
+        "required": ["is_food", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "needs_lookup", "assumption", "match", "parts"] + FoodExtrasPrompt.required + ServingSizePrompt.required,
         "properties": ([
             "is_food": ["type": "boolean"],
             "parts": ["type": "array", "items": ["type": "string"]],
@@ -111,7 +137,7 @@ enum FoodEstimatePrompt {
                     ],
                 ] as [String: Any],
             ]],
-        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first },
+        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first }.merging(ServingSizePrompt.properties) { first, _ in first },
     ]
 }
 
@@ -124,7 +150,7 @@ enum FoodPhotoPrompt {
 
     For a photo of a meal or snack: list each separate food you can see as its own item (the chicken, the rice, the broccoli), with source "photo". Estimate each portion from what is visible (plate size, pieces, depth) and give macros for the whole visible portion. Include sauces, dressings and cooking fat you can see in the food they are on.
 
-    For a photo of a nutrition label: give one item with source "label", read exactly from the label. name: the product, if the packaging shows it, else what the label is for ("Basmati rice"). quantity 1 and unit: the label's serving, with its size ("serving (100 g)", "bar (60 g)"). grams: the serving's weight if printed. calories, protein, fat and carbs: per serving, as printed (convert kJ only if no kcal is given).
+    For a photo of a nutrition label: give one item with source "label", read exactly from the label. name: the product, if the packaging shows it, else what the label is for ("Basmati rice"). quantity 1 and unit: the label's serving as printed, its household measure and weight ("5 crackers (16 g)", "2/3 cup (55 g)", "bar (60 g)"; "serving (100 g)" only when the label gives no measure). grams: the serving's weight if printed. calories, protein, fat and carbs: per serving, as printed (convert kJ only if no kcal is given).
 
     Rules for every item:
     - name: short and capitalised, without the amount ("Roast chicken", "Steamed broccoli").
@@ -134,6 +160,8 @@ enum FoodPhotoPrompt {
     - assumption: one short sentence on what you assumed about the portion or preparation, or "".
     - match: null, unless a list of the person's saved foods follows.
     For a label item, read fiber, sodium, caffeine and alcohol exactly from the label when it prints them, and use null for any it doesn't.
+    \(ServingSizePrompt.rules)
+    There may be several photos: parts of one nutrition label that wraps around a package, or views of the same meal. Read them together: one label is one item combining what each photo shows, and a food seen in two photos is counted once.
     \(FoodExtrasPrompt.rules)
     The person may send a short note with the photo. Trust it over what you see: it can say how much they ate ("I ate half", "only the chicken"), what a food is ("it's turkey, not chicken"), or what was added that you can't see ("cooked in butter"). Apply it to the items and say so in their assumption.
     A weight eaten in the note for a label's food ("45 g", "I had 45 grams", "1.5 oz") makes that item the weight: quantity the grams, unit "g", grams the same, and every number, extras too, scaled from the label's serving weight. A share of the serving ("half a serving") keeps the serving as the unit with that quantity.
@@ -157,7 +185,7 @@ enum FoodPhotoPrompt {
         properties["parts"] = nil
         properties["source"] = ["type": "string", "enum": ["photo", "label"]]
         item["properties"] = properties
-        item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"] + FoodExtrasPrompt.required
+        item["required"] = ["source", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption", "match"] + FoodExtrasPrompt.required + ServingSizePrompt.required
         return [
             "type": "object",
             "additionalProperties": false,
@@ -184,6 +212,7 @@ enum FoodLookupPrompt {
     - calories in kcal; protein, fat and carbs in grams; null for any you did not find published.
     - fiber_g (grams), sodium_mg (milligrams), caffeine_mg (milligrams) and alcohol_drinks (US standard drinks of 14 g pure alcohol, from the published strength and size): from the same published source, null for any it doesn't give. Never estimate these. A brand that doesn't publish caffeine gets null.
     - assumption: one short sentence naming where the numbers come from and anything assumed.
+    \(ServingSizePrompt.rules)
     - is_food is false only if the line cannot be something eaten or drunk. This is a food log: when a name could be a food or something else, it's the food.
     - Only when the line says they shared it or had part of it ("shared a large fries with my sister", "most of a burrito"): after finding the published numbers, scale them and the extras to their share (shared with one other person: half; with two others: a third; "most of": three quarters), set quantity to their share, and say so in the assumption. Otherwise give the published numbers as they are.
     """
@@ -191,7 +220,7 @@ enum FoodLookupPrompt {
     static let schema: [String: Any] = [
         "type": "object",
         "additionalProperties": false,
-        "required": ["is_food", "found", "product", "source_url", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption"] + FoodExtrasPrompt.required,
+        "required": ["is_food", "found", "product", "source_url", "name", "quantity", "unit", "grams", "calories", "protein", "fat", "carbs", "assumption"] + FoodExtrasPrompt.required + ServingSizePrompt.required,
         "properties": ([
             "is_food": ["type": "boolean"],
             "found": ["type": "boolean"],
@@ -206,7 +235,7 @@ enum FoodLookupPrompt {
             "fat": ["type": ["number", "null"]],
             "carbs": ["type": ["number", "null"]],
             "assumption": ["type": "string"],
-        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first },
+        ] as [String: Any]).merging(FoodExtrasPrompt.properties) { first, _ in first }.merging(ServingSizePrompt.properties) { first, _ in first },
     ]
 
     /// The published label in a lookup's reply, or nil when the model found no label for this
@@ -229,6 +258,9 @@ enum FoodLookupPrompt {
             let sodium_mg: Double?
             let caffeine_mg: Double?
             let alcohol_drinks: Double?
+            let serving_name: String?
+            let serving_grams: Double?
+            let piece_name: String?
         }
         guard let reply = try? JSONDecoder().decode(Reply.self, from: reply) else { throw Estimate.ReplyError.unreadable }
         guard reply.is_food, reply.found,
@@ -242,7 +274,8 @@ enum FoodLookupPrompt {
             macros: Macros(calories: calories, protein: protein, fat: fat, carbs: carbs),
             source: .lookedUp,
             assumption: plainText(reply.assumption).trimmingCharacters(in: .whitespaces),
-            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised()
+            extras: Extras(fiber: reply.fiber_g, sodium: reply.sodium_mg, caffeine: reply.caffeine_mg, alcohol: reply.alcohol_drinks).normalised(),
+            servingSize: ServingSize(reply: reply.serving_name, grams: reply.serving_grams, piece: reply.piece_name)
         )
     }
 
@@ -288,12 +321,13 @@ final class OpenRouterFoodEstimator: FoodEstimator {
         return kept
     }
 
-    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
+    func estimate(photos jpegs: [Data], note: String?, library: FoodLibrary) async throws -> [Estimate] {
         let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let together: [OpenRouterClient.Part] = jpegs.count > 1 ? [.text("These \(jpegs.count) photos are parts of one label or views of one meal: read them together.")] : []
         let reply = try await client.complete(
             model: FoodModels.photo,
             system: FoodPhotoPrompt.system + (library.promptListing.map(FoodPhotoPrompt.library) ?? ""),
-            user: [.jpeg(jpeg)] + (trimmed.isEmpty ? [] : [.text("Note from the person: \(trimmed)")]),
+            user: jpegs.map { .jpeg($0) } + together + (trimmed.isEmpty ? [] : [.text("Note from the person: \(trimmed)")]),
             schema: (name: "photo", json: FoodPhotoPrompt.schema),
             timeout: 40
         )
@@ -362,7 +396,7 @@ final class DebugFoodEstimator: FoodEstimator {
     }
 
     /// Two plate items after two seconds; a third photo in a row fails, to see the retry.
-    func estimate(photo jpeg: Data, note: String?, library: FoodLibrary) async throws -> [Estimate] {
+    func estimate(photos jpegs: [Data], note: String?, library: FoodLibrary) async throws -> [Estimate] {
         try await Task.sleep(for: .seconds(2))
         photos += 1
         if photos % 3 == 0 { throw OpenRouterError.failed("OpenRouter took too long to reply") }
