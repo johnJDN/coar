@@ -258,6 +258,7 @@ final class DayViewController: ScreenViewController {
         } catch {
             Self.logger.error("Failed to save mood: \(error, privacy: .public)")
         }
+        Task { await dependencies.reminder?.refresh() }
         self.mood.render((try? dependencies.store.mood(on: day)) ?? nil)
     }
 

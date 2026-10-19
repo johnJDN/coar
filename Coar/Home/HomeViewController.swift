@@ -160,6 +160,7 @@ final class HomeViewController: ScreenViewController {
         } catch {
             Self.logger.error("Failed to save mood: \(error, privacy: .public)")
         }
+        Task { await dependencies.reminder?.refresh() }
         // Let the pick show before the card leaves.
         Task {
             try? await Task.sleep(for: .milliseconds(450))

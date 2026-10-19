@@ -658,3 +658,11 @@ Ticket: `.scratch/food-logging/issues/02-natural-servings-and-wraparound-labels.
 - [ ] Describe "150g cooked chicken breast" and add it: Foods → its serving is "1 breast" (about 170 g); the g switch works there.
 - [ ] A label that wraps around a bag: Take Photo → photograph the left part → Add another photo → the right part → Read 2 photos: one line with everything from both parts.
 - [ ] Choose Photo: pick two screenshots of one label (in order): "2 photos, read together…" → one line.
+
+## Added after v1: Evening reminder (2026-10-18)
+
+Ticket: `.scratch/reminders/issues/01-evening-reminder.md`.
+
+- [ ] Settings → Reminders → Evening reminder on → Allow. Time shows 9:00 PM; set it a couple of minutes ahead to try it: "Log today" arrives; tapping it opens today's Day page.
+- [ ] Log some food and set mood and energy: that night's reminder doesn't come. The next night's does.
+- [ ] Turn it off: no more reminders.

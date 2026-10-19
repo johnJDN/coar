@@ -10,6 +10,8 @@ final class Preferences {
     static let massUnitDidChange = Notification.Name("Preferences.massUnitDidChange")
 
     private static let massUnitKey = "massUnit"
+    private static let reminderEnabledKey = "reminderEnabled"
+    private static let reminderMinuteKey = "reminderMinute"
 
     private let defaults: UserDefaults
 
@@ -26,6 +28,18 @@ final class Preferences {
             defaults.set(newValue.rawValue, forKey: Self.massUnitKey)
             NotificationCenter.default.post(name: Self.massUnitDidChange, object: self)
         }
+    }
+
+    /// The nightly reminder (`EveningReminder`): on or off, and minutes after midnight (9 PM by
+    /// default). Per device, like the notifications themselves.
+    var reminderEnabled: Bool {
+        get { defaults.bool(forKey: Self.reminderEnabledKey) }
+        set { defaults.set(newValue, forKey: Self.reminderEnabledKey) }
+    }
+
+    var reminderMinute: Int {
+        get { (defaults.object(forKey: Self.reminderMinuteKey) as? Int) ?? ReminderPlan.defaultMinute }
+        set { defaults.set(newValue, forKey: Self.reminderMinuteKey) }
     }
 
     /// Calls `handler` on the main actor whenever the unit changes, for as long as the returned

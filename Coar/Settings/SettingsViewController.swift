@@ -26,7 +26,10 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             healthStatus: nil,
             aiKey: dependencies.openRouter.keys.lastFour.map { .saved(lastFour: $0, spend: nil, problem: nil) } ?? .missing(problem: nil),
             aboutMe: (try? dependencies.store.aboutMe()) ?? AboutMe(),
-            journal: dependencies.journal?.status
+            journal: dependencies.journal?.status,
+            reminder: dependencies.reminder.map { _ in
+                SettingsForm.Reminder(isOn: dependencies.preferences.reminderEnabled, minute: dependencies.preferences.reminderMinute, blocked: false)
+            }
         )
         super.init(rootView: SettingsForm(model: model, onTargetsChanged: { _ in }, onChangeMassUnit: { _ in }, onConnectHealth: {}))
         title = "Settings"
@@ -43,6 +46,7 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         view.backgroundColor = UIColor.background
         render()
         refreshHealthStatus()
+        refreshReminder()
         refreshKeySpending()
     }
 
@@ -102,6 +106,33 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
             } catch {
                 Self.logger.error("Failed to read About me from Apple Health: \(error, privacy: .public)")
             }
+        }
+    }
+
+    private func toggleReminder(_ on: Bool) {
+        guard let reminder = dependencies.reminder else { return }
+        model.reminder?.isOn = on
+        render()
+        Task {
+            let allowed = await reminder.setEnabled(on)
+            model.reminder?.blocked = on && !allowed
+            render()
+        }
+    }
+
+    private func setReminderTime(_ minute: Int) {
+        guard let reminder = dependencies.reminder else { return }
+        model.reminder?.minute = minute
+        render()
+        Task { await reminder.setMinute(minute) }
+    }
+
+    /// Whether iOS has notifications for Coar turned off, for a reminder that's on.
+    private func refreshReminder() {
+        guard let reminder = dependencies.reminder, model.reminder?.isOn == true else { return }
+        Task {
+            model.reminder?.blocked = await reminder.isAllowed() == false
+            render()
         }
     }
 
@@ -213,6 +244,8 @@ final class SettingsViewController: UIHostingController<SettingsForm> {
         form.onFillAboutMe = { [weak self] in self?.fillAboutMe() }
         form.onChooseJournalFolder = { [weak self] in self?.chooseJournalFolder() }
         form.onReadJournal = { [weak self] in self?.readJournal() }
+        form.onReminderToggled = { [weak self] in self?.toggleReminder($0) }
+        form.onReminderTime = { [weak self] in self?.setReminderTime($0) }
         rootView = form
     }
 

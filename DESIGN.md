@@ -261,6 +261,9 @@ Charts never show a legend when color already maps to a label on screen.
   workouts and sleep open; journal events in a neutral tint (food amber, exercise green,
   social lavender); then a Summary card of `MetricRow`s (calories against the Target, habits
   done, steps, Sleep Score).
+- **Evening reminder** — Settings → Reminders: a toggle (bell on `accentAmber`) and a time,
+  9:00 PM by default; a local notification "Log today", skipped on Days already logged (food,
+  mood and energy); tapping it opens today's Day page.
 - **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
   or a fraction ("1/3", "1 1/2", "½"), then "× serving" or, where the portion's weight is known,
   a system segmented servings | g; under it quick amounts ¼ ½ ¾ 1 1½ 2 as capsules

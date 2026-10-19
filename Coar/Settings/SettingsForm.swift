@@ -17,6 +17,17 @@ struct SettingsForm: View {
         var aboutMe = AboutMe()
         /// Nil where there's no journal import (tests).
         var journal: JournalImporter.Status?
+        /// Nil where there's no reminder (tests).
+        var reminder: Reminder?
+    }
+
+    /// The nightly reminder's rows.
+    struct Reminder: Equatable {
+        var isOn: Bool
+        /// Minutes after midnight.
+        var minute: Int
+        /// iOS has Coar's notifications turned off.
+        var blocked: Bool
     }
 
     /// The OpenRouter key's rows. The key itself never reaches the form after it is typed.
@@ -40,6 +51,8 @@ struct SettingsForm: View {
     var onFillAboutMe: () -> Void = {}
     var onChooseJournalFolder: () -> Void = {}
     var onReadJournal: () -> Void = {}
+    var onReminderToggled: (Bool) -> Void = { _ in }
+    var onReminderTime: (Int) -> Void = { _ in }
 
     /// The key as it is being pasted; cleared once it is sent to be checked.
     @State private var typedKey = ""
@@ -88,6 +101,10 @@ struct SettingsForm: View {
             }
 
             aboutMeSection
+
+            if let reminder = model.reminder {
+                reminderSection(reminder)
+            }
 
             Section("Units") {
                 HStack(spacing: Metrics.spaceInner) {
@@ -143,6 +160,38 @@ struct SettingsForm: View {
         .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: fields) { _, fields in onTargetsChanged(Self.draft(from: fields)) }
+    }
+
+    // MARK: - Reminder
+
+    private func reminderSection(_ reminder: Reminder) -> some View {
+        Section {
+            HStack(spacing: Metrics.spaceInner) {
+                IconTile(systemImage: "bell.fill", tint: Color.accentAmber)
+                Toggle("Evening reminder", isOn: Binding(get: { reminder.isOn }, set: onReminderToggled))
+                    .foregroundStyle(Color.textPrimary)
+                    .tint(Color.accentGreen)
+            }
+            .formRow()
+            if reminder.isOn {
+                DatePicker("Time", selection: Binding(
+                    get: { Calendar.current.date(bySettingHour: reminder.minute / 60, minute: reminder.minute % 60, second: 0, of: Date())! },
+                    set: { date in
+                        let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                        onReminderTime((parts.hour ?? 21) * 60 + (parts.minute ?? 0))
+                    }
+                ), displayedComponents: .hourAndMinute)
+                .foregroundStyle(Color.textPrimary)
+                .formRow()
+            }
+            if reminder.isOn, reminder.blocked {
+                problemRow("Notifications are off for Coar. Turn them on in the iPhone's Settings → Notifications → Coar.")
+            }
+        } header: {
+            Text("Reminders")
+        } footer: {
+            Text("A nudge to log the day. It's skipped on days you've already logged food and set mood and energy. Tapping it opens the Day page.")
+        }
     }
 
     // MARK: - Journal

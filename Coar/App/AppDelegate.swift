@@ -26,6 +26,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         dependencies.places = isTestHost ? nil : PlaceRecorder(store: store)
         dependencies.journal = isTestHost ? nil : JournalImporter(store: store, reader: OnDeviceJournalReader())
         dependencies.sleepWriter = (dependencies.healthReader as? SleepWriter) ?? health
+        // Made at launch so it is the notification centre's delegate before a tap arrives.
+        dependencies.reminder = isTestHost ? nil : EveningReminder(store: store, preferences: dependencies.preferences)
         return dependencies
     }()
 

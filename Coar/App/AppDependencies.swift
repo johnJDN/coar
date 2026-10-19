@@ -26,4 +26,6 @@ struct AppDependencies {
     var journal: JournalImporter? = nil
     /// Adds a nap or missed sleep to Apple Health; nil in tests.
     var sleepWriter: SleepWriter? = nil
+    /// The nightly "log today" notification; nil in tests.
+    var reminder: EveningReminder? = nil
 }
