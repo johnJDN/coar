@@ -16,6 +16,7 @@ final class TrainViewController: ScreenViewController {
     private let exercisesChip = PillChipView(title: "Exercises", systemImage: "figure.strengthtraining.traditional", tint: UIColor.accentLime)
     private let bodyWeightChip = PillChipView(title: "Body Weight", systemImage: "scalemass.fill", tint: UIColor.accentTeal)
     private let photosChip = PillChipView(title: "Progress Photos", systemImage: "camera.fill", tint: UIColor.accentLavender)
+    private let walksChip = PillChipView(title: "Walks", subtitle: "Indoor", systemImage: "figure.walk", tint: UIColor.accentAmber)
     private let startButton = UIButton(configuration: .prominentGlass())
     /// The Workout Resume opens; nil while Start offers the menu instead.
     private var activeWorkoutID: WorkoutRecord.ID?
@@ -102,8 +103,9 @@ final class TrainViewController: ScreenViewController {
         exercisesChip.addAction(UIAction { [weak self] _ in self?.showExercises() }, for: .touchUpInside)
         bodyWeightChip.addAction(UIAction { [weak self] _ in self?.showBodyWeight() }, for: .touchUpInside)
         photosChip.addAction(UIAction { [weak self] _ in self?.showProgressPhotos() }, for: .touchUpInside)
+        walksChip.addAction(UIAction { [weak self] _ in self?.showWalks() }, for: .touchUpInside)
 
-        let chips = UIStackView(arrangedSubviews: [exercisesChip, bodyWeightChip, photosChip])
+        let chips = UIStackView(arrangedSubviews: [exercisesChip, bodyWeightChip, photosChip, walksChip])
         chips.axis = .horizontal
         chips.spacing = Metrics.spaceTight
         chips.translatesAutoresizingMaskIntoConstraints = false
@@ -385,6 +387,10 @@ final class TrainViewController: ScreenViewController {
 
     private func showBodyWeight() {
         navigationController?.pushViewController(BodyWeightViewController(dependencies: dependencies), animated: true)
+    }
+
+    private func showWalks() {
+        navigationController?.pushViewController(WalksViewController(dependencies: dependencies), animated: true)
     }
 
     private func showProgressPhotos() {

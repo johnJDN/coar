@@ -6,7 +6,7 @@ struct DayItem: Equatable {
         case woke, fellAsleep
         case meal(EntryRecord.ID)
         case workout(WorkoutRecord.ID)
-        case healthWorkout
+        case healthWorkout(UUID)
         case weighIn
         case journal
     }
@@ -45,11 +45,19 @@ enum DayTimeline {
         var healthWorkouts: [HealthWorkout] = []
         var weighedIn: String?
         var journal: [JournalEventRecord] = []
+        /// Notes on Watch workouts, for "inhaler" and a treadmill's settings.
+        var workoutNotes: [UUID: WorkoutNoteRecord] = [:]
     }
 
     static func items(_ inputs: Inputs, calendar: Calendar = .current) -> [DayItem] {
         let midnight = inputs.day.start(in: calendar)
-        func minute(_ date: Date) -> Int { Int(date.timeIntervalSince(midnight) / 60) }
+        // The clock time, so a Day the clocks change on (23 or 25 hours) still reads true;
+        // another Day's time counts whole days from this one's midnight.
+        func minute(_ date: Date) -> Int {
+            let clock = calendar.dateComponents([.hour, .minute], from: date)
+            let days = calendar.dateComponents([.day], from: midnight, to: calendar.startOfDay(for: date)).day ?? 0
+            return days * 1_440 + (clock.hour ?? 0) * 60 + (clock.minute ?? 0)
+        }
         var items: [DayItem] = []
 
         if let woke = inputs.woke {
@@ -66,8 +74,10 @@ enum DayTimeline {
                                  title: workout.title, detail: [workout.duration.map(Self.duration), effort].compactMap { $0 }.joined(separator: " · ").nilIfEmpty))
         }
         for health in inputs.healthWorkouts where !linked.contains(health.id) {
-            items.append(DayItem(kind: .healthWorkout, minute: minute(health.start), isApproximate: false, systemImage: "applewatch", tint: UIColor.accentGreen,
-                                 title: health.name, detail: [Self.duration(health.duration), health.effortText].compactMap { $0 }.joined(separator: " · ")))
+            let note = inputs.workoutNotes[health.id]
+            let detail = [Self.duration(health.duration), health.effortText, note?.settingsText, note?.usedInhaler == true ? "inhaler" : nil].compactMap { $0 }
+            items.append(DayItem(kind: .healthWorkout(health.id), minute: minute(health.start), isApproximate: false, systemImage: "applewatch", tint: UIColor.accentGreen,
+                                 title: health.name, detail: detail.joined(separator: " · ")))
         }
         if let weighedIn = inputs.weighedIn {
             items.append(DayItem(kind: .weighIn, minute: PartOfDay.morning.anchorMinute, isApproximate: true, systemImage: "scalemass.fill", tint: UIColor.accentTeal, title: "Weighed in", detail: weighedIn))

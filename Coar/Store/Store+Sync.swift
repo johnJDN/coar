@@ -20,6 +20,7 @@ enum DedupePass {
         var placesDeleted = 0
         var journalEntriesDeleted = 0
         var journalEventsDeleted = 0
+        var workoutNotesDeleted = 0
         var servingDefaultsCleared = 0
         var workoutsFinished = 0
         var workoutsDeleted = 0
@@ -38,6 +39,7 @@ enum DedupePass {
         report.moodsDeleted = try dedupeMoods(in: context)
         report.placesDeleted = try dedupePlaces(in: context)
         (report.journalEntriesDeleted, report.journalEventsDeleted) = try dedupeJournal(in: context)
+        report.workoutNotesDeleted = try dedupeWorkoutNotes(in: context)
         report.servingDefaultsCleared = try dedupeDefaultServings(in: context)
         (report.workoutsFinished, report.workoutsDeleted) = try dedupeActiveWorkouts(in: context)
         try Store.stampAndSave(context)
@@ -134,6 +136,16 @@ enum DedupePass {
         }
         stale.forEach(context.delete)
         return (losers.count, stale.count)
+    }
+
+    /// One note per Health Workout: the latest `modifiedAt` stays.
+    private static func dedupeWorkoutNotes(in context: NSManagedObjectContext) throws -> Int {
+        let notes = try context.fetch(WorkoutNote.fetchRequest())
+        let losers = losers(among: notes, key: \.healthWorkoutID) {
+            ($0.modifiedAt ?? .distantPast, $0.usedInhaler ? 1 : 0) > ($1.modifiedAt ?? .distantPast, $1.usedInhaler ? 1 : 0)
+        }
+        losers.forEach(context.delete)
+        return losers.count
     }
 
     /// One default Serving per Food Item: the latest `modifiedAt` keeps the flag; the others

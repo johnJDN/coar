@@ -24,6 +24,11 @@ final class FakeHealthWorkoutReader: HealthWorkoutReader {
         return workouts.filter { Day($0.start, in: calendar) == day }.sorted { $0.start < $1.start }
     }
 
+    func healthWorkouts(from first: Day, to last: Day) async throws -> [HealthWorkout] {
+        if let failure { throw failure }
+        return workouts.filter { (first...last).contains(Day($0.start, in: calendar)) }.sorted { $0.start < $1.start }
+    }
+
     func healthWorkouts(withIDs ids: [UUID]) async throws -> [UUID: HealthWorkout] {
         if let failure { throw failure }
         return Dictionary(workouts.filter { ids.contains($0.id) }.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })

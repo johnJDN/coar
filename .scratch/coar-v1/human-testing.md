@@ -664,5 +664,22 @@ Ticket: `.scratch/food-logging/issues/02-natural-servings-and-wraparound-labels.
 Ticket: `.scratch/reminders/issues/01-evening-reminder.md`.
 
 - [ ] Settings → Reminders → Evening reminder on → Allow. Time shows 9:00 PM; set it a couple of minutes ahead to try it: "Log today" arrives; tapping it opens today's Day page.
-- [ ] Log some food and set mood and energy: that night's reminder doesn't come. The next night's does.
+- [ ] (Changed 2026-11-01) It comes every night, even on Days already logged.
 - [ ] Turn it off: no more reminders.
+
+## Added after v1: Copy entries (2026-11-01)
+
+Ticket: `.scratch/food-logging/issues/03-copy-entries.md`.
+
+- [ ] Food → Select → tap two entries (checks appear) → Copy 2 to… → pick tomorrow, Keep their own times on → Copy 2 entries. "Copied 2 to …" → Show: tomorrow has both at the same times.
+- [ ] Long-press an entry → Copy to… → turn Keep their own times off, pick a time today → Copy: the copy shows at that time.
+
+## Added after v1: Indoor walks and the inhaler (2026-11-01)
+
+Ticket: `.scratch/walks/issues/01-indoor-walks-and-inhaler.md`.
+
+- [ ] Train → Walks: your Indoor Walks from the Watch, with heart rate as points (allow workouts in the Health prompt if asked).
+- [ ] Tap a walk: turn on Used inhaler before, type Speed (mph) and Incline (%). Close: the walk's row shows them; its point turns lavender.
+- [ ] Tap the next walk: "Same as last time: 3.0 mph · 6%" fills both in one tap.
+- [ ] After two or more walks at the same speed and incline: a card for them shows heart rate without and with the inhaler, and first → latest.
+- [ ] Day page of a day with an Indoor Walk: the row opens the same sheet; its detail shows the settings and "inhaler".

@@ -262,8 +262,20 @@ Charts never show a legend when color already maps to a label on screen.
   social lavender); then a Summary card of `MetricRow`s (calories against the Target, habits
   done, steps, Sleep Score).
 - **Evening reminder** — Settings → Reminders: a toggle (bell on `accentAmber`) and a time,
-  9:00 PM by default; a local notification "Log today", skipped on Days already logged (food,
-  mood and energy); tapping it opens today's Day page.
+  9:00 PM by default; a local notification "Log today" every night (planned a week ahead, so
+  it comes without Coar being opened); tapping it opens today's Day page.
+- **Copy to…** (Food) — Select in the bar (or Select / Copy to… in an entry's menu) puts a
+  check badge on each entry card's leading corner (`checkmark.circle.fill` in `accentGreen`,
+  an empty `circle` in `textTertiary`); tapping a card toggles it; Cancel on the left, a
+  prominent "Copy N to…" on the right opens a medium sheet: Day, "Keep their own times" (on by
+  default) or a Time, and "Copy N entries". A toast says where, with Show for another Day.
+- **Walks** (Train → Walks chip, `figure.walk` in `accentAmber`) — indoor walks from the Watch
+  over six months: a card with heart rate a point per walk (lavender with the inhaler, teal
+  without); up to three cards of walks done the same way ("3.0 mph · 6%": average heart rate
+  without and with the inhaler, first → latest); then Every walk, each opening its note.
+- **Workout note** (a sheet from Walks or a Watch workout on the Day page) — what the Watch
+  read (when, duration, average heart rate, distance), then Used inhaler before (`accentLavender`
+  toggle), Speed (mph or km/h) and Incline (%) in `accentAmber`; saved as it changes.
 - **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
   or a fraction ("1/3", "1 1/2", "½"), then "× serving" or, where the portion's weight is known,
   a system segmented servings | g; under it quick amounts ¼ ½ ¾ 1 1½ 2 as capsules

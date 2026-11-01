@@ -367,4 +367,5 @@ extension DayMood: ModifiedAtStamped {}
 extension DayPlace: ModifiedAtStamped {}
 extension JournalEntry: ModifiedAtStamped {}
 extension JournalEvent: ModifiedAtStamped {}
+extension WorkoutNote: ModifiedAtStamped {}
 extension ProgressPhoto: ModifiedAtStamped {}

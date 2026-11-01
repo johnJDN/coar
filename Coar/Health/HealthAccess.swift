@@ -332,6 +332,7 @@ extension HealthKitAccess: HealthWorkoutReader {
         HKObjectType.workoutType(),
         HKQuantityType(.activeEnergyBurned),
         HKQuantityType(.heartRate),
+        HKQuantityType(.distanceWalkingRunning),
     ]
 
     func requestWorkoutAccess() async throws {
@@ -354,6 +355,12 @@ extension HealthKitAccess: HealthWorkoutReader {
         return Dictionary(found.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    func healthWorkouts(from first: Day, to last: Day) async throws -> [HealthWorkout] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let predicate = HKQuery.predicateForSamples(withStart: first.start(), end: last.advanced(by: 1).start(), options: .strictStartDate)
+        return try await healthWorkouts(matching: predicate)
+    }
+
     private func healthWorkouts(matching predicate: NSPredicate) async throws -> [HealthWorkout] {
         let descriptor = HKSampleQueryDescriptor(
             predicates: [.workout(predicate)],
@@ -370,11 +377,14 @@ private extension HealthWorkout {
         let beatsPerMinute = HKUnit.count().unitDivided(by: .minute())
         self.init(
             id: workout.uuid,
-            name: workout.workoutActivityType.coarName,
+            name: workout.workoutActivityType == .walking && (workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool) == true ? "Indoor walk" : workout.workoutActivityType.coarName,
             start: workout.startDate,
             end: workout.endDate,
             activeKilocalories: workout.statistics(for: HKQuantityType(.activeEnergyBurned))?.sumQuantity()?.doubleValue(for: .kilocalorie()),
-            averageHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: beatsPerMinute)
+            averageHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?.averageQuantity()?.doubleValue(for: beatsPerMinute),
+            isWalk: workout.workoutActivityType == .walking,
+            isIndoor: (workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool) ?? false,
+            distanceMeters: workout.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()?.doubleValue(for: .meter())
         )
     }
 }

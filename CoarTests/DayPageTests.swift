@@ -34,6 +34,23 @@ final class DayPageTests: XCTestCase {
         XCTAssertEqual(titles, ["Woke up", "Eggs", "Office work", "Lunch with Neil", "Fell asleep"])
     }
 
+    func test_timeline_readsTheClock_onTheDayTheClocksGoBack() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let nov1 = Day(year: 2026, month: 11, day: 1)
+        func at(_ hour: Int, _ minute: Int = 0, on day: Day = nov1) -> Date {
+            calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day.start(in: calendar))!
+        }
+        var inputs = DayTimeline.Inputs(day: nov1)
+        inputs.woke = at(7, 40)
+        inputs.healthWorkouts = [HealthWorkout(id: UUID(), name: "Indoor walk", start: at(20), end: at(20, 35), activeKilocalories: nil, averageHeartRate: nil)]
+        inputs.fellAsleep = at(0, 15, on: nov1.advanced(by: 1))
+
+        let minutes = DayTimeline.items(inputs, calendar: calendar).map(\.minute)
+
+        XCTAssertEqual(minutes, [7 * 60 + 40, 20 * 60, 24 * 60 + 15])
+    }
+
     func test_timeline_leavesOutJournalMealsOnALoggedDay_andWatchWorkoutsLinkedToOne() {
         let health = HealthWorkout(id: UUID(), name: "Strength training", start: at(18, 5), end: at(18, 55), activeKilocalories: 318, averageHeartRate: 118)
         let walk = HealthWorkout(id: UUID(), name: "Walk", start: at(7, 30), end: at(7, 50), activeKilocalories: 95, averageHeartRate: 92)

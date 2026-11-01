@@ -153,6 +153,12 @@ to it as "320 cal · 118 bpm". A reading of how hard the session was, not a numb
 enters food or Targets. Read live each time; the app keeps no copy.
 _Avoid_: Calories burned, intensity, strain
 
+**Workout note**:
+What the user adds to a Health Workout that the Watch can't know: whether they used their
+inhaler before it, and a treadmill's speed and incline. Kept by the Health Workout's
+identifier, like a link. Walks at the same speed and incline are compared by heart rate.
+_Avoid_: Annotation, tag, metadata
+
 **Active Workout**:
 The one Workout currently in progress. There is never more than one.
 _Avoid_: Current workout, live workout, in-progress session

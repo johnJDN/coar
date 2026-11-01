@@ -13,6 +13,11 @@ struct HealthWorkout: Equatable, Identifiable {
     let activeKilocalories: Double?
     /// Average heart rate in beats per minute, when Health has it.
     let averageHeartRate: Double?
+    /// A walk (indoor or out), and whether it was indoors (a treadmill).
+    var isWalk = false
+    var isIndoor = false
+    /// Walking distance in metres, when Health has it; the Watch's estimate indoors.
+    var distanceMeters: Double? = nil
 
     var duration: TimeInterval { end.timeIntervalSince(start) }
 
@@ -90,6 +95,8 @@ protocol HealthWorkoutReader: AnyObject {
     /// The Health Workouts with these identifiers, by identifier; those Health no longer
     /// holds, or may not be read, are missing.
     func healthWorkouts(withIDs ids: [UUID]) async throws -> [UUID: HealthWorkout]
+    /// The Health Workouts that started between two Days, inclusive, earliest first.
+    func healthWorkouts(from first: Day, to last: Day) async throws -> [HealthWorkout]
 }
 
 #if DEBUG
@@ -108,10 +115,28 @@ final class DebugHealthWorkoutReader: HealthWorkoutReader {
     func healthWorkouts(on day: Day) async throws -> [HealthWorkout] {
         let calendar = Calendar.current
         let at = { (hour: Int, minute: Int) in calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day.start(in: calendar))! }
-        return [
-            HealthWorkout(id: Self.id(day, 1), name: "Walk", start: at(7, 30), end: at(7, 50), activeKilocalories: 95, averageHeartRate: 92),
+        var workouts = [
+            HealthWorkout(id: Self.id(day, 1), name: "Walk", start: at(7, 30), end: at(7, 50), activeKilocalories: 95, averageHeartRate: 92, isWalk: true, distanceMeters: 1_600),
             HealthWorkout(id: Self.id(day, 2), name: "Strength training", start: at(18, 5), end: at(18, 55), activeKilocalories: 318.4, averageHeartRate: 118.2),
         ]
+        // A treadmill walk every other evening, heart rate easing down over the weeks.
+        let index = Day.today().distance(to: day)
+        if index % 2 == 0 {
+            let weeksAgo = Double(-index) / 7
+            workouts.append(HealthWorkout(id: Self.id(day, 3), name: "Indoor walk", start: at(20, 0), end: at(20, 35), activeKilocalories: 210,
+                                          averageHeartRate: 118 + weeksAgo * 1.5 + Double(abs(index * 7) % 5), isWalk: true, isIndoor: true, distanceMeters: 2_800))
+        }
+        return workouts
+    }
+
+    func healthWorkouts(from first: Day, to last: Day) async throws -> [HealthWorkout] {
+        var result: [HealthWorkout] = []
+        var day = first
+        while day <= last {
+            result += try await healthWorkouts(on: day)
+            day = day.advanced(by: 1)
+        }
+        return result
     }
 
     func healthWorkouts(withIDs ids: [UUID]) async throws -> [UUID: HealthWorkout] {

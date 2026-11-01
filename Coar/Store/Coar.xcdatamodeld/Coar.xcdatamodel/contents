@@ -263,6 +263,15 @@
         <attribute name="readID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
     </entity>
+    <!-- What the Watch doesn't know about one of its workouts (.scratch/walks/): keyed by the
+         Health Workout's identifier, one per workout. -->
+    <entity name="WorkoutNote" representedClassName="WorkoutNote" syncable="YES" codeGenerationType="class">
+        <attribute name="healthWorkoutID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="inclinePercent" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="speedKmh" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="usedInhaler" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+    </entity>
     <entity name="ProgressPhoto" representedClassName="ProgressPhoto" syncable="YES" codeGenerationType="class">
         <attribute name="caption" optional="YES" attributeType="String"/>
         <attribute name="day" optional="YES" attributeType="String"/>

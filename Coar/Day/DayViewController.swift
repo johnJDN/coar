@@ -27,6 +27,8 @@ final class DayViewController: ScreenViewController {
     private lazy var previousItem = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), primaryAction: UIAction { [weak self] _ in self?.move(by: -1) })
     private lazy var nextItem = UIBarButtonItem(image: UIImage(systemName: "chevron.right"), primaryAction: UIAction { [weak self] _ in self?.move(by: 1) })
     private var loadTask: Task<Void, Never>?
+    /// The Day's Watch workouts as last read, for opening one's note.
+    private var lastHealthWorkouts: [HealthWorkout] = []
 
     init(dependencies: AppDependencies, day: Day) {
         self.dependencies = dependencies
@@ -135,6 +137,7 @@ final class DayViewController: ScreenViewController {
         let unit = dependencies.preferences.massUnit
         inputs.weighedIn = ((try? store.bodyWeight(on: day)) ?? nil).map { unit.displayText(fromKilograms: $0.kilograms) }
         inputs.healthWorkouts = (try? await dependencies.healthWorkouts.healthWorkouts(on: day)) ?? []
+        inputs.workoutNotes = (try? store.workoutNotes(for: inputs.healthWorkouts.map(\.id))) ?? [:]
 
         let nightDays = (-HealthDetailViewController.patternNights...1).map { day.advanced(by: $0) }
         let nights = (try? await reader.sleepNights(wakingOn: nightDays)) ?? [:]
@@ -192,6 +195,7 @@ final class DayViewController: ScreenViewController {
         mood.render(snapshot?.mood)
 
         timelineStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        lastHealthWorkouts = snapshot?.inputs.healthWorkouts ?? []
         let items = snapshot.map { DayTimeline.items($0.inputs) } ?? []
         for item in items {
             let row = DayItemRow(item: item)
@@ -245,7 +249,13 @@ final class DayViewController: ScreenViewController {
                 guard let self else { return }
                 navigationController?.pushViewController(HealthDetailViewController(dependencies: dependencies, metric: .sleep), animated: true)
             }
-        case .healthWorkout, .weighIn, .journal:
+        case .healthWorkout(let id):
+            return { [weak self] in
+                guard let self, let workout = lastHealthWorkouts.first(where: { $0.id == id }) else { return }
+                let sheet = WorkoutNoteViewController(store: dependencies.store, workout: workout) { [weak self] in self?.load() }
+                present(sheet.inSheet(detents: [.large()]), animated: true)
+            }
+        case .weighIn, .journal:
             return nil
         }
     }
@@ -330,6 +340,7 @@ final class DayItemRow: UIControl {
         detail.text = item.detail
         detail.font = UIFont.label
         detail.textColor = UIColor.textSecondary
+        detail.numberOfLines = 2
         detail.adjustsFontForContentSizeCategory = true
         detail.isHidden = item.detail == nil
         let text = UIStackView(arrangedSubviews: [title, detail])
