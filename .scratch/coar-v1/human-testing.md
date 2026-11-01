@@ -679,7 +679,7 @@ Ticket: `.scratch/food-logging/issues/03-copy-entries.md`.
 Ticket: `.scratch/walks/issues/01-indoor-walks-and-inhaler.md`.
 
 - [ ] Train → Walks: your Indoor Walks from the Watch, with heart rate as points (allow workouts in the Health prompt if asked).
-- [ ] Tap a walk: turn on Used inhaler before, type Speed (mph) and Incline (%). Close: the walk's row shows them; its point turns lavender.
-- [ ] Tap the next walk: "Same as last time: 3.0 mph · 6%" fills both in one tap.
-- [ ] After two or more walks at the same speed and incline: a card for them shows heart rate without and with the inhaler, and first → latest.
-- [ ] Day page of a day with an Indoor Walk: the row opens the same sheet; its detail shows the settings and "inhaler".
+- [ ] After a walk, open it (Walks or the Day page): turn on Used inhaler before if you did, type the treadmill's distance and roughly the incline you were at most of the time. Average speed shows under them.
+- [ ] The next walk: "Same incline as last time" fills the incline in one tap.
+- [ ] With a few walks filled in: the chart reads "At 3.0 mph · 5%, estimated" (your usual), points lavender with the inhaler; the Inhaler card shows both averages; after four or more, the Fitness card shows first → latest.
+- [ ] Day page of a day with an Indoor Walk: the row opens the same sheet; its detail shows the distance, incline and "inhaler".

@@ -3,53 +3,115 @@ import SwiftUI
 import UIKit
 import os
 
-/// Indoor walks compared (`.scratch/walks/issues/01`; a pure rule): heart rate is comparable only
-/// between walks at the same treadmill speed and incline, so walks are grouped by those, and
-/// each group says its average heart rate with and without the inhaler, and its first and
-/// latest walk.
-enum WalkComparison {
+/// Indoor walks made comparable (`.scratch/walks/issues/01`; a pure rule). A walk's effort is
+/// the oxygen it takes by the ACSM walking equation (American College of Sports Medicine:
+/// 0.1 × speed + 1.8 × speed × grade + 3.5 mL/kg/min, speed in metres a minute), from the
+/// treadmill's distance over the Watch's duration and the average incline. Heart rate rises
+/// in a straight line with oxygen from the resting rate, so each walk's heart rate is moved
+/// to one reference effort (the walks' usual speed and incline): lower there means fitter.
+enum WalkEffort {
 
-    struct Group: Equatable {
-        /// "3.0 mph · 6%".
-        let settings: String
-        let count: Int
-        let withInhaler: (average: Double, count: Int)?
-        let without: (average: Double, count: Int)?
-        let first: Double
-        let latest: Double
+    struct Reference: Equatable {
+        let metersPerMinute: Double
+        let inclinePercent: Double
 
-        static func == (lhs: Group, rhs: Group) -> Bool {
-            lhs.settings == rhs.settings && lhs.count == rhs.count && lhs.first == rhs.first && lhs.latest == rhs.latest
-                && lhs.withInhaler?.average == rhs.withInhaler?.average && lhs.without?.average == rhs.without?.average
-        }
+        /// "3.0 mph · 5%".
+        var text: String { "\(TreadmillUnits.speedText(metersPerMinute: metersPerMinute)) · \(TreadmillUnits.inclineText(inclinePercent))" }
+        var oxygen: Double { WalkEffort.oxygen(metersPerMinute: metersPerMinute, inclinePercent: inclinePercent) }
     }
 
-    /// Walks with a heart rate and both settings, grouped; the largest groups first.
-    static func groups(_ walks: [(workout: HealthWorkout, note: WorkoutNoteRecord?)]) -> [Group] {
-        let usable = walks.compactMap { walk -> (key: String, heart: Double, inhaler: Bool, start: Date)? in
-            guard let heart = walk.workout.averageHeartRate, let settings = walk.note?.settingsText else { return nil }
-            return (settings, heart, walk.note?.usedInhaler ?? false, walk.workout.start)
+    struct Scored: Equatable {
+        let id: UUID
+        let date: Date
+        let inhaler: Bool
+        let heartRate: Double
+        /// The heart rate this walk's fitness would give at the reference effort.
+        let atReference: Double
+    }
+
+    struct Average: Equatable {
+        let heartRate: Double
+        let walks: Int
+    }
+
+    struct Summary: Equatable {
+        let reference: Reference
+        /// Oldest first.
+        let scored: [Scored]
+        /// Over the last `recentDays`, so fitness changing over months doesn't decide it.
+        let withInhaler: Average?
+        let without: Average?
+        /// The first few scored walks against the latest few; nil with fewer than four.
+        let earlier: Average?
+        let later: Average?
+    }
+
+    static let restingFallback = 65.0
+    static let recentDays = 56
+
+    /// mL/kg/min by the ACSM walking equation.
+    static func oxygen(metersPerMinute: Double, inclinePercent: Double) -> Double {
+        0.1 * metersPerMinute + 1.8 * metersPerMinute * inclinePercent / 100 + 3.5
+    }
+
+    /// The treadmill's distance over the Watch's duration.
+    static func metersPerMinute(_ workout: HealthWorkout, _ note: WorkoutNoteRecord?) -> Double? {
+        guard let meters = note?.treadmillMeters, meters > 0, workout.duration > 0 else { return nil }
+        return meters / (workout.duration / 60)
+    }
+
+    /// A heart rate at one effort moved to another along the straight line from resting.
+    static func heartRate(_ heartRate: Double, atOxygen oxygen: Double, movedTo target: Double, resting: Double) -> Double? {
+        guard oxygen > 3.5, heartRate > resting else { return nil }
+        return resting + (heartRate - resting) * (target - 3.5) / (oxygen - 3.5)
+    }
+
+    /// The walks' middle speed (to half a mph or km/h) and incline (to a whole percent).
+    static func reference(speeds: [Double], inclines: [Double]) -> Reference {
+        func median(_ values: [Double]) -> Double {
+            let sorted = values.sorted()
+            guard !sorted.isEmpty else { return 0 }
+            return sorted.count % 2 == 1 ? sorted[sorted.count / 2] : (sorted[sorted.count / 2 - 1] + sorted[sorted.count / 2]) / 2
         }
-        return Dictionary(grouping: usable, by: \.key).map { key, group in
-            let sorted = group.sorted { $0.start < $1.start }
-            func average(_ walks: [(key: String, heart: Double, inhaler: Bool, start: Date)]) -> (Double, Int)? {
-                walks.isEmpty ? nil : (walks.map(\.heart).reduce(0, +) / Double(walks.count), walks.count)
-            }
-            return Group(settings: key, count: group.count, withInhaler: average(group.filter(\.inhaler)), without: average(group.filter { !$0.inhaler }),
-                         first: sorted.first!.heart, latest: sorted.last!.heart)
+        let speed = max(0.5, (TreadmillUnits.displaySpeed(metersPerMinute: median(speeds)) * 2).rounded() / 2)
+        return Reference(metersPerMinute: TreadmillUnits.metersPerMinute(fromDisplaySpeed: speed), inclinePercent: median(inclines).rounded())
+    }
+
+    static func summary(_ walks: [(workout: HealthWorkout, note: WorkoutNoteRecord?)], restingHeartRate: Double?, now: Date = Date()) -> Summary? {
+        let usable = walks.compactMap { walk -> (workout: HealthWorkout, inhaler: Bool, speed: Double, incline: Double, heart: Double)? in
+            guard let heart = walk.workout.averageHeartRate, let speed = metersPerMinute(walk.workout, walk.note), let incline = walk.note?.inclinePercent else { return nil }
+            return (walk.workout, walk.note?.usedInhaler ?? false, speed, incline, heart)
         }
-        .sorted { ($0.count, $0.settings) > ($1.count, $1.settings) }
+        guard !usable.isEmpty else { return nil }
+        let resting = restingHeartRate ?? restingFallback
+        let reference = reference(speeds: usable.map(\.speed), inclines: usable.map(\.incline))
+        let scored = usable.compactMap { item -> Scored? in
+            let oxygen = oxygen(metersPerMinute: item.speed, inclinePercent: item.incline)
+            guard let moved = heartRate(item.heart, atOxygen: oxygen, movedTo: reference.oxygen, resting: resting) else { return nil }
+            return Scored(id: item.workout.id, date: item.workout.start, inhaler: item.inhaler, heartRate: item.heart, atReference: moved)
+        }
+        .sorted { $0.date < $1.date }
+
+        func average(_ walks: [Scored]) -> Average? {
+            walks.isEmpty ? nil : Average(heartRate: walks.map(\.atReference).reduce(0, +) / Double(walks.count), walks: walks.count)
+        }
+        let recent = scored.filter { $0.date >= now.addingTimeInterval(-Double(recentDays) * 86_400) }
+        let ends = scored.count >= 4 ? min(5, scored.count / 2) : 0
+        return Summary(reference: reference, scored: scored,
+                       withInhaler: average(recent.filter(\.inhaler)), without: average(recent.filter { !$0.inhaler }),
+                       earlier: ends > 0 ? average(Array(scored.prefix(ends))) : nil, later: ends > 0 ? average(Array(scored.suffix(ends))) : nil)
     }
 }
 
 /// A Watch workout's note (ADR 0001: SwiftUI leaf, values in, closures out): what it was, then
-/// the inhaler, and a treadmill's speed and incline. Saved as it changes.
+/// the inhaler, and from the treadmill's display its distance and the incline it was mostly
+/// at. Saved as it changes.
 struct WorkoutNoteForm: View {
 
     let workout: HealthWorkout
     @State var note: WorkoutNoteRecord
-    /// The last speed and incline set on any walk, offered while this one has neither.
-    var last: (speedKmh: Double, inclinePercent: Double)?
+    /// The incline last set on any walk, offered while this one has none.
+    var lastIncline: Double?
     let onChange: (WorkoutNoteRecord) -> Void
 
     var body: some View {
@@ -57,31 +119,32 @@ struct WorkoutNoteForm: View {
             Section {
                 row("When", "\(workout.start.formatted(date: .abbreviated, time: .shortened)) · \(HealthText.duration(workout.duration))")
                 if let heart = workout.averageHeartRate { row("Average heart rate", "\(Int(heart.rounded())) bpm") }
-                if let meters = workout.distanceMeters, meters > 0 { row("Distance (Watch)", Self.distance(meters)) }
+                if let meters = workout.distanceMeters, meters > 0 { row("Distance (Watch's guess)", TreadmillUnits.distanceText(meters)) }
             }
             Section {
                 Toggle("Used inhaler before", isOn: $note.usedInhaler)
                     .foregroundStyle(Color.textPrimary)
                     .tint(Color.accentLavender)
                     .formRow()
-                numberRow("Speed", unit: TreadmillSpeed.unit, value: Binding(
-                    get: { note.speedKmh.map(TreadmillSpeed.display) },
-                    set: { note.speedKmh = $0.map(TreadmillSpeed.kmh(fromDisplay:)) }
+                numberRow("Treadmill distance", unit: TreadmillUnits.distanceUnit, fraction: 0...2, value: Binding(
+                    get: { note.treadmillMeters.map(TreadmillUnits.displayDistance) },
+                    set: { note.treadmillMeters = $0.map(TreadmillUnits.meters(fromDisplay:)) }
                 ))
-                numberRow("Incline", unit: "%", value: $note.inclinePercent)
-                if let last, note.speedKmh == nil, note.inclinePercent == nil {
+                numberRow("Average incline", unit: "%", fraction: 0...1, value: $note.inclinePercent)
+                if let lastIncline, note.inclinePercent == nil {
                     Button {
-                        note.speedKmh = last.speedKmh
-                        note.inclinePercent = last.inclinePercent
+                        note.inclinePercent = lastIncline
                     } label: {
-                        Label("Same as last time: \(WorkoutNoteRecord(healthWorkoutID: note.healthWorkoutID, speedKmh: last.speedKmh, inclinePercent: last.inclinePercent).settingsText ?? "")",
-                              systemImage: "arrow.uturn.backward")
+                        Label("Same incline as last time: \(TreadmillUnits.inclineText(lastIncline))", systemImage: "arrow.uturn.backward")
                     }
                     .foregroundStyle(Color.accentAmber)
                     .formRow()
                 }
+                if let speed = WalkEffort.metersPerMinute(workout, note) {
+                    row("Average speed", TreadmillUnits.speedText(metersPerMinute: speed))
+                }
             } footer: {
-                Text("The Watch doesn't know a treadmill's speed or incline. With them, Walks compares heart rate between walks done the same way, with and without the inhaler. For noticing patterns to talk over with your doctor, not for deciding medication.")
+                Text("From the treadmill's display at the end: its distance (the Watch's guess is often off indoors), and roughly the incline you were at most of the time. With them, Walks turns each walk into an effort, so walks at any speed and incline compare. For noticing patterns to talk over with your doctor, not for deciding medication.")
             }
         }
         .font(Font.bodyText)
@@ -101,24 +164,19 @@ struct WorkoutNoteForm: View {
         .formRow()
     }
 
-    private func numberRow(_ title: String, unit: String, value: Binding<Double?>) -> some View {
+    private func numberRow(_ title: String, unit: String, fraction: ClosedRange<Int>, value: Binding<Double?>) -> some View {
         HStack(spacing: Metrics.spaceInner) {
             Text(title).foregroundStyle(Color.textPrimary)
             Spacer()
-            TextField("—", value: value, format: .number.precision(.fractionLength(0...1)))
+            TextField("—", value: value, format: .number.precision(.fractionLength(fraction)))
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(Font.metricNumber)
                 .foregroundStyle(Color.accentAmber)
+                .frame(maxWidth: 88)
             Text(unit).foregroundStyle(Color.textSecondary)
         }
         .formRow()
-    }
-
-    static func distance(_ meters: Double) -> String {
-        TreadmillSpeed.usesMiles
-            ? "\((meters / 1_609.344).formatted(.number.precision(.fractionLength(2)))) mi"
-            : "\((meters / 1_000).formatted(.number.precision(.fractionLength(2)))) km"
     }
 }
 
@@ -129,9 +187,9 @@ final class WorkoutNoteViewController: UIHostingController<WorkoutNoteForm> {
 
     init(store: Store, workout: HealthWorkout, onChange: @escaping () -> Void) {
         let note = ((try? store.workoutNotes(for: [workout.id])) ?? [:])[workout.id] ?? WorkoutNoteRecord(healthWorkoutID: workout.id)
-        let last = try? store.latestTreadmillSettings()
-        super.init(rootView: WorkoutNoteForm(workout: workout, note: note, last: nil) { _ in })
-        rootView = WorkoutNoteForm(workout: workout, note: note, last: last) { note in
+        let lastIncline = try? store.latestIncline()
+        super.init(rootView: WorkoutNoteForm(workout: workout, note: note, lastIncline: nil) { _ in })
+        rootView = WorkoutNoteForm(workout: workout, note: note, lastIncline: lastIncline) { note in
             do {
                 try store.setWorkoutNote(note)
                 onChange()
@@ -152,8 +210,9 @@ final class WorkoutNoteViewController: UIHostingController<WorkoutNoteForm> {
     }
 }
 
-/// Average heart rate on each indoor walk over time (DESIGN.md §8 "Trend over time"): a point
-/// a walk, lavender with the inhaler and teal without, so the two can be told apart.
+/// Heart rate on each indoor walk over time (DESIGN.md §8 "Trend over time"), at the reference
+/// effort once walks have their treadmill numbers: a point a walk, lavender with the inhaler
+/// and teal without, so the two can be told apart.
 struct WalkHeartRateChart: View {
 
     struct Point: Hashable, Identifiable {
@@ -163,6 +222,7 @@ struct WalkHeartRateChart: View {
         var id: Date { date }
     }
 
+    /// Oldest first.
     let points: [Point]
 
     var body: some View {
@@ -172,24 +232,26 @@ struct WalkHeartRateChart: View {
                 .symbolSize(28)
         }
         .trendChartChrome(over: points.map { TrendPoint(date: $0.date, value: $0.heartRate) })
-        .accessibilityLabel("Average heart rate on indoor walks")
+        .accessibilityLabel("Heart rate on indoor walks")
     }
 }
 
 /// Walks (`.scratch/walks/issues/01`), from Train: the last six months of indoor walks from the
-/// Watch. Heart rate on each, the walks grouped by treadmill speed and incline with the
-/// inhaler's difference, then every walk, each opening its note.
+/// Watch. Heart rate on each at one effort once they have their treadmill numbers (as measured
+/// before then), the inhaler's difference and the change since the first walks, then every
+/// walk, each opening its note.
 final class WalksViewController: ScreenViewController {
 
-    private static let logger = Logger(category: "Train")
     static let days = 182
 
     private let dependencies: AppDependencies
     private let chart = UIHostingController(rootView: WalkHeartRateChart(points: []))
+    private let chartSubtitle = UILabel()
     private let chartCaption = UILabel()
-    private let groupsStack = UIStackView()
+    private let summaryStack = UIStackView()
     private let listStack = UIStackView()
     private var walks: [(workout: HealthWorkout, note: WorkoutNoteRecord?)] = []
+    private var resting: Double?
     private var asked = false
 
     init(dependencies: AppDependencies) {
@@ -200,28 +262,31 @@ final class WalksViewController: ScreenViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.largeTitleDisplayMode = .never
-        chartCaption.font = UIFont.label
-        chartCaption.textColor = UIColor.textSecondary
-        chartCaption.numberOfLines = 0
-        chartCaption.adjustsFontForContentSizeCategory = true
+        for (label, color) in [(chartSubtitle, UIColor.textPrimary), (chartCaption, UIColor.textSecondary)] {
+            label.font = label === chartSubtitle ? UIFont.bodyText : UIFont.label
+            label.textColor = color
+            label.numberOfLines = 0
+            label.adjustsFontForContentSizeCategory = true
+        }
 
         let overview = CardView(title: "Heart rate on indoor walks", systemImage: "heart.fill", iconTint: UIColor.accentCoral)
         chart.view.backgroundColor = .clear
         chart.sizingOptions = .intrinsicContentSize
         addChild(chart)
+        overview.contentStack.addArrangedSubview(chartSubtitle)
         overview.contentStack.addArrangedSubview(chart.view)
         chart.didMove(toParent: self)
         overview.contentStack.addArrangedSubview(chartCaption)
 
-        groupsStack.axis = .vertical
-        groupsStack.spacing = Metrics.spaceCard
+        summaryStack.axis = .vertical
+        summaryStack.spacing = Metrics.spaceCard
         listStack.axis = .vertical
         listStack.spacing = Metrics.spaceTight
         let list = CardView(title: "Every walk", systemImage: "figure.walk", iconTint: UIColor.accentAmber)
         list.contentStack.addArrangedSubview(listStack)
 
         contentStack.addArrangedSubview(overview)
-        contentStack.addArrangedSubview(groupsStack)
+        contentStack.addArrangedSubview(summaryStack)
         contentStack.addArrangedSubview(list)
     }
 
@@ -238,46 +303,77 @@ final class WalksViewController: ScreenViewController {
                 try? await reader.requestWorkoutAccess()
             }
             let today = Day.today()
-            let all = (try? await reader.healthWorkouts(from: today.advanced(by: -Self.days), to: today)) ?? []
+            let first = today.advanced(by: -Self.days)
+            let all = (try? await reader.healthWorkouts(from: first, to: today)) ?? []
             let indoor = all.filter { $0.isWalk && $0.isIndoor }.sorted { $0.start > $1.start }
             let notes = (try? dependencies.store.workoutNotes(for: indoor.map(\.id))) ?? [:]
             walks = indoor.map { ($0, notes[$0.id]) }
+            if resting == nil {
+                // One resting rate for every walk (the period's middle), so they move alike.
+                let samples = (try? await dependencies.healthReader.vitalSamples(from: first.start(), to: Date())) ?? []
+                let values = samples.filter { $0.vital == .restingHeartRate }.map(\.value).sorted()
+                resting = values.isEmpty ? nil : values[values.count / 2]
+            }
             render()
         }
     }
 
     private func render() {
-        chart.rootView = WalkHeartRateChart(points: walks.reversed().compactMap { walk in
-            walk.workout.averageHeartRate.map { .init(date: walk.workout.start, heartRate: $0, inhaler: walk.note?.usedInhaler ?? false) }
-        })
-        chartCaption.text = walks.isEmpty
-            ? "Indoor walks from your Apple Watch show here. Start an Indoor Walk on the Watch for a treadmill."
-            : "A point a walk: lavender with the inhaler, teal without. At the same speed and incline, a lower heart rate means fitter. Tap a walk below to add its treadmill speed, incline, and inhaler."
+        let summary = WalkEffort.summary(walks, restingHeartRate: resting)
+        if let summary {
+            chart.rootView = WalkHeartRateChart(points: summary.scored.map { .init(date: $0.date, heartRate: $0.atReference, inhaler: $0.inhaler) })
+            chartSubtitle.text = "At \(summary.reference.text), estimated"
+            chartSubtitle.isHidden = false
+            chartCaption.text = "Each walk's heart rate moved to the same effort from the treadmill's distance and incline, so lower means fitter. Lavender with the inhaler, teal without."
+        } else {
+            chart.rootView = WalkHeartRateChart(points: walks.reversed().compactMap { walk in
+                walk.workout.averageHeartRate.map { .init(date: walk.workout.start, heartRate: $0, inhaler: walk.note?.usedInhaler ?? false) }
+            })
+            chartSubtitle.isHidden = true
+            chartCaption.text = walks.isEmpty
+                ? "Indoor walks from your Apple Watch show here. Start an Indoor Walk on the Watch for a treadmill."
+                : "Average heart rate as measured. Tap a walk below and add the treadmill's distance and incline: then walks at any speed compare."
+        }
 
-        groupsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for group in WalkComparison.groups(walks).prefix(3) {
-            let card = CardView(title: group.settings, systemImage: "figure.walk.treadmill", iconTint: UIColor.accentAmber)
-            func add(_ symbol: String, _ tint: UIColor, _ title: String, _ value: String) {
-                let row = MetricRowView()
-                row.configure(leading: .symbol(symbol, tint: tint), title: title, value: value)
-                card.contentStack.addArrangedSubview(row)
+        summaryStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        if let summary {
+            func card(_ title: String, _ systemImage: String, _ tint: UIColor, rows: [(String, UIColor, String, String)], footnote: String) -> CardView {
+                let card = CardView(title: title, systemImage: systemImage, iconTint: tint)
+                for (symbol, symbolTint, title, value) in rows {
+                    let row = MetricRowView()
+                    row.configure(leading: .symbol(symbol, tint: symbolTint), title: title, value: value)
+                    card.contentStack.addArrangedSubview(row)
+                }
+                let note = UILabel()
+                note.text = footnote
+                note.font = UIFont.label
+                note.textColor = UIColor.textTertiary
+                note.numberOfLines = 0
+                note.adjustsFontForContentSizeCategory = true
+                card.contentStack.addArrangedSubview(note)
+                return card
             }
-            if let without = group.without {
-                add("circle.fill", UIColor.accentTeal, "Without inhaler", "\(Int(without.average.rounded())) bpm · \(without.count) \(without.count == 1 ? "walk" : "walks")")
+            func text(_ average: WalkEffort.Average) -> String {
+                "\(Int(average.heartRate.rounded())) bpm · \(average.walks) \(average.walks == 1 ? "walk" : "walks")"
             }
-            if let with = group.withInhaler {
-                add("circle.fill", UIColor.accentLavender, "With inhaler", "\(Int(with.average.rounded())) bpm · \(with.count) \(with.count == 1 ? "walk" : "walks")")
+            var inhaler: [(String, UIColor, String, String)] = []
+            if let without = summary.without { inhaler.append(("circle.fill", UIColor.accentTeal, "Without", text(without))) }
+            if let with = summary.withInhaler { inhaler.append(("circle.fill", UIColor.accentLavender, "With", text(with))) }
+            if !inhaler.isEmpty {
+                summaryStack.addArrangedSubview(card("Inhaler", "lungs.fill", UIColor.accentLavender, rows: inhaler,
+                                                     footnote: "The last \(WalkEffort.recentDays / 7) weeks, at \(summary.reference.text). A few walks each way before reading much into it."))
             }
-            if group.count > 1 {
-                add("arrow.right", UIColor.textTertiary, "First → latest", "\(Int(group.first.rounded())) → \(Int(group.latest.rounded())) bpm")
+            if let earlier = summary.earlier, let later = summary.later {
+                summaryStack.addArrangedSubview(card("Fitness", "chart.line.downtrend.xyaxis", UIColor.accentGreen, rows: [
+                    ("arrow.right", UIColor.textTertiary, "First \(earlier.walks) → latest \(later.walks)", "\(Int(earlier.heartRate.rounded())) → \(Int(later.heartRate.rounded())) bpm"),
+                ], footnote: "Heart rate at \(summary.reference.text): lower is fitter."))
             }
-            groupsStack.addArrangedSubview(card)
         }
 
         listStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for walk in walks.prefix(40) {
-            let row = WeighInLikeRow()
-            let settings = walk.note?.settingsText ?? "Add speed and incline"
+            let row = WalkRow()
+            let settings = walk.note?.settingsText ?? "Add treadmill numbers"
             let heart = walk.workout.averageHeartRate.map { "\(Int($0.rounded())) bpm" } ?? "—"
             row.configure(title: walk.workout.start.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
                           detail: "\(HealthText.duration(walk.workout.duration)) · \(settings)\(walk.note?.usedInhaler == true ? " · inhaler" : "")",
@@ -294,7 +390,7 @@ final class WalksViewController: ScreenViewController {
 }
 
 /// A tappable two-line row: title over a detail, a value on the right.
-final class WeighInLikeRow: UIControl {
+final class WalkRow: UIControl {
 
     private let title = UILabel()
     private let detail = UILabel()

@@ -269,13 +269,17 @@ Charts never show a legend when color already maps to a label on screen.
   an empty `circle` in `textTertiary`); tapping a card toggles it; Cancel on the left, a
   prominent "Copy N to…" on the right opens a medium sheet: Day, "Keep their own times" (on by
   default) or a Time, and "Copy N entries". A toast says where, with Show for another Day.
-- **Walks** (Train → Walks chip, `figure.walk` in `accentAmber`) — indoor walks from the Watch
-  over six months: a card with heart rate a point per walk (lavender with the inhaler, teal
-  without); up to three cards of walks done the same way ("3.0 mph · 6%": average heart rate
-  without and with the inhaler, first → latest); then Every walk, each opening its note.
-- **Workout note** (a sheet from Walks or a Watch workout on the Day page) — what the Watch
-  read (when, duration, average heart rate, distance), then Used inhaler before (`accentLavender`
-  toggle), Speed (mph or km/h) and Incline (%) in `accentAmber`; saved as it changes.
+- **Walks** (Train → Walks chip, `figure.walk` in `accentAmber`, "Indoor") — indoor walks from
+  the Watch over six months: a card with heart rate a point per walk (lavender with the inhaler,
+  teal without), once walks have treadmill numbers moved to one effort ("At 3.0 mph · 5%,
+  estimated", the walks' usual speed and incline), as measured before; an Inhaler card
+  (`lungs.fill`: average at that effort without and with, last 8 weeks); a Fitness card (first
+  few → latest few); then Every walk, each opening its note.
+- **Workout note** (a full-height sheet from Walks or a Watch workout on the Day page) — what
+  the Watch read (when, duration, average heart rate, its distance guess), then Used inhaler
+  before (`accentLavender` toggle), Treadmill distance (mi or km) and Average incline (%) in
+  `accentAmber`, "Same incline as last time" while empty, and the Average speed they give;
+  saved as it changes.
 - **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
   or a fraction ("1/3", "1 1/2", "½"), then "× serving" or, where the portion's weight is known,
   a system segmented servings | g; under it quick amounts ¼ ½ ¾ 1 1½ 2 as capsules

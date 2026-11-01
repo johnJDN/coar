@@ -269,7 +269,7 @@
         <attribute name="healthWorkoutID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="inclinePercent" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="modifiedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="speedKmh" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <attribute name="treadmillMeters" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
         <attribute name="usedInhaler" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
     </entity>
     <entity name="ProgressPhoto" representedClassName="ProgressPhoto" syncable="YES" codeGenerationType="class">
