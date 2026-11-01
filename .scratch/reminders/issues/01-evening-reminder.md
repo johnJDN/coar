@@ -26,3 +26,8 @@ everything for the day".
   - **The text is the same every night**: it's written when planned, before the day happens,
     so it can't list what's missing. The Day page shows that.
   - Not checked on a device: the tap opening the Day page (the simulator was refused permission).
+- 2026-11-01 (agent): John got no reminders (the setting was off), but the "skip a logged
+  Day" rule would have skipped nearly every night anyway: Home's mood card and breakfast make a
+  Day "logged" by morning. Now it reminds every night. Re-planning also no longer clears the
+  week before adding it back (Coar suspended in between left none): each Day's reminder is
+  added over the old one, stale ones removed after, inside a background task.

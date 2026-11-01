@@ -11,23 +11,15 @@ final class ReminderPlanTests: XCTestCase {
         Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: oct18.start())!
     }
 
-    func test_beforeNine_andNotLogged_remindsTonightAndTheNextSixNights() {
-        let days = ReminderPlan.days(today: oct18, now: at(14), minuteOfDay: 21 * 60, todayLogged: false)
+    func test_beforeNine_remindsTonightAndTheNextSixNights() {
+        let days = ReminderPlan.days(today: oct18, now: at(14), minuteOfDay: 21 * 60)
         XCTAssertEqual(days.first, oct18)
         XCTAssertEqual(days.count, 7)
     }
 
-    func test_aLoggedDay_orOnePastTheTime_startsTomorrow() {
-        XCTAssertEqual(ReminderPlan.days(today: oct18, now: at(14), minuteOfDay: 21 * 60, todayLogged: true).first, oct18.advanced(by: 1))
-        XCTAssertEqual(ReminderPlan.days(today: oct18, now: at(22), minuteOfDay: 21 * 60, todayLogged: false).first, oct18.advanced(by: 1))
-        XCTAssertEqual(ReminderPlan.days(today: oct18, now: at(22), minuteOfDay: 21 * 60, todayLogged: false).count, 7)
-    }
-
-    func test_loggedMeansFoodAndBothMoodAndEnergy() {
-        XCTAssertTrue(ReminderPlan.isLogged(foodEntries: 3, mood: MoodRecord(day: oct18, mood: 4, energy: 3)))
-        XCTAssertFalse(ReminderPlan.isLogged(foodEntries: 0, mood: MoodRecord(day: oct18, mood: 4, energy: 3)))
-        XCTAssertFalse(ReminderPlan.isLogged(foodEntries: 3, mood: MoodRecord(day: oct18, mood: 4, energy: nil)))
-        XCTAssertFalse(ReminderPlan.isLogged(foodEntries: 3, mood: nil))
+    func test_pastTheTime_startsTomorrow() {
+        XCTAssertEqual(ReminderPlan.days(today: oct18, now: at(22), minuteOfDay: 21 * 60).first, oct18.advanced(by: 1))
+        XCTAssertEqual(ReminderPlan.days(today: oct18, now: at(22), minuteOfDay: 21 * 60).count, 7)
     }
 
     func test_theTimeDefaultsToNine() {

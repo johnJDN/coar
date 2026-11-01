@@ -26,8 +26,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     /// Leaving Coar re-plans the reminders, so tonight's goes once the day is logged.
     func sceneWillResignActive(_ scene: UIScene) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        Task { await appDelegate.dependencies.reminder?.refresh() }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate, let reminder = appDelegate.dependencies.reminder else { return }
+        // Asks iOS for time to finish before Coar is suspended.
+        let task = UIApplication.shared.beginBackgroundTask(withName: "Plan reminders")
+        Task {
+            await reminder.refresh()
+            UIApplication.shared.endBackgroundTask(task)
+        }
     }
 
     /// Each time Coar comes forward: today's place (once a Day) and new journal entries.

@@ -190,7 +190,7 @@ struct SettingsForm: View {
         } header: {
             Text("Reminders")
         } footer: {
-            Text("A nudge to log the day. It's skipped on days you've already logged food and set mood and energy. Tapping it opens the Day page.")
+            Text("A nudge every night to log the day. Tapping it opens the Day page.")
         }
     }
 
