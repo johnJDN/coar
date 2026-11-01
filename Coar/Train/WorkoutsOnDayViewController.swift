@@ -47,7 +47,7 @@ final class WorkoutsOnDayViewController: ScreenViewController {
         effortTask?.cancel()
         effortTask = Task { [weak self] in
             guard let self else { return }
-            let texts = await WorkoutEffort.texts(for: workouts, reader: dependencies.healthWorkouts)
+            let texts = await WorkoutEffort.texts(for: workouts, store: dependencies.store, reader: dependencies.healthWorkouts)
             guard !Task.isCancelled else { return }
             for (id, text) in texts { cards[id]?.showEffort(text) }
         }

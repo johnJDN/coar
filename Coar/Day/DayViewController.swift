@@ -132,11 +132,13 @@ final class DayViewController: ScreenViewController {
         let reader = dependencies.healthReader
         var inputs = DayTimeline.Inputs(day: day)
         inputs.entries = (try? store.entries(on: day)) ?? []
-        inputs.workouts = (try? store.workouts(on: day)) ?? []
         inputs.journal = (try? store.journalEvents(on: day)) ?? []
         let unit = dependencies.preferences.massUnit
         inputs.weighedIn = ((try? store.bodyWeight(on: day)) ?? nil).map { unit.displayText(fromKilograms: $0.kilograms) }
         inputs.healthWorkouts = (try? await dependencies.healthWorkouts.healthWorkouts(on: day)) ?? []
+        // After the wait, so links made meanwhile (here or by another pass) are read.
+        try? store.autoLinkHealthWorkouts(on: [day], among: inputs.healthWorkouts)
+        inputs.workouts = (try? store.workouts(on: day)) ?? []
         inputs.workoutNotes = (try? store.workoutNotes(for: inputs.healthWorkouts.map(\.id))) ?? [:]
 
         let nightDays = (-HealthDetailViewController.patternNights...1).map { day.advanced(by: $0) }

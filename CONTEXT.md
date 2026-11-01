@@ -144,7 +144,8 @@ _Avoid_: Cardio, sport, session
 **Health Workout**:
 A workout Apple Health holds for the user, usually one the Apple Watch recorded. Coar reads
 it live and never stores it; a Workout is linked to one by its identifier alone. One Health
-Workout belongs to at most one Workout.
+Workout belongs to at most one Workout. A finished Workout is linked by itself to the one Health
+Workout that overlaps it, unless the user unlinked it.
 _Avoid_: Watch workout (in the app's words), import, sync
 
 **Effort**:

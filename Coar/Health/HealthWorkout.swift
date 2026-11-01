@@ -68,6 +68,23 @@ extension HealthWorkout {
         return overlapping.count == 1 ? overlapping[0] : nil
     }
 
+    /// The links to make without asking: each finished, unlinked Workout the user hasn't
+    /// unlinked, to its `suggestion`, when no other such Workout has the same suggestion.
+    static func autoLinks(
+        for workouts: [WorkoutRecord],
+        among healthWorkouts: [HealthWorkout],
+        alreadyLinked: Set<UUID>
+    ) -> [WorkoutRecord.ID: UUID] {
+        let suggested = workouts
+            .filter { !$0.isActive && $0.healthWorkoutID == nil && !$0.watchLinkDeclined }
+            .compactMap { workout -> (WorkoutRecord.ID, UUID)? in
+                let span = (start: workout.startedAt, end: workout.finishedAt ?? workout.startedAt)
+                return suggestion(for: span, among: healthWorkouts, alreadyLinked: alreadyLinked).map { (workout.id, $0.id) }
+            }
+        let claims = Dictionary(grouping: suggested, by: \.1)
+        return Dictionary(uniqueKeysWithValues: suggested.filter { claims[$0.1]?.count == 1 })
+    }
+
     /// Seconds the Health Workout and the span share.
     private static func overlap(_ healthWorkout: HealthWorkout, _ span: (start: Date, end: Date)) -> TimeInterval {
         max(0, min(healthWorkout.end, span.end).timeIntervalSince(max(healthWorkout.start, span.start)))

@@ -24,6 +24,8 @@ struct WorkoutRecord: Hashable, Identifiable {
     /// Whether the user used their inhaler before it (CONTEXT.md "Workout note"): a record
     /// for them, not compared the way walks are.
     var usedInhaler = false
+    /// Set when the user unlinked its Health Workout, so it isn't linked again by itself.
+    var watchLinkDeclined = false
     let modifiedAt: Date
 
     var isActive: Bool { finishedAt == nil }

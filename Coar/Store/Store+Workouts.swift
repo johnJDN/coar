@@ -108,7 +108,8 @@ extension Store {
 
     /// Links a finished Workout to a Health Workout, or unlinks it with nil. Only the
     /// identifier is stored (ADR 0002). Linking an already-linked Health Workout moves the
-    /// link: one Health Workout belongs to at most one Workout.
+    /// link: one Health Workout belongs to at most one Workout. Unlinking is remembered, so
+    /// the Workout isn't linked again by itself.
     func linkHealthWorkout(_ healthWorkoutID: UUID?, to id: WorkoutRecord.ID) throws {
         guard let workout = try fetchWorkout(id), workout.finishedAt != nil else { return }
         if let healthWorkoutID {
@@ -117,7 +118,23 @@ extension Store {
             for other in try context.fetch(request) { other.healthWorkoutID = nil }
         }
         workout.healthWorkoutID = healthWorkoutID
+        workout.watchLinkDeclined = healthWorkoutID == nil
         try save()
+    }
+
+    /// Links each finished Workout on these Days to the one Health Workout that overlaps it
+    /// (`HealthWorkout.autoLinks`), leaving those the user unlinked. True when any was linked.
+    @discardableResult
+    func autoLinkHealthWorkouts(on days: Set<Day>, among healthWorkouts: [HealthWorkout]) throws -> Bool {
+        guard !healthWorkouts.isEmpty else { return false }
+        let workouts = try days.flatMap { try self.workouts(on: $0) }
+        let links = HealthWorkout.autoLinks(for: workouts, among: healthWorkouts, alreadyLinked: try linkedHealthWorkoutIDs())
+        guard !links.isEmpty else { return false }
+        for (id, healthWorkoutID) in links {
+            try fetchWorkout(id)?.healthWorkoutID = healthWorkoutID
+        }
+        try save()
+        return true
     }
 
     /// Marks whether the user used their inhaler before the Workout, active or finished.
@@ -377,6 +394,7 @@ private extension WorkoutRecord {
             activity: object.activityName.map { WorkoutActivity(name: $0, distanceMeters: object.distanceMeters > 0 ? object.distanceMeters : nil, notes: object.notes) },
             healthWorkoutID: object.healthWorkoutID,
             usedInhaler: object.usedInhaler,
+            watchLinkDeclined: object.watchLinkDeclined,
             modifiedAt: modifiedAt
         )
     }

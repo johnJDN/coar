@@ -24,7 +24,26 @@ enum InhalerMenu {
         }
     }
 
-    /// "Inhaler", for joining onto a Workout's subtitle; nil when it wasn't used.
+    /// "Used inhaler before" with the lungs in lavender, above a finished Workout's cards,
+    /// where the subtitle has no room for it.
+    static func line() -> UILabel {
+        let text = NSMutableAttributedString()
+        if let lungs = UIImage(systemName: "lungs.fill", withConfiguration: UIImage.SymbolConfiguration(font: UIFont.label))?
+            .withTintColor(UIColor.accentLavender, renderingMode: .alwaysOriginal) {
+            text.append(NSAttributedString(attachment: NSTextAttachment(image: lungs)))
+            text.append(NSAttributedString(string: " "))
+        }
+        text.append(NSAttributedString(string: "Used inhaler before"))
+        let label = UILabel()
+        label.attributedText = text
+        label.font = UIFont.label
+        label.textColor = UIColor.textSecondary
+        label.adjustsFontForContentSizeCategory = true
+        label.accessibilityLabel = "Used inhaler before"
+        return label
+    }
+
+    /// "Inhaler", for joining onto the Active Workout's subtitle; nil when it wasn't used.
     static func text(_ workout: WorkoutRecord) -> String? {
         workout.usedInhaler ? "Inhaler" : nil
     }

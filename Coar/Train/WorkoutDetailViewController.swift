@@ -55,10 +55,13 @@ final class WorkoutDetailViewController: ScreenViewController {
         }
         let unit = dependencies.preferences.massUnit
         title = workout.title
-        navigationItem.subtitle = [TrainText.when(workout), InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
+        navigationItem.subtitle = TrainText.when(workout)
 
         contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         updateMenu()
+        if workout.usedInhaler {
+            contentStack.addArrangedSubview(InhalerMenu.line())
+        }
         contentStack.addArrangedSubview(watchCard)
         loadHealth(for: workout)
         if let activity = workout.activity {
@@ -101,6 +104,10 @@ final class WorkoutDetailViewController: ScreenViewController {
                 watchCard.render(found.map { .linked($0) } ?? .linkedMissing)
             } else {
                 let day = (try? await reader.healthWorkouts(on: workout.day)) ?? []
+                guard !Task.isCancelled else { return }
+                if (try? dependencies.store.autoLinkHealthWorkouts(on: [workout.day], among: day)) == true {
+                    return render()
+                }
                 let taken = (try? dependencies.store.linkedHealthWorkoutIDs(excluding: workout.id)) ?? []
                 guard !Task.isCancelled else { return }
                 let span = (start: workout.startedAt, end: workout.finishedAt ?? workout.startedAt)

@@ -683,5 +683,13 @@ Ticket: `.scratch/walks/issues/01-indoor-walks-and-inhaler.md`.
 - [ ] The next walk: "Same incline as last time" fills the incline in one tap.
 - [ ] With a few walks filled in: the chart reads "At 3.0 mph · 5%, estimated" (your usual), points lavender with the inhaler; the Inhaler card shows both averages; after four or more, the Fitness card shows first → latest.
 - [ ] Day page of a day with an Indoor Walk: the row opens the same sheet; its detail shows the distance, incline and "inhaler".
-- [ ] Lifting: on the workout screen, … → Used inhaler before. The subtitle ends "· Inhaler", the menu shows a tick, and after finishing it stays on the finished workout and the Day page row says "inhaler". Tap it again to turn it off.
+- [ ] Lifting: on the workout screen, … → Used inhaler before. The subtitle ends "· Inhaler" and the menu shows a tick. After finishing, the finished workout shows "Used inhaler before" above the Apple Watch card, and the Day page row says "inhaler". Tap it again to turn it off.
 - [ ] A Watch workout that isn't a walk and isn't linked (Day page): its sheet shows only the inhaler switch, no treadmill numbers.
+
+## Added after v1: Watch workouts link by themselves (2026-11-01)
+
+Ticket: `.scratch/watch-link/issues/02-link-by-itself.md`.
+
+- [ ] Lift with the Watch recording a workout, finish in Coar, then open Train a few minutes later: the workout's card in Recent workouts shows its calories and heart rate without tapping Link.
+- [ ] The Day page of that day lists the workout once, with the Watch's numbers.
+- [ ] Open the workout, … → Unlink Watch workout. Go back and return: it stays unlinked, with the one-tap Link still offered.

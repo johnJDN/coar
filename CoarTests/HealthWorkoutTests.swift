@@ -92,6 +92,54 @@ final class HealthWorkoutTests: XCTestCase {
         XCTAssertEqual(try store.workout(second.id)?.healthWorkoutID, id)
     }
 
+    func test_aFinishedWorkout_isLinkedByItself_toTheOneHealthWorkoutOverlappingIt() throws {
+        let store = Store.inMemory()
+        let lift = try store.logPastWorkout(from: nil, startedAt: at(18), duration: 3_000, in: Self.calendar)
+        let morning = try store.logPastWorkout(from: nil, startedAt: at(7), duration: 1_800, in: Self.calendar)
+        let watch = health(from: at(18, 2), minutes: 48)
+        let walk = health("Walk", from: at(12), minutes: 20)
+
+        XCTAssertTrue(try store.autoLinkHealthWorkouts(on: [sep16], among: [walk, watch]))
+
+        XCTAssertEqual(try store.workout(lift.id)?.healthWorkoutID, watch.id)
+        XCTAssertNil(try store.workout(morning.id)?.healthWorkoutID, "nothing overlaps it")
+        XCTAssertFalse(try store.autoLinkHealthWorkouts(on: [sep16], among: [walk, watch]), "nothing left to link")
+    }
+
+    func test_noLinkIsMadeByItself_whenItIsntClear() throws {
+        let store = Store.inMemory()
+        let lift = try store.logPastWorkout(from: nil, startedAt: at(18), duration: 3_600, in: Self.calendar)
+        let twoOnTheWatch = [health(from: at(18), minutes: 25), health(from: at(18, 30), minutes: 25)]
+        XCTAssertFalse(try store.autoLinkHealthWorkouts(on: [sep16], among: twoOnTheWatch), "two overlap it: the user picks")
+
+        let other = try store.logPastWorkout(from: nil, startedAt: at(18, 30), duration: 3_600, in: Self.calendar)
+        let oneOnTheWatch = health(from: at(18), minutes: 90)
+        XCTAssertFalse(try store.autoLinkHealthWorkouts(on: [sep16], among: [oneOnTheWatch]), "two Workouts overlap it: the user picks")
+        XCTAssertNil(try store.workout(lift.id)?.healthWorkoutID)
+        XCTAssertNil(try store.workout(other.id)?.healthWorkoutID)
+    }
+
+    func test_aWorkoutTheUserUnlinked_isntLinkedAgainByItself_untilTheyLinkIt() throws {
+        let store = Store.inMemory()
+        let lift = try store.logPastWorkout(from: nil, startedAt: at(18), duration: 3_000, in: Self.calendar)
+        let watch = health(from: at(18), minutes: 50)
+        try store.autoLinkHealthWorkouts(on: [sep16], among: [watch])
+
+        try store.linkHealthWorkout(nil, to: lift.id)
+        XCTAssertFalse(try store.autoLinkHealthWorkouts(on: [sep16], among: [watch]))
+        XCTAssertNil(try store.workout(lift.id)?.healthWorkoutID)
+
+        try store.linkHealthWorkout(watch.id, to: lift.id)
+        XCTAssertEqual(try store.workout(lift.id)?.watchLinkDeclined, false)
+    }
+
+    func test_anActiveWorkout_isntLinkedByItself() throws {
+        let store = Store.inMemory()
+        let active = try store.startWorkout(from: nil, at: at(18), in: Self.calendar)
+        XCTAssertFalse(try store.autoLinkHealthWorkouts(on: [sep16], among: [health(from: at(18), minutes: 50)]))
+        XCTAssertNil(try store.workout(active.id)?.healthWorkoutID)
+    }
+
     func test_anActiveWorkout_cannotBeLinked() throws {
         let store = Store.inMemory()
         let active = try store.startWorkout(from: nil, at: at(18), in: Self.calendar)

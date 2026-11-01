@@ -179,7 +179,7 @@ final class WorkoutLoggerViewController: UIViewController {
         case .active:
             navigationItem.subtitle = ["Started \(TrainText.timeText(workout.startedAt))", InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
         case .editing:
-            navigationItem.subtitle = [TrainText.when(workout), InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
+            navigationItem.subtitle = TrainText.when(workout)
             backGuard?.refresh()
         }
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
