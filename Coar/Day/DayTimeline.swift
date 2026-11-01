@@ -71,7 +71,7 @@ enum DayTimeline {
         for workout in inputs.workouts {
             let effort = inputs.healthWorkouts.first { $0.id == workout.healthWorkoutID }?.effortText
             items.append(DayItem(kind: .workout(workout.id), minute: minute(workout.startedAt), isApproximate: false, systemImage: "dumbbell.fill", tint: UIColor.accentGreen,
-                                 title: workout.title, detail: [workout.duration.map(Self.duration), effort].compactMap { $0 }.joined(separator: " · ").nilIfEmpty))
+                                 title: workout.title, detail: [workout.duration.map(Self.duration), effort, workout.usedInhaler ? "inhaler" : nil].compactMap { $0 }.joined(separator: " · ").nilIfEmpty))
         }
         for health in inputs.healthWorkouts where !linked.contains(health.id) {
             let note = inputs.workoutNotes[health.id]

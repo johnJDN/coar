@@ -184,6 +184,7 @@
         <attribute name="notes" optional="YES" attributeType="String"/>
         <attribute name="planName" optional="YES" attributeType="String"/>
         <attribute name="startedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="usedInhaler" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="exercises" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="WorkoutExercise" inverseName="workout" inverseEntity="WorkoutExercise"/>
         <relationship name="plan" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Plan" inverseName="workouts" inverseEntity="Plan"/>
     </entity>

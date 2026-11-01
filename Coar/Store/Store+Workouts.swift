@@ -120,6 +120,13 @@ extension Store {
         try save()
     }
 
+    /// Marks whether the user used their inhaler before the Workout, active or finished.
+    func setUsedInhaler(_ usedInhaler: Bool, on id: WorkoutRecord.ID) throws {
+        guard let workout = try fetchWorkout(id), workout.usedInhaler != usedInhaler else { return }
+        workout.usedInhaler = usedInhaler
+        try save()
+    }
+
     /// The Health Workouts already linked to a Workout, optionally leaving out one Workout's
     /// own: what the link sheet must not offer again.
     func linkedHealthWorkoutIDs(excluding id: WorkoutRecord.ID? = nil) throws -> Set<UUID> {
@@ -369,6 +376,7 @@ private extension WorkoutRecord {
             exercises: object.exerciseRecords,
             activity: object.activityName.map { WorkoutActivity(name: $0, distanceMeters: object.distanceMeters > 0 ? object.distanceMeters : nil, notes: object.notes) },
             healthWorkoutID: object.healthWorkoutID,
+            usedInhaler: object.usedInhaler,
             modifiedAt: modifiedAt
         )
     }

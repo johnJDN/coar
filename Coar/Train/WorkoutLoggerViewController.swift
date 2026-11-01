@@ -61,6 +61,7 @@ final class WorkoutLoggerViewController: UIViewController {
         view.backgroundColor = UIColor.background
         navigationItem.largeTitleDisplayMode = .never
 
+        let inhaler = InhalerMenu.item(store: dependencies.store, workoutID: workoutID) { [weak self] in self?.render() }
         switch mode {
         case .active:
             let finish = UIBarButtonItem(title: "Finish", primaryAction: UIAction { [weak self] _ in self?.finish() })
@@ -68,7 +69,7 @@ final class WorkoutLoggerViewController: UIViewController {
             let discard = UIAction(title: "Discard workout", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
                 self?.confirmDiscard()
             }
-            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [discard]))
+            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [inhaler, discard]))
             more.accessibilityLabel = "More"
             navigationItem.rightBarButtonItems = [finish, more]
         case .editing:
@@ -77,7 +78,7 @@ final class WorkoutLoggerViewController: UIViewController {
             let delete = UIAction(title: "Delete workout", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
                 self?.confirmDelete()
             }
-            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [time, delete]))
+            let more = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: UIMenu(children: [inhaler, time, delete]))
             more.accessibilityLabel = "More"
             navigationItem.rightBarButtonItems = [done, more]
             backGuard = BackGuard(controller: self, verdict: { [weak self] in self?.leaveVerdict ?? .leave }, onDiscard: { [weak self] in
@@ -176,9 +177,9 @@ final class WorkoutLoggerViewController: UIViewController {
         title = workout.title
         switch mode {
         case .active:
-            navigationItem.subtitle = "Started \(TrainText.timeText(workout.startedAt))"
+            navigationItem.subtitle = ["Started \(TrainText.timeText(workout.startedAt))", InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
         case .editing:
-            navigationItem.subtitle = TrainText.when(workout)
+            navigationItem.subtitle = [TrainText.when(workout), InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
             backGuard?.refresh()
         }
         var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()

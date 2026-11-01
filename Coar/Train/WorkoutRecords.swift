@@ -21,6 +21,9 @@ struct WorkoutRecord: Hashable, Identifiable {
     /// The Health Workout it is linked to (CONTEXT.md "Health Workout"): only the identifier
     /// is kept, the effort numbers are read live from Apple Health (ADR 0002).
     var healthWorkoutID: UUID? = nil
+    /// Whether the user used their inhaler before it (CONTEXT.md "Workout note"): a record
+    /// for them, not compared the way walks are.
+    var usedInhaler = false
     let modifiedAt: Date
 
     var isActive: Bool { finishedAt == nil }

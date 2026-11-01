@@ -277,9 +277,9 @@ Charts never show a legend when color already maps to a label on screen.
   few → latest few); then Every walk, each opening its note.
 - **Workout note** (a full-height sheet from Walks or a Watch workout on the Day page) — what
   the Watch read (when, duration, average heart rate, its distance guess), then Used inhaler
-  before (`accentLavender` toggle), Treadmill distance (mi or km) and Average incline (%) in
-  `accentAmber`, "Same incline as last time" while empty, and the Average speed they give;
-  saved as it changes.
+  before (`accentLavender` toggle), and for a walk only Treadmill distance (mi or km) and
+  Average incline (%) in `accentAmber`, "Same incline as last time" while empty, and the
+  Average speed they give; saved as it changes.
 - **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
   or a fraction ("1/3", "1 1/2", "½"), then "× serving" or, where the portion's weight is known,
   a system segmented servings | g; under it quick amounts ¼ ½ ¾ 1 1½ 2 as capsules
@@ -335,7 +335,9 @@ Charts never show a legend when color already maps to a label on screen.
   card above its sets: linked, its Effort ("320 cal · 118 bpm", read live from Apple
   Health) over the Health Workout it is; unlinked, an invitation, with a one-tap Link when
   exactly one Health Workout overlaps it; tapping the card lists the Day's Health Workouts
-  in a sheet, and the `…` menu unlinks. Linked Workouts show their Effort ("🔥 318 cal ·
+  in a sheet, and the `…` menu unlinks. The `…` menu of a Workout (while logging, editing, or
+  finished) holds "Used inhaler before" (`lungs.fill`), ticked when set, and the subtitle
+  then ends "· Inhaler". Linked Workouts show their Effort ("🔥 318 cal ·
   118 bpm", a flame in `accentAmber`) on their cards in Recent workouts and a Day's list.
   Exercise detail: estimated-1RM progression chart plus recent sets.
   Body Weight: a card with Trend Weight as the hero, a `UISegmentedControl` range (1M / 3M /

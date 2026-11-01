@@ -37,6 +37,20 @@ final class WalksTests: XCTestCase {
         XCTAssertEqual(try store.context.count(for: WorkoutNote.fetchRequest()), 0)
     }
 
+    func test_theInhaler_isMarkedOnALiftingWorkout_whileActiveAndAfter() throws {
+        let store = Store.inMemory()
+        let workout = try store.startWorkout(from: nil, at: now)
+        XCTAssertFalse(try XCTUnwrap(store.workout(workout.id)).usedInhaler)
+
+        try store.setUsedInhaler(true, on: workout.id)
+        XCTAssertTrue(try XCTUnwrap(store.workout(workout.id)).usedInhaler)
+
+        _ = try store.finishWorkout(workout.id, at: now.addingTimeInterval(3_600))
+        XCTAssertTrue(try XCTUnwrap(store.workout(workout.id)).usedInhaler)
+        try store.setUsedInhaler(false, on: workout.id)
+        XCTAssertFalse(try XCTUnwrap(store.workout(workout.id)).usedInhaler)
+    }
+
     func test_twoNotesForOneWorkout_keepTheLatestModified() async throws {
         let store = Store.inMemory()
         let id = UUID()

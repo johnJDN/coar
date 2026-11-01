@@ -157,7 +157,8 @@ _Avoid_: Calories burned, intensity, strain
 What the user adds to a Health Workout that the Watch can't know: whether they used their
 inhaler before it, and a treadmill's distance and roughly its average incline. Kept by the
 Health Workout's identifier, like a link. With them a walk has an effort, and walks are
-compared by heart rate at one effort.
+compared by heart rate at one effort. A Workout logged in Coar carries the inhaler itself, as
+a record only: lifting has no steady effort to compare.
 _Avoid_: Annotation, tag, metadata
 
 **Active Workout**:

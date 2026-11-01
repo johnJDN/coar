@@ -126,25 +126,11 @@ struct WorkoutNoteForm: View {
                     .foregroundStyle(Color.textPrimary)
                     .tint(Color.accentLavender)
                     .formRow()
-                numberRow("Treadmill distance", unit: TreadmillUnits.distanceUnit, fraction: 0...2, value: Binding(
-                    get: { note.treadmillMeters.map(TreadmillUnits.displayDistance) },
-                    set: { note.treadmillMeters = $0.map(TreadmillUnits.meters(fromDisplay:)) }
-                ))
-                numberRow("Average incline", unit: "%", fraction: 0...1, value: $note.inclinePercent)
-                if let lastIncline, note.inclinePercent == nil {
-                    Button {
-                        note.inclinePercent = lastIncline
-                    } label: {
-                        Label("Same incline as last time: \(TreadmillUnits.inclineText(lastIncline))", systemImage: "arrow.uturn.backward")
-                    }
-                    .foregroundStyle(Color.accentAmber)
-                    .formRow()
-                }
-                if let speed = WalkEffort.metersPerMinute(workout, note) {
-                    row("Average speed", TreadmillUnits.speedText(metersPerMinute: speed))
-                }
+                if workout.isWalk { treadmillRows }
             } footer: {
-                Text("From the treadmill's display at the end: its distance (the Watch's guess is often off indoors), and roughly the incline you were at most of the time. With them, Walks turns each walk into an effort, so walks at any speed and incline compare. For noticing patterns to talk over with your doctor, not for deciding medication.")
+                Text(workout.isWalk
+                     ? "From the treadmill's display at the end: its distance (the Watch's guess is often off indoors), and roughly the incline you were at most of the time. With them, Walks turns each walk into an effort, so walks at any speed and incline compare. For noticing patterns to talk over with your doctor, not for deciding medication."
+                     : "A record for you and your doctor, not for deciding medication.")
             }
         }
         .font(Font.bodyText)
@@ -153,6 +139,27 @@ struct WorkoutNoteForm: View {
         .keyboardDoneBar()
         .background(Color.background)
         .onChange(of: note) { _, note in onChange(note) }
+    }
+
+    /// The treadmill's numbers, for a walk only: other workouts have no effort to work out.
+    @ViewBuilder private var treadmillRows: some View {
+        numberRow("Treadmill distance", unit: TreadmillUnits.distanceUnit, fraction: 0...2, value: Binding(
+            get: { note.treadmillMeters.map(TreadmillUnits.displayDistance) },
+            set: { note.treadmillMeters = $0.map(TreadmillUnits.meters(fromDisplay:)) }
+        ))
+        numberRow("Average incline", unit: "%", fraction: 0...1, value: $note.inclinePercent)
+        if let lastIncline, note.inclinePercent == nil {
+            Button {
+                note.inclinePercent = lastIncline
+            } label: {
+                Label("Same incline as last time: \(TreadmillUnits.inclineText(lastIncline))", systemImage: "arrow.uturn.backward")
+            }
+            .foregroundStyle(Color.accentAmber)
+            .formRow()
+        }
+        if let speed = WalkEffort.metersPerMinute(workout, note) {
+            row("Average speed", TreadmillUnits.speedText(metersPerMinute: speed))
+        }
     }
 
     private func row(_ title: String, _ value: String) -> some View {

@@ -41,3 +41,11 @@ and incline, which the Watch doesn't know on a treadmill.
   median), so walks move alike; without vitals access it is 65. The ACSM equation is meant for
   about 1.9 to 3.7 mph; walks outside that still score, less exactly. Not yet deployed to
   CloudKit, so the field change needed no migration.
+- 2026-11-01 (agent): John wants the inhaler noted for lifts too. A Workout logged in Coar
+  carries `usedInhaler` itself (new field on Workout, needs the same schema deploy), set from
+  "Used inhaler before" in the workout screen's `…` menu (while logging, editing, or on the
+  finished workout); the subtitle ends "· Inhaler" and the Day row's detail adds "inhaler". A
+  Watch workout that isn't a walk opens its note with only the inhaler switch. Left as
+  deliberate: it's a record only, with no lifting comparison (lifting has no steady effort);
+  Recent workouts cards don't show it; a mark on an unlinked Watch workout's note isn't carried
+  to a Coar Workout when they're later linked (the linked Day row shows the Workout's own).

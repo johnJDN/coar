@@ -5,8 +5,8 @@ import os
 /// title, when it ran, and one `Card` per Exercise row listing its Logged Sets in the
 /// display unit (ADR 0004); an Activity shows its duration, distance, and notes instead.
 /// Edit opens the logger in editing mode (an Activity: its sheet), for fixing what was
-/// logged; the `…` menu unlinks its Watch workout when it has one and deletes it, with a
-/// confirmation. The Apple Watch card above the sets links a Health Workout and shows its
+/// logged; the `…` menu marks the inhaler, unlinks its Watch workout when it has one, and
+/// deletes it, with a confirmation. The Apple Watch card above the sets links a Health Workout and shows its
 /// effort, read live from Apple Health (`.scratch/watch-link/`).
 final class WorkoutDetailViewController: ScreenViewController {
 
@@ -55,7 +55,7 @@ final class WorkoutDetailViewController: ScreenViewController {
         }
         let unit = dependencies.preferences.massUnit
         title = workout.title
-        navigationItem.subtitle = TrainText.when(workout)
+        navigationItem.subtitle = [TrainText.when(workout), InhalerMenu.text(workout)].compactMap { $0 }.joined(separator: " · ")
 
         contentStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         updateMenu()
@@ -77,7 +77,7 @@ final class WorkoutDetailViewController: ScreenViewController {
     // MARK: - Apple Watch
 
     private func updateMenu() {
-        var items: [UIMenuElement] = []
+        var items: [UIMenuElement] = [InhalerMenu.item(store: dependencies.store, workoutID: workoutID) { [weak self] in self?.render() }]
         if workout?.healthWorkoutID != nil {
             items.append(UIAction(title: "Unlink Watch workout", image: UIImage(systemName: "link.badge.minus")) { [weak self] _ in self?.link(nil) })
         }
