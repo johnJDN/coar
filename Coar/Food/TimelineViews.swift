@@ -141,6 +141,7 @@ final class EntryCell: UICollectionViewCell {
     }()
 
     private let cardView = UIView()
+    private let checkView = UIImageView()
     private let nameLabel = UILabel()
     private let portionLabel = UILabel()
     private let macrosLabel = UILabel()
@@ -211,6 +212,13 @@ final class EntryCell: UICollectionViewCell {
         row.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(row)
 
+        checkView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(textStyle: .title3)
+        checkView.backgroundColor = UIColor.background
+        checkView.layer.cornerRadius = 12
+        checkView.isHidden = true
+        checkView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(checkView)
+
         NSLayoutConstraint.activate([
             rail.topAnchor.constraint(equalTo: contentView.topAnchor),
             rail.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -229,6 +237,10 @@ final class EntryCell: UICollectionViewCell {
             row.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Metrics.spaceInner),
             row.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -Metrics.spaceInner),
             row.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
+            checkView.centerXAnchor.constraint(equalTo: cardView.leadingAnchor),
+            checkView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: -6),
+            checkView.widthAnchor.constraint(equalToConstant: 24),
+            checkView.heightAnchor.constraint(equalToConstant: 24),
         ])
 
         applyElevation()
@@ -256,6 +268,20 @@ final class EntryCell: UICollectionViewCell {
         onDelete = nil
         onReveal = nil
         accessibilityCustomActions = nil
+        setChecked(nil)
+    }
+
+    /// Selection mode (`.scratch/food-logging/issues/03`): nil outside it; inside it, a circle on
+    /// the card's corner, filled green with a tick and the card outlined when picked. No swipe
+    /// while selecting.
+    func setChecked(_ checked: Bool?) {
+        checkView.isHidden = checked == nil
+        pan.isEnabled = checked == nil
+        checkView.image = UIImage(systemName: checked == true ? "checkmark.circle.fill" : "circle")
+        checkView.tintColor = checked == true ? UIColor.accentGreen : UIColor.textTertiary
+        cardView.layer.borderWidth = checked == true ? 2 : 0
+        cardView.layer.borderColor = UIColor.accentGreen.cgColor
+        accessibilityTraits = checked == true ? [.button, .selected] : .button
     }
 
     // MARK: - Swipe to delete

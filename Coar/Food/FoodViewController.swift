@@ -24,6 +24,12 @@ final class FoodViewController: UIViewController {
     /// Sections are the 24 hours of the Day; items are the Entries in each.
     private var dataSource: UICollectionViewDiffableDataSource<Int, EntryRecord.ID>!
     private var entries: [EntryRecord.ID: EntryRecord] = [:]
+    /// The Entries picked to copy; nil outside selection mode.
+    private var selection: Set<EntryRecord.ID>?
+    private lazy var addItem = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentAdd(hour: nil) })
+    private lazy var selectItem = UIBarButtonItem(title: "Select", primaryAction: UIAction { [weak self] _ in self?.startSelecting(nil) })
+    private lazy var cancelItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in self?.stopSelecting() })
+    private lazy var copyItem = UIBarButtonItem(title: "Copy to…", primaryAction: UIAction { [weak self] _ in self?.presentCopy() })
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -53,9 +59,9 @@ final class FoodViewController: UIViewController {
         }
         remoteObserver = observeRemoteChanges { [weak self] in self?.render() }
 
-        let add = UIBarButtonItem(systemItem: .add, primaryAction: UIAction { [weak self] _ in self?.presentAdd(hour: nil) })
-        add.accessibilityLabel = "Add entry"
-        navigationItem.rightBarButtonItem = add
+        addItem.accessibilityLabel = "Add entry"
+        copyItem.style = .prominent
+        updateBarItems()
 
         strip.onSelect = { [weak self] day in self?.select(day) }
 
@@ -122,6 +128,7 @@ final class FoodViewController: UIViewController {
         let entryCell = UICollectionView.CellRegistration<EntryCell, EntryRecord.ID> { [weak self] cell, _, id in
             guard let self, let entry = entries[id] else { return }
             cell.configure(with: entry)
+            cell.setChecked(selection.map { $0.contains(id) })
             cell.onDelete = { [weak self] in self?.delete(id) }
             cell.onReveal = { [weak self] in
                 if self?.revealedCell !== $0 { self?.revealedCell?.closeSwipe() }
@@ -195,6 +202,10 @@ final class FoodViewController: UIViewController {
         }
         summary.configure(with: MacroSummary(consumed: Macros.sum(dayEntries.map(\.macros)), target: target))
         entries = Dictionary(uniqueKeysWithValues: dayEntries.map { ($0.id, $0) })
+        // A selection is one Day's: moving to another Day (or a deletion elsewhere) drops
+        // what's no longer on screen.
+        if let picked = selection { selection = picked.intersection(entries.keys) }
+        updateBarItems()
         let byHour = Dictionary(grouping: dayEntries) { Calendar.current.component(.hour, from: $0.loggedAt) }
 
         var snapshot = NSDiffableDataSourceSnapshot<Int, EntryRecord.ID>()
@@ -265,6 +276,66 @@ final class FoodViewController: UIViewController {
         }
     }
 
+    // MARK: - Selecting and copying
+
+    /// Selection mode, optionally with one Entry already picked (from its long press).
+    private func startSelecting(_ first: EntryRecord.ID?) {
+        closeRevealedCell()
+        selection = first.map { [$0] } ?? []
+        updateBarItems()
+        reconfigureVisibleEntries()
+    }
+
+    private func stopSelecting() {
+        selection = nil
+        updateBarItems()
+        reconfigureVisibleEntries()
+    }
+
+    private func toggle(_ id: EntryRecord.ID) {
+        guard var picked = selection else { return }
+        if picked.contains(id) { picked.remove(id) } else { picked.insert(id) }
+        selection = picked
+        updateBarItems()
+        reconfigureVisibleEntries()
+    }
+
+    /// Select (left) and + (right) normally; Cancel and Copy to… while selecting.
+    private func updateBarItems() {
+        if let selection {
+            navigationItem.leftBarButtonItem = cancelItem
+            navigationItem.rightBarButtonItem = copyItem
+            copyItem.isEnabled = !selection.isEmpty
+            copyItem.title = selection.isEmpty ? "Copy to…" : "Copy \(selection.count) to…"
+        } else {
+            navigationItem.leftBarButtonItem = entries.isEmpty ? nil : selectItem
+            navigationItem.rightBarButtonItem = addItem
+        }
+    }
+
+    private func reconfigureVisibleEntries() {
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems(snapshot.itemIdentifiers)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
+    private func presentCopy() {
+        guard let selection, !selection.isEmpty else { return }
+        let picked = entries.values.filter { selection.contains($0.id) }.sorted { $0.loggedAt < $1.loggedAt }
+        let copy = CopyEntriesViewController(store: dependencies.store, entries: picked, day: selectedDay) { [weak self] day, count in
+            guard let self else { return }
+            stopSelecting()
+            render()
+            let noun = count == 1 ? "1 entry" : "\(count) entries"
+            if day == selectedDay {
+                toast.show("Copied \(noun)", duration: 3)
+            } else {
+                toast.show("Copied \(noun) to \(day.shortTitle(relativeTo: today))", actionTitle: "Show") { [weak self] in self?.strip.select(day) }
+            }
+        }
+        present(copy.inSheet(detents: [.medium()]), animated: true)
+    }
+
     private func closeRevealedCell() {
         revealedCell?.closeSwipe()
         revealedCell = nil
@@ -285,6 +356,7 @@ extension FoodViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        if selection != nil, let id = dataSource.itemIdentifier(for: indexPath) { return toggle(id) }
         // A row left showing Delete closes first; the tap doesn't also open anything.
         if revealedCell != nil { return closeRevealedCell() }
         guard let id = dataSource.itemIdentifier(for: indexPath),
@@ -302,7 +374,7 @@ extension FoodViewController: UICollectionViewDelegate {
     /// Press and hold an Entry for Save as food (when it isn't one of the user's foods yet)
     /// and Delete, which deletes at once like the swipe, with Undo.
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemsAt indexPaths: [IndexPath], point: CGPoint) -> UIContextMenuConfiguration? {
-        guard let indexPath = indexPaths.first, let id = dataSource.itemIdentifier(for: indexPath), let entry = entries[id] else { return nil }
+        guard selection == nil, let indexPath = indexPaths.first, let id = dataSource.itemIdentifier(for: indexPath), let entry = entries[id] else { return nil }
         closeRevealedCell()
         return UIContextMenuConfiguration(identifier: id as NSUUID, previewProvider: nil) { [weak self] _ in
             guard let self else { return nil }
@@ -310,6 +382,11 @@ extension FoodViewController: UICollectionViewDelegate {
             if canSaveAsFood(entry) {
                 actions.append(UIAction(title: "Save as food", image: UIImage(systemName: "tray.and.arrow.down")) { [weak self] _ in self?.saveAsFood(id) })
             }
+            actions.append(UIAction(title: "Copy to…", image: UIImage(systemName: "doc.on.doc")) { [weak self] _ in
+                self?.startSelecting(id)
+                self?.presentCopy()
+            })
+            actions.append(UIAction(title: "Select", image: UIImage(systemName: "checkmark.circle")) { [weak self] _ in self?.startSelecting(id) })
             actions.append(UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in self?.delete(id) })
             return UIMenu(children: actions)
         }

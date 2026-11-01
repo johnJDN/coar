@@ -286,6 +286,37 @@ extension Store {
         return EntryRecord(entry)!
     }
 
+    /// Copies Entries (`.scratch/food-logging/issues/03`): each a new Entry with the same
+    /// snapshot (ADR 0003) and links, at `instant`, or with `keepingTimes` at its own time of
+    /// day on `instant`'s Day. In one save.
+    @discardableResult
+    func copyEntries(_ records: [EntryRecord], to instant: Date, keepingTimes: Bool, in calendar: Calendar = .current) throws -> [EntryRecord] {
+        let day = Day(instant, in: calendar)
+        let copies = try records.map { record -> Entry in
+            var at = instant
+            if keepingTimes {
+                let time = calendar.dateComponents([.hour, .minute, .second], from: record.loggedAt)
+                at = calendar.date(bySettingHour: time.hour ?? 12, minute: time.minute ?? 0, second: time.second ?? 0, of: day.start(in: calendar)) ?? instant
+            }
+            let entry = makeEntry(name: record.name, servingName: record.servingName, quantity: record.quantity, macros: record.macros, extras: record.extras, at: at, in: calendar)
+            entry.foodItem = try record.foodItemID.flatMap { try fetchFoodItem($0) }
+            entry.meal = try record.mealID.flatMap { try fetchMeal($0) }
+            for (position, line) in record.components.enumerated() {
+                let component = EntryComponent(context: context)
+                component.name = line.name
+                component.servingName = line.servingName
+                component.quantity = line.quantity
+                component.macros = line.macros
+                component.extras = line.extras
+                component.sortOrder = Int32(position)
+                component.entry = entry
+            }
+            return entry
+        }
+        try save()
+        return copies.compactMap(EntryRecord.init)
+    }
+
     // MARK: - Writes
 
     private func write(name: String, servings drafts: [ServingDraft], to item: FoodItem) throws {
