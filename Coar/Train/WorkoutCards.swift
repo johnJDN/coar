@@ -49,3 +49,39 @@ final class WorkoutCardControl: CardControl {
         return "\(TrainText.timeText(workout.startedAt)) · \(TrainText.duration(from: workout.startedAt, to: finishedAt))"
     }
 }
+
+/// A walk on a Day's list: what the Watch called it, when it ran, what its note adds, and its
+/// effort. Tapping opens its note.
+final class WalkCardControl: CardControl {
+
+    init(walk: HealthWorkout, note: WorkoutNoteRecord?) {
+        super.init(card: CardView(title: walk.name, systemImage: "figure.walk", iconTint: UIColor.accentAmber, accessory: .navigates))
+
+        let when = UILabel()
+        when.text = "\(TrainText.timeText(walk.start)) · \(TrainText.duration(from: walk.start, to: walk.end))"
+        when.font = UIFont.metricNumber
+        when.textColor = UIColor.textPrimary
+        when.adjustsFontForContentSizeCategory = true
+        card.contentStack.addArrangedSubview(when)
+
+        let added = [note?.settingsText, note?.usedInhaler == true ? "inhaler" : nil].compactMap { $0 }.joined(separator: " · ")
+        if !added.isEmpty {
+            let caption = UILabel()
+            caption.text = added
+            caption.font = UIFont.label
+            caption.textColor = UIColor.textSecondary
+            caption.adjustsFontForContentSizeCategory = true
+            caption.numberOfLines = 2
+            card.contentStack.addArrangedSubview(caption)
+        }
+        if let effort = walk.effortText {
+            let label = UILabel()
+            label.attributedText = WorkoutEffort.line(effort)
+            label.adjustsFontForContentSizeCategory = true
+            card.contentStack.addArrangedSubview(label)
+        }
+
+        isAccessibilityElement = true
+        accessibilityLabel = [walk.name, when.text, added.isEmpty ? nil : added, walk.effortText].compactMap { $0 }.joined(separator: ", ")
+    }
+}

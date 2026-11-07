@@ -1,8 +1,8 @@
 import UIKit
 import os
 
-/// The Train root (DESIGN.md §11): the month grid of Workout Days (tap one to open its
-/// Workout, or the list when there were several), the row of three `PillChip`s, Start (a
+/// The Train root (DESIGN.md §11): the month grid of Workout Days, walks ringed (tap one to
+/// open its Workout or walk, or the list when there were several), the row of three `PillChip`s, Start (a
 /// Plan or an empty Workout; Resume while one is active), the Plans section (tap a card to
 /// edit, New plan to add), Recent workouts, and an Archived section with Restore and Delete
 /// permanently.
@@ -25,6 +25,9 @@ final class TrainViewController: ScreenViewController {
     private let archivedHeader = TrainViewController.sectionHeader("Archived")
     private let archivedStack = UIStackView()
     private var remoteObserver: NSObjectProtocol?
+    /// The walks of the months shown so far, read live from Apple Health.
+    private var walksByDay: [Day: [HealthWorkout]] = [:]
+    private var walksTask: Task<Void, Never>?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -39,6 +42,7 @@ final class TrainViewController: ScreenViewController {
         super.viewDidLoad()
 
         calendar.onTapDay = { [weak self] day in self?.openDay(day) }
+        calendar.onMonthChange = { [weak self] in self?.loadWalks() }
         let grid = CardView()
         grid.contentStack.addArrangedSubview(calendar)
         contentStack.addArrangedSubview(grid)
@@ -86,6 +90,7 @@ final class TrainViewController: ScreenViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         render()
+        loadWalks()
     }
 
     /// Every section afresh through the façade.
@@ -161,8 +166,8 @@ final class TrainViewController: ScreenViewController {
 
     // MARK: - Month grid
 
-    /// Days with a Workout light up `accentGreen` and open it; any other Day up to today
-    /// offers to log a past Workout on it.
+    /// Days with a Workout light up `accentGreen` and walks ring theirs in `accentAmber`; each
+    /// opens what it holds, and any other Day up to today offers to log a past Workout on it.
     private func renderGrid() {
         let today = Day.today()
         let days: Set<Day>
@@ -175,8 +180,24 @@ final class TrainViewController: ScreenViewController {
         calendar.model = .init(
             today: today,
             levels: Dictionary(uniqueKeysWithValues: days.map { ($0, Heatmap.Level.done) }),
-            editableFrom: .distantPast
+            editableFrom: .distantPast,
+            ringedDays: Set(walksByDay.keys),
+            ringDescription: "Walk"
         )
+    }
+
+    /// Reads Apple Health quietly, with no prompt: before access is given no walks come back.
+    private func loadWalks() {
+        walksTask?.cancel()
+        let shown = calendar.shownMonth
+        let last = min(shown.last, Day.today())
+        walksTask = Task { [weak self] in
+            guard let self, let found = try? await dependencies.healthWorkouts.healthWorkouts(from: shown.first, to: last), !Task.isCancelled else { return }
+            let linked = (try? dependencies.store.linkedHealthWorkoutIDs()) ?? []
+            walksByDay = walksByDay.filter { $0.key < shown.first || $0.key > shown.last }
+                .merging(CalendarWalks.byDay(found, linked: linked)) { _, new in new }
+            renderGrid()
+        }
     }
 
     private func openDay(_ day: Day) {
@@ -187,11 +208,16 @@ final class TrainViewController: ScreenViewController {
             Self.logger.error("Failed to read Workouts: \(error, privacy: .public)")
             return
         }
-        guard let only = workouts.first else { return logPastWorkout(on: day) }
-        let screen = workouts.count == 1
-            ? WorkoutScreens.screen(for: only, dependencies: dependencies)
-            : WorkoutsOnDayViewController(dependencies: dependencies, day: day)
-        navigationController?.pushViewController(screen, animated: true)
+        switch CalendarWalks.tap(workouts: workouts, walks: walksByDay[day] ?? []) {
+        case .logPastWorkout:
+            logPastWorkout(on: day)
+        case .workout(let workout):
+            navigationController?.pushViewController(WorkoutScreens.screen(for: workout, dependencies: dependencies), animated: true)
+        case .walk(let walk):
+            present(WorkoutNoteViewController(store: dependencies.store, workout: walk, onChange: {}).inSheet(detents: [.large()]), animated: true)
+        case .list:
+            navigationController?.pushViewController(WorkoutsOnDayViewController(dependencies: dependencies, day: day), animated: true)
+        }
     }
 
     // MARK: - Start

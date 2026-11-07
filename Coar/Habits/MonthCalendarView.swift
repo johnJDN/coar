@@ -4,7 +4,7 @@ import UIKit
 /// coloured like the heatmap's cells (done in `accentGreen` with bloom, quantitative buckets
 /// by intensity, empty on `surfaceSunken`), future Days and Days before the first target
 /// muted and inert. Owns which month is shown; the owner supplies today and the levels and
-/// handles taps.
+/// handles taps. An owner may ring Days in `accentAmber` to mark a second kind of Day.
 final class MonthCalendarView: UIView {
 
     struct Model: Equatable {
@@ -15,6 +15,10 @@ final class MonthCalendarView: UIView {
         /// When set, only these Days (within the editable range) respond to a tap; the rest
         /// read normally but are inert. Nil lets every editable Day respond.
         var tappableDays: Set<Day>? = nil
+        /// Days with an `accentAmber` ring, over whatever their level fills in.
+        var ringedDays: Set<Day> = []
+        /// What VoiceOver adds on a ringed Day.
+        var ringDescription = ""
 
         /// In the editable range: from `editableFrom` up to today. Days outside it are muted.
         func isEditable(_ day: Day) -> Bool {
@@ -31,6 +35,13 @@ final class MonthCalendarView: UIView {
         didSet { render() }
     }
     var onTapDay: ((Day) -> Void)?
+    /// Called when the user moves to another month.
+    var onMonthChange: (() -> Void)?
+
+    /// The first and last Day of the month on show.
+    var shownMonth: (first: Day, last: Day) {
+        (firstOfMonth, firstOfMonth.advanced(by: firstOfMonth.daysInMonth - 1))
+    }
 
     private enum Item: Hashable {
         case blank(Int)
@@ -96,7 +107,8 @@ final class MonthCalendarView: UIView {
                 guard let model = self?.model else { return cell.configure(nil) }
                 cell.configure(.init(
                     day: day, level: day > model.today ? .future : model.levels[day] ?? .empty,
-                    isToday: day == model.today, isEditable: model.isEditable(day), isTappable: model.isTappable(day)
+                    isToday: day == model.today, isEditable: model.isEditable(day), isTappable: model.isTappable(day),
+                    ringDescription: model.ringedDays.contains(day) && day <= model.today ? model.ringDescription : nil
                 ))
             }
         }
@@ -152,6 +164,7 @@ final class MonthCalendarView: UIView {
         if month > 12 { month = 1; year += 1 }
         visibleMonth = (year, month)
         render()
+        onMonthChange?()
     }
 
     private func updateHeight() {
@@ -206,7 +219,11 @@ private final class CalendarDayCell: UICollectionViewCell {
         let isEditable: Bool
         /// Responds to a tap.
         let isTappable: Bool
+        /// Set on a ringed Day: what VoiceOver adds.
+        let ringDescription: String?
     }
+
+    private static let ringWidth: CGFloat = 2.5
 
     private let bloomView = BloomView(accent: UIColor.accentGreen, shadowRadius: 6)
     private let circle = UIView()
@@ -262,6 +279,7 @@ private final class CalendarDayCell: UICollectionViewCell {
         guard let state else {
             label.text = nil
             circle.isHidden = true
+            circle.layer.borderWidth = 0
             bloomView.setVisible(false, animated: false)
             isAccessibilityElement = false
             return
@@ -271,6 +289,8 @@ private final class CalendarDayCell: UICollectionViewCell {
         label.text = String(state.day.day)
         circle.isHidden = isFuture
         circle.backgroundColor = state.level.fillColor
+        circle.layer.borderColor = UIColor.accentAmber.cgColor
+        circle.layer.borderWidth = state.ringDescription == nil ? 0 : Self.ringWidth
         label.textColor = !state.isEditable ? UIColor.textTertiary
             : isDone ? .white
             : state.isToday ? UIColor.accentGreen
@@ -280,6 +300,6 @@ private final class CalendarDayCell: UICollectionViewCell {
         isAccessibilityElement = true
         accessibilityTraits = state.isTappable ? .button : .staticText
         accessibilityLabel = state.day.start().formatted(.dateTime.month(.wide).day())
-        accessibilityValue = isFuture ? "" : state.level.accessibilityValue
+        accessibilityValue = isFuture ? "" : [state.level.accessibilityValue, state.ringDescription].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
     }
 }

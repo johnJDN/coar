@@ -126,9 +126,9 @@ struct WorkoutNoteForm: View {
                     .foregroundStyle(Color.textPrimary)
                     .tint(Color.accentLavender)
                     .formRow()
-                if workout.isWalk { treadmillRows }
+                if onTreadmill { treadmillRows }
             } footer: {
-                Text(workout.isWalk
+                Text(onTreadmill
                      ? "From the treadmill's display at the end: its distance (the Watch's guess is often off indoors), and roughly the incline you were at most of the time. With them, Walks turns each walk into an effort, so walks at any speed and incline compare. For noticing patterns to talk over with your doctor, not for deciding medication."
                      : "A record for you and your doctor, not for deciding medication.")
             }
@@ -141,7 +141,9 @@ struct WorkoutNoteForm: View {
         .onChange(of: note) { _, note in onChange(note) }
     }
 
-    /// The treadmill's numbers, for a walk only: other workouts have no effort to work out.
+    /// Only an indoor walk has a treadmill's numbers, and so an effort to work out.
+    private var onTreadmill: Bool { workout.isWalk && workout.isIndoor }
+
     @ViewBuilder private var treadmillRows: some View {
         numberRow("Treadmill distance", unit: TreadmillUnits.distanceUnit, fraction: 0...2, value: Binding(
             get: { note.treadmillMeters.map(TreadmillUnits.displayDistance) },

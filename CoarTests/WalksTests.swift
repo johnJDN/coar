@@ -51,6 +51,36 @@ final class WalksTests: XCTestCase {
         XCTAssertFalse(try XCTUnwrap(store.workout(workout.id)).usedInhaler)
     }
 
+    // MARK: The calendar
+
+    func test_theCalendar_showsEveryWalk_butNotOtherWorkouts_orWalksLinkedToAWorkout() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let day = Day(now, in: calendar)
+        let indoor = walk(daysAgo: 0, mph: 3, incline: 5).workout
+        let outdoor = HealthWorkout(id: UUID(), name: "Walk", start: now.addingTimeInterval(-3_600), end: now, activeKilocalories: 95, averageHeartRate: 92, isWalk: true)
+        let linked = HealthWorkout(id: UUID(), name: "Walk", start: now.addingTimeInterval(-7_200), end: now, activeKilocalories: 95, averageHeartRate: 92, isWalk: true)
+        let lift = HealthWorkout(id: UUID(), name: "Strength training", start: now, end: now, activeKilocalories: 300, averageHeartRate: 118)
+
+        let days = CalendarWalks.byDay([indoor, lift, outdoor, linked], linked: [linked.id], in: calendar)
+
+        XCTAssertEqual(days, [day: [outdoor, indoor]], "earliest first")
+    }
+
+    func test_tappingACalendarDay_opensTheOneThingOnIt_orTheList_orOffersToLog() throws {
+        let store = Store.inMemory()
+        let lift = try store.logPastWorkout(from: nil, startedAt: now, duration: 3_000)
+        let walkOne = walk(daysAgo: 0, mph: 3, incline: 5).workout
+        let walkTwo = walk(daysAgo: 0, mph: 3, incline: 5).workout
+
+        XCTAssertEqual(CalendarWalks.tap(workouts: [], walks: []), .logPastWorkout)
+        XCTAssertEqual(CalendarWalks.tap(workouts: [lift], walks: []), .workout(lift))
+        XCTAssertEqual(CalendarWalks.tap(workouts: [], walks: [walkOne]), .walk(walkOne))
+        XCTAssertEqual(CalendarWalks.tap(workouts: [lift], walks: [walkOne]), .list)
+        XCTAssertEqual(CalendarWalks.tap(workouts: [], walks: [walkOne, walkTwo]), .list)
+        XCTAssertEqual(CalendarWalks.tap(workouts: [lift, lift], walks: []), .list)
+    }
+
     func test_twoNotesForOneWorkout_keepTheLatestModified() async throws {
         let store = Store.inMemory()
         let id = UUID()

@@ -277,7 +277,7 @@ Charts never show a legend when color already maps to a label on screen.
   few → latest few); then Every walk, each opening its note.
 - **Workout note** (a full-height sheet from Walks or a Watch workout on the Day page) — what
   the Watch read (when, duration, average heart rate, its distance guess), then Used inhaler
-  before (`accentLavender` toggle), and for a walk only Treadmill distance (mi or km) and
+  before (`accentLavender` toggle), and for an indoor walk only Treadmill distance (mi or km) and
   Average incline (%) in `accentAmber`, "Same incline as last time" while empty, and the
   Average speed they give; saved as it changes.
 - **Quantity row** (every log and line form) — the amount in `accentGreen`, typed as a decimal
@@ -327,7 +327,9 @@ Charts never show a legend when color already maps to a label on screen.
   rows with `textPrimary` numbers (not accents: they are not macros); nothing about them on
   the timeline, the day's summary, or Home. A saved food's serving editor lists all four,
   optional.
-- **Train** — root: month grid of workout days → Start (from a Plan or empty) → Plans
+- **Train** — root: month grid of workout days (filled `accentGreen`), every Watch walk not
+  linked to a Workout ringing its Day in `accentAmber`, read live for the month on show; a tap
+  opens the one thing on the Day, or the Day's list of Workouts and walks → Start (from a Plan or empty) → Plans
   → Recent workouts; a row of three `PillChip`s under the grid pushes Exercises, Body
   Weight, and Progress Photos. Live logging with `ExerciseCard`s (supersets linked, no
   auto-advance) and the rest-timer accessory bar (auto-starts on set completion; after

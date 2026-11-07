@@ -693,3 +693,12 @@ Ticket: `.scratch/watch-link/issues/02-link-by-itself.md`.
 - [ ] Lift with the Watch recording a workout, finish in Coar, then open Train a few minutes later: the workout's card in Recent workouts shows its calories and heart rate without tapping Link.
 - [ ] The Day page of that day lists the workout once, with the Watch's numbers.
 - [ ] Open the workout, … → Unlink Watch workout. Go back and return: it stays unlinked, with the one-tap Link still offered.
+
+## Added after v1: Walks on the Train calendar (2026-11-06)
+
+Ticket: `.scratch/walks/issues/02-walks-on-the-calendar.md`.
+
+- [ ] Train calendar: days with a walk have an amber ring, lifting days are green, and a day with both is green with the ring. Move back a month: last month's walks show too.
+- [ ] Tap a day with one walk: its sheet opens. An outdoor walk shows only the inhaler switch; an indoor walk also has the treadmill numbers.
+- [ ] Tap a day with a walk and a lift: the day's list shows both in time order, and each opens.
+- [ ] A day with no workout still offers to log a past workout.
